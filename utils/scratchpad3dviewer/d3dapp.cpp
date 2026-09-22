@@ -124,7 +124,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 
 	// TODO: Place code here.
 	SpewOutputFunc( D3DAppSpewFunc );
-	MathLib_Init( true, true, true, 2.2f, 2.2f, 0.0f, 2.0f );
+	MathLib_Init( true, true, true, 2.2f, 0.0f, 2.0f );
 	MSG msg;
 	HACCEL hAccelTable;
 	

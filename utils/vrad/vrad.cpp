@@ -2355,7 +2355,7 @@ void VRAD_Finish()
 // WorldCraft interface into vrad).
 void VRAD_Init()
 {
-	MathLib_Init( 2.2f, 2.2f, 0.0f, 2.0f, false, false, false, false );
+	MathLib_Init( 2.2f, 2.2f, 0.0f, 2.0f, false, false, false );
 	InstallAllocationFunctions();
 	InstallSpewFunction();
 }

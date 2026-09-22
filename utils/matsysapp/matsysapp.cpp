@@ -568,7 +568,7 @@ bool MaterialSystemApp::InitMaterialSystem()
 	RECT rect;
 
 	// Init libraries.
-	MathLib_Init( true, true, true, 2.2f, 2.2f, 0.0f, 2.0f );
+	MathLib_Init( true, true, true, 2.2f, 0.0f, 2.0f );
 	SpewOutputFunc( MatSysAppSpewFunc );
 	
 	if ((m_hDC = GetDC((HWND)m_hWnd)) == NULL)

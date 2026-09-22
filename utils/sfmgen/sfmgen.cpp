@@ -332,7 +332,7 @@ bool CSFMGenApp::Create()
 //-----------------------------------------------------------------------------
 bool CSFMGenApp::PreInit( )
 {
-	MathLib_Init( 2.2f, 2.2f, 0.0f, 2.0f, false, false, false, false );
+	MathLib_Init( 2.2f, 2.2f, 0.0f, 2.0f, false, false, false );
 
 	if ( !BaseClass::PreInit() )
 		return false;

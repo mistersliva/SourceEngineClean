@@ -146,7 +146,7 @@ Phase 3 additions:
 - **Gate 0**: this file exists; lint green in CI; build + tests green on
   both architectures; smoke checklist documented. (Reached when this
   commit lands green on `origin/main`.)
-- **Gate 1**: `x360_refs`, `isx360_fn`, `xbox_include` at 0;
+- **Gate 1**: `x360_refs`, `isx360_fn`, `xbox_include`, `fn3dnow` at 0;
   `mathlib/3dnow.*` deleted (staged plan: [phase1a.md](phase1a.md); `dx9sdk/`
   moved to Gate 3 - waf still links `dx9sdk/lib/amd64` while the D3D9
   backend lives); dead modules deleted (Phase 1b):

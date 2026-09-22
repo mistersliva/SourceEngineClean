@@ -79,7 +79,7 @@ Phase 1b CI reports green (each stage then gets its own CI run).
    voice_codec_frame, buypreset_listbox, career_box, TextEntryBox, entcount, …) →
    `std::min/max` or inline ternary. Nothing else qualifies (see *Out of scope*).
 
-## Stage 1 execution notes (completed, uncommitted)
+## Stage 1 execution notes (completed, commit `8b9421c2`)
 
 Result: lint `xbox_include` 165 → **0**; `x360_refs` 1911 → 1871; `isx360_fn` 910 → 901.
 Baseline ratcheted (`scripts/lint-baseline.json`). Scripted via a byte-safe
@@ -163,8 +163,42 @@ tree:
 - **Whitelisted residue:** `vprof.h` ×2 (`pmc360.h` include inside dead `_X360` guard →
   Stage 3), `ImageByteSwap.cpp` (`NO_X360_XDK` guard → Stage 3).
 
+## Stage 2 execution notes (3dnow)
+
+Result: 3 files deleted, ~60 lines of symbols removed across 25 files, 26
+`MathLib_Init` call sites rewritten; scripted via
+`stage2_3dnow.py` (byte-safe, idempotent — verified green on re-run). Lint gained
+a new ratchet id **`fn3dnow`** (baseline **0**), wired into the Gate 1 criteria.
+
+- **Deleted:** `mathlib/3dnow.cpp`, `mathlib/3dnow.h`, `public/mathlib/amd3dx.h`
+  (only includers were each other + `mathlib_base.cpp`, verified before deletion).
+- **`MathLib_Init`:** the `bAllow3DNow` parameter (pos 5) is gone from the
+  signature in `public/mathlib/mathlib.h` (+ external copy) and
+  `mathlib/mathlib_base.cpp`; the 5th argument was dropped from all 26 call
+  sites (8-arg calls, plus the legacy 7-arg `true,…` shapes in
+  `matsysapp.cpp`/`d3dapp.cpp`). `s_bAllow3DNow` + the multi-line call in
+  `engine/initmathlib.cpp` and the `r_3dnow` concommand (20 lines) were removed;
+  `sse2`/`sse`/`mmx` dispatch and concommands are untouched.
+- **`mathlib_base.cpp`:** the 3dnow selection block (20 lines: `#if
+  bAllow3DNow && pi.m_b3DNow` → `_3DNow_*` function-pointer assignments →
+  `else` arm), `s_b3DNowEnabled`, the `MathLib_3DNowEnabled()` body, and the
+  `amd3dx.h`/`3dnow.h` includes (with the `#ifndef OSX` wrapper) are gone;
+  the `#if !defined(_X360)` → `sse.h` → `#endif` structure stays for Stage 3.
+- **CPU plumbing:** `Check3DNowTechnology` (real impls in `tier0/cpu.cpp` and
+  external copy + stubs/impls in both `processor_detect` variants) deleted; the
+  `pi.m_b3DNow = …` assignments and the `m_b3DNow : 1` bitfield (both
+  `platform.h` copies) deleted; header decl dropped.
+- **`engine/host.cpp`:** the `(3DNow)` feature-string block (6 lines) deleted.
+- **Build refs:** `mathlib.vpc` (3dnow.cpp/3dnow.h/amd3dx `$File` lines),
+  `mathlib/wscript`, `amd3dx.h` `$File` lines in 19 other `.vpc` files, and
+  the `fixcopyrights.py` skip entry.
+- **Kept on purpose:** `K8PerformanceCounters.h` `CombinedMMX_3DNow` (historical
+  symbol name, not a 3DNow path), `cardstats.cpp` `"3DNOW"` card string,
+  `linux/make_check/**` stale `.dsp.check` caches — none match `fn3dnow`.
+
 ## Gate 1 completion criteria (updated)
 
-`x360_refs = 0`, `isx360_fn = 0`, `xbox_include = 0` in lint; `mathlib/3dnow.*` deleted;
+`x360_refs = 0`, `isx360_fn = 0`, `xbox_include = 0`, `fn3dnow = 0` in lint;
+`mathlib/3dnow.*` deleted;
 dead modules deleted (done — Phase 1b); full local build green; CI green on the stage
 commits. ~~`dx9sdk/` deleted~~ → moved to **Gate 3**.

@@ -1433,7 +1433,7 @@ bool CHLModelViewerApp::PreInit( )
 	ConnectTier1Libraries( &factory, 1 );
 	ConVar_Register( 0 );
 
-	MathLib_Init( 2.2f, 2.2f, 0.0f, 2.0f, false, false, false, false );
+	MathLib_Init( 2.2f, 2.2f, 0.0f, 2.0f, false, false, false );
 
 	// Add paths...
 	if ( !SetupSearchPaths( NULL, false, true ) )

@@ -3116,7 +3116,7 @@ int main (int argc, char **argv)
 	InstallSpewFunction();
 
 	// init math stuff
-	MathLib_Init( 2.2f, 2.2f, 0.0f, 2.0f, false, false, false, false );
+	MathLib_Init( 2.2f, 2.2f, 0.0f, 2.0f, false, false, false );
 	g_currentscale = g_defaultscale = 1.0;
 	g_defaultrotation = RadianEuler( 0, 0, M_PI / 2 );
 

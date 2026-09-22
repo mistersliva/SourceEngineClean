@@ -2583,7 +2583,7 @@ bool CHLFacePoserApp::PreInit( )
 		Error("Unable to load required library interface!\n");
 	}
 
-	MathLib_Init( 2.2f, 2.2f, 0.0f, 2.0f, false, false, false, false );
+	MathLib_Init( 2.2f, 2.2f, 0.0f, 2.0f, false, false, false );
 	filesystem->SetWarningFunc( Warning );
 
 	// Add paths...

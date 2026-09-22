@@ -306,7 +306,7 @@ void main( int argc, char **argv )
 		exit(0);
 	}
 
-	MathLib_Init( 2.2f, 2.2f, 0.0f, 2.0f, false, false, false, false );
+	MathLib_Init( 2.2f, 2.2f, 0.0f, 2.0f, false, false, false );
 
 	CmdLib_InitFileSystem( CommandLine()->GetParm(1) );
 

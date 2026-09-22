@@ -60,6 +60,11 @@ $checks = @(
         why = 'Includes of xbox/ headers & xboxstubs.h (Phase 1a)'
     },
     [pscustomobject]@{
+        id = 'fn3dnow'
+        pattern = 'MathLib_3DNowEnabled|_3DNow_|bAllow3DNow|b3DNow|Check3DNowTechnology|3dnow\.(cpp|h)|amd3dx\.h'
+        why = '3DNow! math paths (Phase 1a: deleted with mathlib/3dnow)'
+    },
+    [pscustomobject]@{
         id = 'dx_to_gl_abstraction'
         pattern = 'DX_TO_GL_ABSTRACTION'
         why = 'Fake-D3D9-over-GL define (Phase 3: dies with togl/togles)'

@@ -339,7 +339,7 @@ void main (int argc, char **argv)
 	InitCommandLineProgram( argc, argv );
 	g_pFileSystem = g_pFullFileSystem;
 
-	MathLib_Init( 2.2f, 2.2f, 0.0f, 2.0f, false, false, false, false );
+	MathLib_Init( 2.2f, 2.2f, 0.0f, 2.0f, false, false, false );
 	PrintCommandLine( argc, argv );
 	if (argc == 1)
 	{

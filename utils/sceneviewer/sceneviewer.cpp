@@ -313,7 +313,7 @@ bool CSceneViewerApp::PreInit( )
 	SpewOutputFunc( ModelBrowserSpewFunc );
 	SpewActivate( "console", 1 );
 
-	MathLib_Init( 2.2f, 2.2f, 0.0f, 2.0f, false, false, false, false );
+	MathLib_Init( 2.2f, 2.2f, 0.0f, 2.0f, false, false, false );
 
 	if ( !g_pFullFileSystem || !g_pMaterialSystem || !g_pDataModel || !g_pDmElementFramework || !g_pStudioRender || !g_pDataCache || !g_pMDLCache || !g_pVGuiSurface || !g_pVGui )
 	{

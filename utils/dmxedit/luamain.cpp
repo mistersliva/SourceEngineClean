@@ -95,7 +95,7 @@ bool CDmxEditApp::PreInit( )
 {
 	CreateInterfaceFn factory = GetFactory();
 
-	MathLib_Init( 2.2f, 2.2f, 0.0f, 2.0f, false, false, false, false );
+	MathLib_Init( 2.2f, 2.2f, 0.0f, 2.0f, false, false, false );
 
 	ConnectTier1Libraries( &factory, 1 );
 	ConnectTier2Libraries( &factory, 1 );
