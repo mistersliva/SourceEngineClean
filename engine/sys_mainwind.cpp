@@ -17,7 +17,7 @@
 
 #if defined( WIN32 ) && !defined( _X360 ) && !defined( DX_TO_GL_ABSTRACTION )
 #include "winlite.h"
-#include "xbox/xboxstubs.h"
+#include "xboxstubs.h"
 #endif
 
 #if defined( IS_WINDOWS_PC ) && !defined( USE_SDL )
@@ -67,7 +67,6 @@
 
 
 #if defined( _X360 )
-  #include "xbox/xbox_win32stubs.h"
   #include "hl2orange.spa.h"
 #endif
 

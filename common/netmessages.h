@@ -31,7 +31,7 @@
 #include "proto_version.h"
 
 #if !defined( _X360 )
-#include "xbox/xboxstubs.h"
+#include "xboxstubs.h"
 #endif
 
 class SendTable;

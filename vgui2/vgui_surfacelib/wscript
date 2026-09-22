@@ -20,7 +20,6 @@ def build(bld):
 		'FontAmalgam.cpp',
 		'FontManager.cpp',
 		'FontEffects.cpp',
-		#'Win32Font_x360.cpp',	[$X360]
 		#'osxfont.cpp',			[$OSXALL]
 	]
 	

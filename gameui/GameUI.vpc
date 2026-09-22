@@ -30,18 +30,10 @@ $Configuration
 
 $Configuration "Debug"
 {
-	$Linker [$X360]
-	{
-		$AdditionalDependencies			"$BASE Xonlined.lib"
-	}
 }
 
 $Configuration "Release"
 {
-	$Linker [$X360]
-	{
-		$AdditionalDependencies			"$BASE Xonline.lib"
-	}
 }
 
 $Project "GameUI"

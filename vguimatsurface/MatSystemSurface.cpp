@@ -56,9 +56,8 @@ ILauncherMgr *g_pLauncherMgr = NULL;
 #include "../vgui2/src/VPanel.h"
 #include <vgui/IInputInternal.h>
 #if defined( _X360 )
-#include "xbox/xbox_win32stubs.h"
 #endif
-#include "xbox/xboxstubs.h"
+#include "xboxstubs.h"
 #include "../vgui2/src/Memorybitmap.h"
 
 #pragma warning( disable : 4706 )
@@ -1915,7 +1914,6 @@ bool CMatSystemSurface::AddCustomFontFile( const char *fontName, const char *fon
 	return false;
 
 #elif defined( _X360 )
-#include "xbox/xbox_win32stubs.h"
 #else
 #error	
 #endif

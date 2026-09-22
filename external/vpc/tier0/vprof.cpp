@@ -38,7 +38,6 @@
 
 #ifdef _X360
 
-#include "xbox/xbox_console.h"
 
 #elif defined(_PS3)
 #include "ps3/ps3_console.h"

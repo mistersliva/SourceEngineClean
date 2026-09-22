@@ -17,7 +17,6 @@
 #else
 
 #ifdef _X360
-#include "xbox/xbox_win32stubs.h" // WAVEFORMATEX, WAVEFORMAT and ADPCM WAVEFORMAT!!!
 #endif
 
 #endif

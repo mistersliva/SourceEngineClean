@@ -147,7 +147,6 @@ typedef unsigned char BYTE;
 #endif // POSIX
 
 #if defined( _X360 )
-#include "xbox/xbox_win32stubs.h"
 #endif
 
 

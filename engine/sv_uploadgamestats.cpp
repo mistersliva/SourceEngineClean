@@ -60,7 +60,6 @@ typedef unsigned char uuid_t[16];
 #include "host_state.h"
 
 #if defined( _X360 )
-#include "xbox/xbox_win32stubs.h"
 #endif
 
 // memdbgon must be the last include file in a .cpp file!!!

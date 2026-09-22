@@ -23,7 +23,6 @@
 #include "zip_utils.h"
 #include "packfile.h"
 #ifdef _X360
-#include "xbox/xbox_launch.h"
 #endif
 
 #ifndef DEDICATED
@@ -38,7 +37,6 @@
 #endif
 
 #if defined( _X360 )
-#include "xbox\xbox_win32stubs.h"
 #undef GetCurrentDirectory
 #endif
 

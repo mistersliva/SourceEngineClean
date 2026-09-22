@@ -61,9 +61,6 @@
 #include "steam/steam_api.h"
 
 #if defined( _X360 )
-#include "xbox/xbox_win32stubs.h"
-#include "xbox/xbox_console.h"
-#include "xbox/xbox_launch.h"
 #endif
 
 #if defined( USE_SDL )

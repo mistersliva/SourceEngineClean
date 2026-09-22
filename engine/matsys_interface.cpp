@@ -40,7 +40,6 @@
 #include "client.h"
 #include "sourcevr/isourcevirtualreality.h"
 #if defined( _X360 )
-#include "xbox/xbox_launch.h"
 #endif
 
 #if defined( USE_SDL )

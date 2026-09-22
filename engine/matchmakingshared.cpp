@@ -19,7 +19,6 @@
 #include "host.h"
 
 #if defined( _X360 )   
-#include "xbox/xbox_win32stubs.h"
 #include "audio/private/snd_dev_xaudio.h"
 #include "audio_pch.h"
 #endif

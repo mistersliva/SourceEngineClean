@@ -14,7 +14,6 @@
 #include "MapReslistGenerator.h"
 #include "tier0/vcrmode.h"
 #if defined( _X360 )
-#include "xbox/xbox_console.h"
 #endif
 
 // memdbgon must be the last include file in a .cpp file!!!

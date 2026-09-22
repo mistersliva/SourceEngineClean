@@ -13,7 +13,6 @@ $Configuration
 {
 	$Compiler
 	{
-		$AdditionalIncludeDirectories	"$BASE;$SRCDIR\x360xdk\include\win32\vs2005"
 		$AdditionalOptions				"/EHsc"
 	}
 

@@ -22,7 +22,6 @@
 #include "vehicle_base.h"
 
 #if defined( _X360 )
-#include "xbox/xbox_win32stubs.h"
 #endif
 
 #define GAMESTATS_LOG_FILE "gamestats.log"

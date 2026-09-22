@@ -39,7 +39,6 @@
 #endif
 
 #if defined( _X360 )
-#include "xbox/xbox_win32stubs.h"
 #endif
 
 #include "tier0/memdbgon.h"

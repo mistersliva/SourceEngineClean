@@ -379,12 +379,10 @@ int VTFFileHeaderSize( int nMajorVersion = -1, int nMinorVersion = -1 );
 // 360 Conversion
 //-----------------------------------------------------------------------------
 typedef bool (*CompressFunc_t)( CUtlBuffer &inputBuffer, CUtlBuffer &outputBuffer );
-bool ConvertVTFTo360Format( const char *pDebugName, CUtlBuffer &sourceBuf, CUtlBuffer &targetBuf, CompressFunc_t pCompressFunc );
 
 //-----------------------------------------------------------------------------
 // 360 Preload
 //-----------------------------------------------------------------------------
-bool GetVTFPreload360Data( const char *pDebugName, CUtlBuffer &fileBufferIn, CUtlBuffer &preloadBufferOut );
 
 #include "mathlib/vector.h"
 

@@ -42,10 +42,6 @@
 
 #include "tier0/valve_off.h"
 
-// There's a different version of this file in the xbox codeline
-// so the PC version built in the xbox branch includes things like 
-// tickrate changes.
-#include "xbox_codeline_defines.h"
 
 #if defined(_PS3)
 #include <ppu_intrinsics.h>

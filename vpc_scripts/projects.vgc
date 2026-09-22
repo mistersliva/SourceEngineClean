@@ -13,14 +13,10 @@ $Project "actbusy"
 	"tools\actbusy\actbusy.vpc" [$WIN32]
 }
 
-$Project "AppInstaller"
-{
-	"utils\xbox\AppInstaller\AppInstaller.vpc" 	[$X360]
-}
 
 $Project "appframework"
 {
-	"appframework\appframework.vpc" 	[$WINDOWS||$X360||$POSIX]
+	"appframework\appframework.vpc" 	[$WINDOWS||$POSIX]
 }
 
 $Project "autorun"
@@ -35,12 +31,12 @@ $Project "avitest"
 
 $Project "bitmap"
 {
-	"bitmap\bitmap.vpc" [$WINDOWS||$X360||$POSIX]
+	"bitmap\bitmap.vpc" [$WINDOWS||$POSIX]
 }
 
 $Project "bsppack"
 {
-	"utils\bsppack\bsppack.vpc" [$WINDOWS||$X360||$POSIX]
+	"utils\bsppack\bsppack.vpc" [$WINDOWS||$POSIX]
 }
 
 $Project "bspzip"
@@ -48,29 +44,13 @@ $Project "bspzip"
 	"utils\bspzip\bspzip.vpc" [$WIN32]
 }
 
-$Project "bugreporter"
-{
-//	"utils\bugreporter\bugreporter.vpc" [$WIN32]
-}
 
-$Project "bugreporter_public"
-{
-//	"utils\bugreporter_public\bugreporter_public.vpc" [$WINDOWS||$POSIX]
-}
 
-$Project "bugreporter_text"
-{
-//	"utils\bugreporter_text\bugreporter_text.vpc" [$WIN32]
-}
 
-$Project "bugreporter_filequeue"
-{
-//	"utils\bugreporter_filequeue\bugreporter_filequeue.vpc" [$WINDOWS||$POSIX]
-}
 
 $Project "bzip2"
 {
-	"utils\bzip2\bzip2.vpc" [$WINDOWS||$X360||$POSIX]
+	"utils\bzip2\bzip2.vpc" [$WINDOWS||$POSIX]
 }
 
 $Project "captioncompiler"
@@ -95,13 +75,13 @@ $Project "classcheck"
 
 $Project "client"
 {
-	"game\client\client_hl2.vpc"		[($WIN32||$X360||$POSIX) && $HL2]
+	"game\client\client_hl2.vpc"		[($WIN32||$POSIX) && $HL2]
 	"game\client\client_dod.vpc"		[($WIN32||$POSIX) && $DOD]
-	"game\client\client_episodic.vpc"	[($WIN32||$X360||$POSIX) && $EPISODIC]
+	"game\client\client_episodic.vpc"	[($WIN32||$POSIX) && $EPISODIC]
 	"game\client\client_lostcoast.vpc"	[($WIN32||$POSIX) && $LOSTCOAST]
-	"game\client\client_tf.vpc"			[($WINDOWS||$X360||$POSIX) && $TF]
+	"game\client\client_tf.vpc"			[($WINDOWS||$POSIX) && $TF]
 	"game\client\client_cstrike.vpc"	[($WIN32||$POSIX) && $CSTRIKE]
-	"game\client\client_portal.vpc"		[($WIN32||$X360||$POSIX) && $PORTAL]
+	"game\client\client_portal.vpc"		[($WIN32||$POSIX) && $PORTAL]
 	"game\client\client_hl2mp.vpc"		[($WIN32||$POSIX) && $HL2MP]
 	"game\client\client_hl1.vpc"		[($WIN32||$POSIX) && $HL1]
 	"game\client\client_hl1mp.vpc"		[($WIN32||$POSIX) && $HL1MP]
@@ -134,7 +114,7 @@ $Project "cubelight"
 
 $Project "datacache"
 {
-	"datacache\datacache.vpc" [$WINDOWS||$X360||$POSIX]
+	"datacache\datacache.vpc" [$WINDOWS||$POSIX]
 }
 
 $Project "datamodel"
@@ -194,7 +174,7 @@ $Project "dmxedit"
 
 $Project "dmxloader"
 {
-	"dmxloader\dmxloader.vpc" [$WINDOWS||$X360||$POSIX]
+	"dmxloader\dmxloader.vpc" [$WINDOWS||$POSIX]
 }
 
 $Project "dmxtest"
@@ -207,10 +187,6 @@ $Project "dumpmatsyshelp"
 	"utils\dumpmatsyshelp\dumpmatsyshelp.vpc" [$WIN32]
 }
 
-$Project "dumpobj"
-{
-	"utils\xbox\dumpobj\dumpobj.vpc" [$WIN32]
-}
 
 $Include "utils\dx_proxy\dx_proxy_all.vgc"
 
@@ -226,7 +202,7 @@ $Project "elementviewer"
 
 $Project "engine"
 {
-	"engine\engine.vpc" [$WINDOWS||$X360||$POSIX]
+	"engine\engine.vpc" [$WINDOWS||$POSIX]
 }
 
 $Project "entcount"
@@ -251,7 +227,7 @@ $Project "FileSystemOpenDialog"
 
 $Project "filesystem_stdio"
 {
-        "filesystem\filesystem_stdio.vpc" [$WINDOWS||$X360||$POSIX]
+        "filesystem\filesystem_stdio.vpc" [$WINDOWS||$POSIX]
 }
 
 $Project "filesystem_steam"
@@ -269,10 +245,6 @@ $Project "floatbm"
 	"floatbm\floatbm.vpc" [$WIN32]
 }
 
-$Project "fontmaker"
-{
-	"utils\xbox\FontMaker\fontmaker.vpc" [$WIN32]
-}
 
 $Project "foundry"
 {
@@ -291,7 +263,7 @@ $Project "gamestats_reader"
 
 $Project "GameUI"
 {
-	"gameui\GameUI.vpc" [$WINDOWS||$X360||$POSIX]
+	"gameui\GameUI.vpc" [$WINDOWS||$POSIX]
 }
 
 $Project "game_shader_generic_advanced"
@@ -341,7 +313,7 @@ $Project "hammer_launcher"
 
 $Project "havana_constraints"
 {
-	"ivp\havana\havana_constraints.vpc" [$WINDOWS||$X360||$POSIX]
+	"ivp\havana\havana_constraints.vpc" [$WINDOWS||$POSIX]
 }
 
 $Project "height2normal"
@@ -356,12 +328,12 @@ $Project "height2ssbump"
 
 $Project "hk_base"
 {
-	"ivp\havana\havok\hk_base\hk_base.vpc" [$WINDOWS||$X360||$POSIX]
+	"ivp\havana\havok\hk_base\hk_base.vpc" [$WINDOWS||$POSIX]
 }
 
 $Project "hk_math"
 {
-	"ivp\havana\havok\hk_math\hk_math.vpc" [$WINDOWS||$X360||$POSIX]
+	"ivp\havana\havok\hk_math\hk_math.vpc" [$WINDOWS||$POSIX]
 }
 
 // FIXME why doesn't source2 define this?
@@ -385,20 +357,16 @@ $Project "particles"
 	"particles\particles.vpc"
 }
 
-$Project "sdktoolslib"
-{
-//	"sdktools/sdktoolslib/sdktoolslib.vpc"
-}
 
 $Project "server"
 {
-	"game\server\server_hl2.vpc"		[($WIN32||$X360||$POSIX) && $HL2]
+	"game\server\server_hl2.vpc"		[($WIN32||$POSIX) && $HL2]
 	"game\server\server_dod.vpc"		[($WIN32||$POSIX) && $DOD]
-	"game\server\server_episodic.vpc"	[($WIN32||$X360||$POSIX) && $EPISODIC]
+	"game\server\server_episodic.vpc"	[($WIN32||$POSIX) && $EPISODIC]
 	"game\server\server_lostcoast.vpc"	[($WIN32||$POSIX) && $LOSTCOAST]
-	"game\server\server_tf.vpc"			[($WINDOWS||$X360||$POSIX) && $TF]
+	"game\server\server_tf.vpc"			[($WINDOWS||$POSIX) && $TF]
 	"game\server\server_cstrike.vpc"	[($WIN32||$POSIX) && $CSTRIKE]
-	"game\server\server_portal.vpc"		[($WIN32||$X360||$POSIX) && $PORTAL]
+	"game\server\server_portal.vpc"		[($WIN32||$POSIX) && $PORTAL]
 	"game\server\server_hl2mp.vpc"		[($WIN32||$POSIX) && $HL2MP]
 	"game\server\server_hl1.vpc"		[($WIN32||$POSIX) && $HL1]
 	"game\server\server_hl1mp.vpc"		[($WIN32||$POSIX) && $HL1MP]
@@ -406,7 +374,7 @@ $Project "server"
 
 $Project "simdtest"
 {
-	"utils\simdtest\simdtest.vpc" [$WINDOWS||$X360||$POSIX]
+	"utils\simdtest\simdtest.vpc" [$WINDOWS||$POSIX]
 }
 
 $Project "hlfaceposer"
@@ -446,7 +414,7 @@ $Project "ihvtest1"
 
 $Project "inputsystem"
 {
-	"inputsystem\inputsystem.vpc" [$WINDOWS||$X360||$POSIX]
+	"inputsystem\inputsystem.vpc" [$WINDOWS||$POSIX]
 }
 
 $Project "inputtest"
@@ -456,27 +424,15 @@ $Project "inputtest"
 
 $Project "ivp_compactbuilder"
 {
-	"ivp\ivp_compact_builder\ivp_compactbuilder.vpc" [$WINDOWS||$X360||$POSIX]
+	"ivp\ivp_compact_builder\ivp_compactbuilder.vpc" [$WINDOWS||$POSIX]
 }
 
-$Project "itemtest_com"
-{
-//	"utils\itemtest\itemtest_com.vpc"
-}
 
-$Project "itemtest_controls"
-{
-//	"utils\itemtest_controls\itemtest_controls.vpc"
-}
 
-$Project "itemtest_lib"
-{
-//	"utils\itemtest_lib\itemtest_lib.vpc"
-}
 
 $Project "ivp_physics"
 {
-	"ivp\ivp_physics\ivp_physics.vpc" [$WINDOWS||$X360||$POSIX]
+	"ivp\ivp_physics\ivp_physics.vpc" [$WINDOWS||$POSIX]
 }
 
 $Project "jpeglib"
@@ -491,12 +447,12 @@ $Project "kvc"
 
 $Project "launcher"
 {
-	"launcher\launcher.vpc" [$WINDOWS||$X360||$POSIX]
+	"launcher\launcher.vpc" [$WINDOWS||$POSIX]
 }
 
 $Project "launcher_main"
 {
-	"launcher_main\launcher_main.vpc" [$WINDOWS||$X360||$POSIX]
+	"launcher_main\launcher_main.vpc" [$WINDOWS||$POSIX]
 }
 
 $Project "LicenseViewed"
@@ -519,44 +475,16 @@ $Project "lzma"
 	"utils\lzma\lzma.vpc"
 }
 
-$Project "MakeGameData"
-{
-	"utils\xbox\MakeGameData\MakeGameData.vpc" [$WIN32]
-}
 
-$Project "MakeScenesImage"
-{
-	"utils\xbox\MakeGameData\MakeScenesImage.vpc" [$WIN32]
-}
 
-$Project "makephx"
-{
-	"utils\xbox\makephx\makephx.vpc" [$WIN32]
-}
 
-$Project "makexcs"
-{
-	"utils\xbox\makexcs\makexcs.vpc" [$WIN32]
-}
 
-$Project "makextf"
-{
-	"utils\xbox\makextf\makextf.vpc" [$WIN32]
-}
 
-$Project "makexvcd"
-{
-	"utils\xbox\makexvcd\makexvcd.vpc" [$WIN32]
-}
 
-$Project "makexzip"
-{
-	"utils\xbox\makexzip\makexzip.vpc" [$WIN32]
-}
 
 $Project "materialsystem"
 {
-	"materialsystem\materialsystem.vpc" [$WINDOWS||$X360||$POSIX]
+	"materialsystem\materialsystem.vpc" [$WINDOWS||$POSIX]
 }
 
 $Project "materialsystemtest"
@@ -566,12 +494,12 @@ $Project "materialsystemtest"
 
 $Project "mathlib"
 {
-	"mathlib\mathlib.vpc" [$WINDOWS||$X360||$POSIX]
+	"mathlib\mathlib.vpc" [$WINDOWS||$POSIX]
 }
 
 $Project "matsys_controls"
 {
-	"vgui2\matsys_controls\matsys_controls.vpc" [$WINDOWS||$X360||$POSIX]
+	"vgui2\matsys_controls\matsys_controls.vpc" [$WINDOWS||$POSIX]
 }
 
 $Project "matsys_regressiontest"
@@ -732,7 +660,7 @@ $Project "quantize"
 
 $Project "raytrace"
 {
-	"raytrace\raytrace.vpc" [$WINDOWS||$X360||$POSIX]
+	"raytrace\raytrace.vpc" [$WINDOWS||$POSIX]
 }
 
 $Project "res2c"
@@ -762,7 +690,7 @@ $Project "sampletool"
 
 $Project "scenefilecache"
 {
-	"scenefilecache\scenefilecache.vpc" [$WINDOWS||$X360||$POSIX]
+	"scenefilecache\scenefilecache.vpc" [$WINDOWS||$POSIX]
 }
 
 $Project "scenemanager"
@@ -787,7 +715,7 @@ $Project "SDKLauncher"
 
 $Project "ServerBrowser"
 {
-	"serverbrowser\ServerBrowser.vpc" [$WINDOWS||$X360||$POSIX]
+	"serverbrowser\ServerBrowser.vpc" [$WINDOWS||$POSIX]
 }
 
 $Project "serverplugin_empty"
@@ -822,7 +750,7 @@ $Project "remoteshadercompile"
 
 $Project "shaderapidx9"
 {
-	"materialsystem\shaderapidx9\shaderapidx9.vpc" [$WINDOWS||$X360||$POSIX]
+	"materialsystem\shaderapidx9\shaderapidx9.vpc" [$WINDOWS||$POSIX]
 }
 
 $Project "togl"
@@ -857,7 +785,7 @@ $Project "shaderinfo"
 
 $Project "shaderlib"
 {
-	"materialsystem\shaderlib\shaderlib.vpc" [$WINDOWS||$X360||$POSIX]
+	"materialsystem\shaderlib\shaderlib.vpc" [$WINDOWS||$POSIX]
 }
 
 $Project "shader_nvfx"
@@ -897,7 +825,7 @@ $Project "socket_tests"
 
 $Project "soundemittersystem"
 {
-	"soundemittersystem\soundemittersystem.vpc" [$WINDOWS||$X360||$POSIX]
+	"soundemittersystem\soundemittersystem.vpc" [$WINDOWS||$POSIX]
 }
 
 $Project "soundsystem"
@@ -915,10 +843,6 @@ $Project "vaudio_speex"
 	"engine\voice_codecs\speex\vaudio_speex.vpc" [$WINDOWS||$POSIX]
 }
 
-$Project "vaudio_celt"
-{
-//	"engine\voice_codecs\celt\vaudio_celt.vpc" [$WIN32||$POSIX]
-}
 
 //$Project "splitskybox"
 //{
@@ -947,7 +871,7 @@ $Project "Status"
 
 $Project "stdshader_dbg"
 {
-	"materialsystem\stdshaders\stdshader_dbg.vpc" [$WIN32||$X360||$POSIX]
+	"materialsystem\stdshaders\stdshader_dbg.vpc" [$WIN32||$POSIX]
 }
 
 $Project "stdshader_dx6"
@@ -967,7 +891,7 @@ $Project "stdshader_dx8"
 
 $Project "stdshader_dx9"
 {
-	"materialsystem\stdshaders\stdshader_dx9.vpc" [$WINDOWS||$X360||$POSIX]
+	"materialsystem\stdshaders\stdshader_dx9.vpc" [$WINDOWS||$POSIX]
 }
 
 $Project "SteamBackup"
@@ -992,7 +916,7 @@ $Project "studiomdl"
 
 $Project "studiorender"
 {
-	"studiorender\studiorender.vpc" [$WINDOWS||$X360||$POSIX]
+	"studiorender\studiorender.vpc" [$WINDOWS||$POSIX]
 }
 
 $Project "SymbolStoreUpdate"
@@ -1010,10 +934,6 @@ $Project "tagbuild"
 	"devtools\tagbuild\tagbuild.vpc" [$WIN32]
 }
 
-$Project "tagxzppreload"
-{
-	"utils\xbox\tagxzppreload\tagxzppreload.vpc" [$WIN32]
-}
 
 //$Project "test"
 //{
@@ -1062,22 +982,22 @@ $Project "tgamse"
 
 $Project "tier0"
 {
-	"tier0\tier0.vpc" 	[$WINDOWS || $X360||$POSIX]
+	"tier0\tier0.vpc" 	[$WINDOWS||$POSIX]
 }
 
 $Project "tier1"
 {
-	"tier1\tier1.vpc" 	[$WINDOWS || $X360||$POSIX]
+	"tier1\tier1.vpc" 	[$WINDOWS||$POSIX]
 }
 
 $Project "tier2"
 {
-	"tier2\tier2.vpc" 	[$WINDOWS||$X360||$POSIX]
+	"tier2\tier2.vpc" 	[$WINDOWS||$POSIX]
 }
 
 $Project "tier3"
 {
-	"tier3\tier3.vpc" 	[$WINDOWS||$X360||$POSIX]
+	"tier3\tier3.vpc" 	[$WINDOWS||$POSIX]
 }
 
 $Project "tier1test"
@@ -1147,13 +1067,9 @@ $Project "valvelib"
 
 $Project "video_services"
 {
-	"video\video_services.vpc" [$WINDOWS||$X360||$POSIX]
+	"video\video_services.vpc" [$WINDOWS||$POSIX]
 }
 
-$Project "vaudio_miles"
-{
-//	"engine\voice_codecs\miles\vaudio_miles.vpc" [$WINDOWS||$POSIX]
-}
 
 $Project "vaudio_minimp3"
 {
@@ -1200,10 +1116,6 @@ $Project "vcrtrace"
 	"utils\vcrtrace\vcrtrace.vpc" [$WIN32]
 }
 
-$Project "video_bink"
-{
-//	"video\video_bink.vpc" [($WINDOWS||$LINUX)]
-}
 
 $Project "video_quicktime"
 {
@@ -1217,22 +1129,22 @@ $Project "video_webm"
 
 $Project "vguimatsurface"
 {
-	"vguimatsurface\vguimatsurface.vpc" [$WINDOWS||$X360||$POSIX]
+	"vguimatsurface\vguimatsurface.vpc" [$WINDOWS||$POSIX]
 }
 
 $Project "vgui_controls"
 {
-	"vgui2\vgui_controls\vgui_controls.vpc" [$WINDOWS||$X360||$POSIX]
+	"vgui2\vgui_controls\vgui_controls.vpc" [$WINDOWS||$POSIX]
 }
 
 $Project "vgui_dll"
 {
-	"vgui2\src\vgui_dll.vpc" [$WINDOWS||$X360||$POSIX]
+	"vgui2\src\vgui_dll.vpc" [$WINDOWS||$POSIX]
 }
 
 $Project "vgui_surfacelib"
 {
-	"vgui2\vgui_surfacelib\vgui_surfacelib.vpc" [$WINDOWS||$X360||$POSIX]
+	"vgui2\vgui_surfacelib\vgui_surfacelib.vpc" [$WINDOWS||$POSIX]
 }
 
 $Project "vice"
@@ -1333,7 +1245,7 @@ $Project "vpccrccheck"
 
 $Project "vphysics"
 {
-	"vphysics\vphysics.vpc"  [$WINDOWS||$X360||$POSIX]
+	"vphysics\vphysics.vpc"  [$WINDOWS||$POSIX]
 }
 
 $Project "vpk"
@@ -1363,7 +1275,7 @@ $Project "coroutine_osx"
 
 $Project "vstdlib"
 {
-	"vstdlib\vstdlib.vpc"		[$WINDOWS || $X360||$POSIX]
+	"vstdlib\vstdlib.vpc"		[$WINDOWS||$POSIX]
 }
 
 $Project "vtaexp"
@@ -1383,7 +1295,7 @@ $Project "vtex_launcher"
 
 $Project "vtf"
 {
-	"vtf\vtf.vpc" [$WINDOWS||$X360||$POSIX]
+	"vtf\vtf.vpc" [$WINDOWS||$POSIX]
 }
 
 $Project "vtf2tga"
@@ -1416,35 +1328,15 @@ $Project "vweightexp"
 	"utils\vweightexp\vweightexp.vpc" [$WIN32]
 }
 
-$Project "vxbdm"
-{
-	"utils\xbox\vxbdm\vxbdm.vpc" [$X360]
-}
 
-$Project "vxconsole"
-{
-	"utils\xbox\vxconsole\vxconsole.vpc" [$WIN32]
-}
 
 $Project "WaitAndRestart"
 {
 	"utils\vmpi\WaitAndRestart\WaitAndRestart.vpc" [$WIN32]
 }
 
-$Project "xbox_loader"
-{
-	"utils\xbox\xbox_loader\xbox_loader.vpc" [$WIN32]
-}
 
-$Project "xbspinfo"
-{
-	"utils\xbox\xbspinfo\xbspinfo.vpc" [$WIN32]
-}
 
-$Project "xcompress"
-{
-	"utils\xbox\xcompress\xcompress.vpc" [$WIN32]
-}
 
 $Project "xwad"
 {

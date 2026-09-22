@@ -14,7 +14,6 @@
 #define _XBOX
 #include <xtl.h>
 #undef _XBOX
-#include "xbox/xbox_win32stubs.h"
 #endif
 #endif
 

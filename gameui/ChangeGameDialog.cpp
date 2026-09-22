@@ -7,8 +7,6 @@
 
 
 #ifdef _XBOX
-#include "xbox/xbox_platform.h"
-#include "xbox/xbox_win32stubs.h"
 #endif
 
 #if !defined( _X360 )

@@ -148,7 +148,7 @@ bool CVPC::Init( int argc, char **argv )
 	}
 
 	Log_Msg( LOG_VPC, "VPC - Valve Project Creator For " );
-	Log_Msg( LOG_VPC, "Visual Studio, Xbox 360, PlayStation 3, " );
+	Log_Msg( LOG_VPC, "Visual Studio, PlayStation 3, " );
 	Log_Msg( LOG_VPC, "Xcode and Make (Build: %s %s)\n", __DATE__, __TIME__ );
 	Log_Msg( LOG_VPC, "(C) Copyright 1996-2015, Valve Corporation, All rights reserved.\n" );
 	Log_Msg( LOG_VPC, "\n" );
@@ -596,13 +596,11 @@ void CVPC::SpewUsage( void )
 			Log_Msg( LOG_VPC, "\n" );
 			Log_Msg( LOG_VPC, "  Single .vcproj generation:\n" );
 			Log_Msg( LOG_VPC, "    vpc +client /hl2     <-- Creates a Win32 .vcproj for the HL2 client.\n" );
-			Log_Msg( LOG_VPC, "    vpc +shaderapi /x360 <-- Creates a Xbox360 .vcproj for the shaderapi.\n" );
 
 			Log_Msg( LOG_VPC, "\n" );
 			Log_Msg( LOG_VPC, "  Multiple .vcproj generation - Multiple Projects for Games and Platforms:\n" );
 			Log_Msg( LOG_VPC, "    vpc +client /hl2 /tf           <-- Creates ALL the Win32 .vcprojs for the HL2 and TF client.\n" );
 			Log_Msg( LOG_VPC, "    vpc +gamedlls /allgames        <-- Creates ALL the Win32 .vcprojs for client and server for all GAMES.\n" );
-			Log_Msg( LOG_VPC, "    vpc +tools -tier0 /win32 /x360 <-- Creates ALL the Win32 and Xbox360 .vcprojs for the tool projects but not the tier0 project.\n" );
 
 			Log_Msg( LOG_VPC, "\n" );
 			Log_Msg( LOG_VPC, "  Use +/- to add or remove projects or groups.\n");
@@ -1224,7 +1222,6 @@ void CVPC::ParseBuildOptions( int argc, char *argv[] )
 		m_bP4SlnCheckEverything = true;
 	}
 
-	CheckForInstalledXDK();
 }
 
 //-----------------------------------------------------------------------------
@@ -1386,38 +1383,6 @@ bool CVPC::RestartFromCorrectLocation( bool *pIsChild )
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-void CVPC::CheckForInstalledXDK()
-{
-#ifndef POSIX
-	if ( !IsPlatformDefined( "X360" ) )
-	{
-		// caller not doing any 360 work, so ignore
-		return;
-	}
-
-	// quick and dirty early check for 360 XDK ability
-	// can only detect simplistic condition, VPC can't validate a perfect XDK/MSDEV installation
-	bool bHasXDK = false;
-	const char *pXDK = getenv( "XEDK" );
-	if ( pXDK && pXDK[0] )
-	{
-		// look for expected compiler
-		char fullPath[MAX_PATH];
-		V_strncpy( fullPath, pXDK, sizeof( fullPath ) );
-		V_AppendSlash( fullPath, sizeof( fullPath ) );
-		V_strncat( fullPath, "bin\\win32\\cl.exe", sizeof( fullPath ) );
-		int fileSize = Sys_FileLength( fullPath, false );
-		if ( fileSize > 0 )
-		{
-			bHasXDK = true;
-		}
-	}
-	if ( !bHasXDK )
-	{
-		VPCError( "Cannot Build For Xbox 360, XDK is missing or damaged. Remove /x360 from command line." );
-	}
-#endif
-}
 
 void CVPC::CreateOutputFilename( project_t *pProject, const char *pchPlatform, const char *pchPhase, const char *pGameName, const char *pchExtension )
 {
@@ -1815,9 +1780,9 @@ void CVPC::SetMacrosAndConditionals()
 	// create reserved $QUOTE - used for embedding quotes, or use msdev's &quot
 	SetMacro( "QUOTE", "\"", false );
 
-	if ( !V_stricmp( cVPCPlatform.String(), "WIN32" ) || !V_stricmp( cVPCPlatform.String(), "WIN64" ) || !V_stricmp( cVPCPlatform.String(), "X360" ) )
+	if ( !V_stricmp( cVPCPlatform.String(), "WIN32" ) || !V_stricmp( cVPCPlatform.String(), "WIN64" ) )
 	{
-		// VS2010 is strictly win32/xbox360
+		// VS2010 is strictly win32
 		switch ( m_eVSVersion )
 		{
 		case k_EVSVersion_2019:
@@ -1900,22 +1865,6 @@ void CVPC::SetMacrosAndConditionals()
 		SetMacro( "_EXTERNAL_IMPLIB_EXT", ".lib", false );
 		SetMacro( "_EXTERNAL_STATICLIB_EXT", ".lib", false );
 
-	}
-	else if ( V_stricmp( cVPCPlatform.String(), "X360" ) == 0 )
-	{
-		SetMacro( "PLATSUBDIR", "\\x360", false );
-
-		SetMacro( "_DLL_EXT", "_360.dll", true );
-		SetMacro( "_IMPLIB_EXT", "_360.lib", false );
-
-		SetMacro( "_IMPLIB_PREFIX", "", false );
-
-		SetMacro( "_IMPLIB_DLL_PREFIX", "", false );
-
-		SetMacro( "_STATICLIB_PREFIX", "", false );
-		SetMacro( "_STATICLIB_EXT", "_360.lib", false );
-
-		SetMacro( "_EXE_EXT", ".exe", false );
 	}
 	else if ( V_stricmp( cVPCPlatform.String(), "PS3" ) == 0 )
 	{
@@ -2119,7 +2068,7 @@ void CVPC::SetMacrosAndConditionals()
 		// The DOTA S1 scripts are not in a clean enough condition to place this logic there.
 		// The S2 scripts have it there along with similar common concepts.
 		conditional_t *pRetailConditional = FindOrCreateConditional( "RETAIL", false, CONDITIONAL_CUSTOM );
-		if ( pRetailConditional && pRetailConditional->m_bDefined && ( !V_stricmp( cVPCPlatform.String(), "X360" ) || !V_stricmp( cVPCPlatform.String(), "PS3" ) ) )
+		if ( pRetailConditional && pRetailConditional->m_bDefined && ( !V_stricmp( cVPCPlatform.String(), "PS3" ) ) )
 		{
 			// CERT is a restricted console RETAIL concept, with publisher dictated rules, there is no CERT process for non-console platforms.
 			SetConditional( "CERT" );
@@ -2309,8 +2258,6 @@ void CVPC::SetupGenerators()
 	extern IBaseProjectGenerator	*GetWin32ProjectGenerator();
 	extern IBaseProjectGenerator	*GetWin32ProjectGenerator_2010();
 	extern IBaseProjectGenerator	*GetPS3ProjectGenerator();
-	extern IBaseProjectGenerator	*GetXbox360ProjectGenerator();
-	extern IBaseProjectGenerator	*GetXbox360ProjectGenerator_2010();
 	extern IBaseProjectGenerator	*GetMakefileProjectGenerator();
 	extern IBaseSolutionGenerator	*GetMakefileSolutionGenerator();
 	extern IBaseProjectGenerator	*GetXcodeProjectGenerator();
@@ -2348,19 +2295,6 @@ void CVPC::SetupGenerators()
 		if ( IsPlatformDefined( "PS3" ) )
 		{
 			m_pProjectGenerator = GetPS3ProjectGenerator();
-			m_pSolutionGenerator = GetSolutionGenerator_Win32();
-		}
-		else if ( IsPlatformDefined( "X360" ) )
-		{
-			if ( m_bUseVS2010FileFormat )
-			{
-				Log_Msg( LOG_VPC, Color( 0, 255, 255, 255 ), "Generating for Visual Studio 2010.\n" );
-				m_pProjectGenerator = GetXbox360ProjectGenerator_2010();
-			}
-			else
-			{
-				m_pProjectGenerator = GetXbox360ProjectGenerator();
-			}
 			m_pSolutionGenerator = GetSolutionGenerator_Win32();
 		}
 		else

@@ -168,8 +168,6 @@ public:
 #include "projectgenerator_vcproj.h"
 #include "projectgenerator_win32.h"
 #include "projectgenerator_win32_2010.h"
-#include "projectgenerator_xbox360.h"
-#include "projectgenerator_xbox360_2010.h"
 #include "projectgenerator_ps3.h"
 #endif
 
@@ -308,7 +306,6 @@ private:
 	void					UnloadPerforceInterface();
 
 	void					InProcessCRCCheck();
-	void					CheckForInstalledXDK();
 
 	void					DetermineSourcePath();
 	void					SetDefaultSourcePath();

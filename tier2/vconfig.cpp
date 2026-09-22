@@ -13,7 +13,6 @@
 #include <process.h>
 #endif
 #if defined( _X360 )
-#include "xbox/xbox_win32stubs.h"
 #endif
 #include "vconfig.h"
 

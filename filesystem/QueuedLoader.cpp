@@ -53,7 +53,7 @@
 #include "tier2/tier2.h"
 #include "characterset.h"
 #if !defined( _X360 )
-#include "xbox/xboxstubs.h"
+#include "xboxstubs.h"
 #endif
 
 // memdbgon must be the last include file in a .cpp file!!!

@@ -1484,7 +1484,6 @@ inline const char *GetPlatformExt( void )
 #include "tier0/fasttimer.h"
 
 #if defined( _X360 )
-#include "xbox/xbox_core.h"
 #endif
 
 //-----------------------------------------------------------------------------

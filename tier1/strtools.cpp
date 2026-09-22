@@ -75,7 +75,6 @@
 #include "tier1/utlstring.h"
 #include "tier1/fmtstr.h"
 #if defined( _X360 )
-#include "xbox/xbox_win32stubs.h"
 #endif
 #include "tier0/memdbgon.h"
 

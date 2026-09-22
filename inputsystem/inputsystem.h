@@ -17,7 +17,7 @@
 #define _WIN32_WINNT 0x502
 #include <windows.h>
 #include <zmouse.h>
-#include "xbox/xboxstubs.h"
+#include "xboxstubs.h"
 #include "../../dx9sdk/include/XInput.h"
 #endif
 #endif
@@ -38,8 +38,6 @@
 #include "tier1/utlflags.h"
 
 #if defined( _X360 )
-#include "xbox/xbox_win32stubs.h"
-#include "xbox/xbox_console.h"
 #endif
 
 #include "steam/steam_api.h"

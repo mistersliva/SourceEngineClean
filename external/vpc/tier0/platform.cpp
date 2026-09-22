@@ -17,7 +17,6 @@
 #include <assert.h>
 #include "tier0/platform.h"
 #if defined( _X360 )
-#include "xbox/xbox_console.h"
 #endif
 #include "tier0/threadtools.h"
 

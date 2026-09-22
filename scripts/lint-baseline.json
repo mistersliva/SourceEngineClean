@@ -1,10 +1,10 @@
 ﻿{
-    "x360_refs":  1911,
-    "isx360_fn":  910,
-    "xbox_include":  165,
+    "x360_refs":  1871,
+    "isx360_fn":  901,
+    "xbox_include":  0,
     "dx_to_gl_abstraction":  216,
-    "win32_long_no_ptr":  83,
-    "inline_asm":  149,
-    "d3d9_com_types":  940,
-    "suspicious_ptr_cast":  56
+    "win32_long_no_ptr":  63,
+    "inline_asm":  148,
+    "d3d9_com_types":  936,
+    "suspicious_ptr_cast":  54
 }

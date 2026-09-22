@@ -16,7 +16,6 @@ def configure(conf):
 
 def build(bld):
 	source = [
-		#'xbox\___FirstModule.cpp' [$X360]
 		'coroutine.cpp',	#			[!$X360 && !$OSXALL]
 		'cvar.cpp',
 		'jobthread.cpp',

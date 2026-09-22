@@ -59,8 +59,6 @@
 #include "voice.h"
 #include "sv_rcon.h"
 #if defined( _X360 )
-#include "xbox/xbox_console.h"
-#include "xbox/xbox_launch.h"
 #endif
 #include "filesystem/IQueuedLoader.h"
 #include "sys.h"

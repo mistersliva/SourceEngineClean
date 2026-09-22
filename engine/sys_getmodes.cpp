@@ -53,9 +53,8 @@ typedef void *HDC;
 #include "tier2/renderutils.h"
 #include "tier0/etwprof.h"
 #if defined( _X360 )
-#include "xbox/xbox_win32stubs.h"
 #else
-#include "xbox/xboxstubs.h"
+#include "xboxstubs.h"
 #endif
 #include "video/ivideoservices.h"
 #if !defined(NO_STEAM)

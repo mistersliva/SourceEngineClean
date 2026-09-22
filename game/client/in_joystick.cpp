@@ -30,9 +30,8 @@
 #include "cam_thirdperson.h"
 
 #if defined( _X360 )
-#include "xbox/xbox_win32stubs.h"
 #else
-#include "../common/xbox/xboxstubs.h"
+#include "../common/xboxstubs.h"
 #endif
 
 #ifdef HL2_CLIENT_DLL

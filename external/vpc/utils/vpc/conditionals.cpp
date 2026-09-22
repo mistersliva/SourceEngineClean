@@ -25,7 +25,6 @@ void CVPC::SetupDefaultConditionals()
 		FindOrCreateConditional( "OSX32", true, CONDITIONAL_PLATFORM );
 		FindOrCreateConditional( "OSX64", true, CONDITIONAL_PLATFORM );
 
-		FindOrCreateConditional( "X360", true, CONDITIONAL_PLATFORM );
 		FindOrCreateConditional( "PS3", true, CONDITIONAL_PLATFORM );
 	}
 	

@@ -26,7 +26,6 @@
 #include "MatSystemSurface.h"
 #include "filesystem.h"
 #if defined( _X360 )
-#include "xbox/xbox_win32stubs.h"
 #endif
 
 #if defined( USE_SDL ) 

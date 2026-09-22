@@ -100,7 +100,6 @@ extern void longjmp( jmp_buf, int ) __attribute__((noreturn));
 #endif
 
 #if defined( _X360 )
-#include "xbox/xbox_win32stubs.h"
 #endif
 
 

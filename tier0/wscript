@@ -35,7 +35,6 @@ def build(bld):
 		'memvalidate.cpp',
 		'minidump.cpp',
 		'pch_tier0.cpp',
-		#'pmc360.cpp',		[$X360]
 		'PMELib.cpp',		#[$WINDOWS||$POSIX]
 		'progressbar.cpp',
 		'security.cpp',

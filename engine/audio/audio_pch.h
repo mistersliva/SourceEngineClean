@@ -59,7 +59,6 @@
 
 #include "snd_wave_mixer_xma.h"
 #if defined( _X360 )
-#include "xbox/xbox_win32stubs.h"
 #include <xhv2.h>
 #elif POSIX
 #include "audio/posix_stubs.h"

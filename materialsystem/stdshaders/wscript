@@ -86,7 +86,6 @@ def build(bld):
 		'pyro_vision.cpp',
 		'refract.cpp',
 		'refract_dx9_helper.cpp',
-		#'rendertargetblit_x360.cpp',					[$X360]	
 		'sample4x4.cpp',
 		'sample4x4_blend.cpp',
 		'screenspace_general.cpp',

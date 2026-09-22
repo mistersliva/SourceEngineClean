@@ -21,7 +21,7 @@
 #include "modes.h"
 
 #if !defined( _X360 )
-#include "xbox/xboxstubs.h"
+#include "xboxstubs.h"
 #endif
 
 //-----------------------------------------------------------------------------

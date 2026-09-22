@@ -123,7 +123,6 @@
 #include "profile.h"
 #include "steam/isteamremotestorage.h"
 #if defined( _X360 )
-#include "xbox/xbox_win32stubs.h"
 #include "audio_pch.h"
 #endif
 #if defined( LINUX )

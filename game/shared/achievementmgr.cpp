@@ -33,7 +33,6 @@
 #include "steam/steam_api.h"
 #include "steam/isteamremotestorage.h"
 #else
-#include "xbox/xbox_win32stubs.h"
 #endif
 #include "tier3/tier3.h"
 #include "vgui/ILocalize.h"

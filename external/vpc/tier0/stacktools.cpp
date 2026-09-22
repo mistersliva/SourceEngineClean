@@ -21,8 +21,6 @@
 
 #if defined( PLATFORM_X360 )
 #include <xbdm.h>
-#include "xbox/xbox_console.h"
-#include "xbox/xbox_vxconsole.h"
 #include <map>
 #include <set>
 #endif

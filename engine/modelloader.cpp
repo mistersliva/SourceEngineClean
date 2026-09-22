@@ -5361,7 +5361,7 @@ static bool BSPCreateCallback( const char *pSourceName, const char *pTargetName,
 	}
 
 	bool bOk = true;
-	if ( !iBSPPack->SwapBSPFile( g_pFileSystem, pSourceName, pTargetName, IsX360(), ConvertVTFTo360Format, NULL, NULL ) )
+	if ( !iBSPPack->SwapBSPFile( g_pFileSystem, pSourceName, pTargetName, IsX360(), NULL, NULL, NULL ) )
 	{
 		bOk = false;
 		Warning( "Failed to create %s\n", pTargetName );

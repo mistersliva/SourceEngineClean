@@ -63,9 +63,8 @@
 #include "vstdlib/jobthread.h"
 
 #if !defined( _X360 )
-#include "xbox/xboxstubs.h"
+#include "xboxstubs.h"
 #else
-#include "xbox/xbox_launch.h"
 #endif
 
 #include "ixboxsystem.h"

@@ -92,7 +92,6 @@
 #include "filesystem/IQueuedLoader.h"
 
 #if defined( _X360 )
-#include "xbox/xbox_win32stubs.h"
 #endif
 
 #include "vgui_askconnectpanel.h"

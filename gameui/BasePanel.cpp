@@ -78,9 +78,8 @@ using namespace vgui;
 #include "hl2orange.spa.h"
 #include "CustomTabExplanationDialog.h"
 #if defined( _X360 )
-#include "xbox/xbox_launch.h"
 #else
-#include "xbox/xboxstubs.h"
+#include "xboxstubs.h"
 #endif
 
 #include "../engine/imatchmaking.h"

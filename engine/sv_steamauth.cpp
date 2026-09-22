@@ -45,7 +45,6 @@ ConVar  sv_steamblockingcheck( "sv_steamblockingcheck", "0", 0,
 							  "3 >= drop if any player has blocked, 4 >= drop if player has blocked anyone on server", sv_setsteamblockingcheck_f );
 
 #if defined( _X360 )
-#include "xbox/xbox_win32stubs.h"
 #endif
 
 // memdbgon must be the last include file in a .cpp file!!!

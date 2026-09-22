@@ -32,7 +32,6 @@
 #include <limits.h>
 #include "tier0/threadtools.h"
 #ifdef _X360
-#include "xbox/xbox_console.h"
 #endif
 
 #ifdef _PS3

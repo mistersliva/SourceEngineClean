@@ -82,7 +82,6 @@
 #include <stdlib.h>
 #include "tier1/utldict.h"
 #if defined( _X360 )
-#include "xbox/xbox_win32stubs.h"
 #elif defined( _PS3 )
 #include "ps3_pathinfo.h"
 #include <cell/l10n.h> // for UCS-2 to UTF-8 conversion

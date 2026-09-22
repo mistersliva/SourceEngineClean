@@ -22,7 +22,6 @@
 #include "winutils.h"
 
 #ifdef _X360
-#include "xbox/xbox_win32stubs.h"
 #endif
 
 //-----------------------------------------------------------------------------

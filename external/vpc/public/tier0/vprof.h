@@ -1395,7 +1395,6 @@ private:
 
 #ifdef _X360
 
-#include "xbox/xbox_console.h"
 #include "tracerecording.h"
 #include  "tier1/fmtstr.h"
 #pragma comment( lib, "tracerecording.lib" )

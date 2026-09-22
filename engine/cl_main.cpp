@@ -66,7 +66,6 @@
 #include "sv_steamauth.h"
 #include "engine/ivmodelinfo.h"
 #ifdef _X360
-#include "xbox/xbox_launch.h"
 #endif
 #if defined( REPLAY_ENABLED )
 #include "replay_internal.h"

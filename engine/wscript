@@ -198,8 +198,6 @@ def build(bld):
 		'audio/vox.cpp',
 		'masterserver.cpp',
 
-		#'audio/snd_dev_xaudio.cpp',[$X360]
-		#'audio/snd_wave_mixer_xma.cpp',	[$X360]
 
 		#'audio/snd_dev_openal.cpp', # [$OSXALL]
 		#'audio/snd_dev_mac_audioqueue.cpp',#	[$OSXALL]

@@ -4,9 +4,9 @@ This directory tree records the Phase 0 baseline for the Source Engine
 modernization effort (see the full roadmap in the project plan):
 
     Phase 0  Baseline, CI gates, smoke checklist          <-- this file
-    Phase 1  Legacy/dead code removal (_X360, dx9sdk, dead modules, macros)
+    Phase 1  Legacy/dead code removal (_X360/PS3, dead modules, macros)
     Phase 2  x86 -> x64 port
-    Phase 3  Graphics: remove FFP/DX6-9/togl, new RHI (DX11 + Vulkan)
+    Phase 3  Graphics: remove FFP/DX6-9/togl/dx9sdk, new RHI (DX11 + Vulkan)
     Phase 4  Remove GameUI/VGUI2, modern retained-mode UI
 
 ## Repository state at baseline
@@ -146,8 +146,10 @@ Phase 3 additions:
 - **Gate 0**: this file exists; lint green in CI; build + tests green on
   both architectures; smoke checklist documented. (Reached when this
   commit lands green on `origin/main`.)
-- **Gate 1**: `x360_refs`, `isx360_fn`, `xbox_include` at 0; `dx9sdk/`,
-  `mathlib/3dnow.*` deleted; dead modules deleted (Phase 1b):
+- **Gate 1**: `x360_refs`, `isx360_fn`, `xbox_include` at 0;
+  `mathlib/3dnow.*` deleted (staged plan: [phase1a.md](phase1a.md); `dx9sdk/`
+  moved to Gate 3 - waf still links `dx9sdk/lib/amd64` while the D3D9
+  backend lives); dead modules deleted (Phase 1b):
   `networksystem/`, `common/networksystem/`, top-level `replay/`,
   `gcsdk/`, `public/gcsdk/`, `tracker/`, `sourcevr/`, `common/python/`,
   `public/python/`, `app/`, `devtools/swigwin-1.3.34/`, the dead GC
@@ -159,8 +161,8 @@ Phase 3 additions:
 - **Gate 2**: x64-only build; `win32_long_no_ptr` and `inline_asm` at 0;
   no C4311/C4302 warnings; save/load works.
 - **Gate 3**: `d3d9_com_types` and `dx_to_gl_abstraction` at 0; `togl/`,
-  `togles/`, `stdshaders/*_dx6|dx7|dx8` deleted; boots on DX11; Vulkan
-  backend at parity.
+  `togles/`, `stdshaders/*_dx6|dx7|dx8`, `dx9sdk/` deleted; boots on DX11;
+  Vulkan backend at parity.
 - **Gate 4**: `grep -r '#include "vgui/'` returns nothing; `gameui/`,
   `vgui2/`, `vguimatsurface/` deleted; new retained-mode UI serves main
   menu, options, loading and HUD; smoke checklist all green.

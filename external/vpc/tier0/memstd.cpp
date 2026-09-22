@@ -23,7 +23,6 @@
 #include "tier0/stacktools.h"
 #include "tier0/minidump.h"
 #ifdef _X360
-#include "xbox/xbox_console.h"
 #endif
 
 #ifdef _PS3

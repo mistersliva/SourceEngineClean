@@ -15,8 +15,6 @@
 #include "tier0/platform.h"
 #include "tier0/minidump.h"
 #ifdef _X360
-#include "xbox/xbox_console.h"
-#include "xbox/xbox_win32stubs.h"
 #else
 #include "tier0/vcrmode.h"
 #endif

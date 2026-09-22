@@ -30,7 +30,6 @@
 #include <direct.h> // getcwd
 #endif
 #if defined( _X360 )
-#include "xbox/xbox_win32stubs.h"
 #endif
 
 #ifdef _PS3

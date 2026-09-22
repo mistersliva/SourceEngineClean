@@ -33,7 +33,6 @@
 #include <limits.h>
 #include "tier0/threadtools.h"
 #ifdef _X360
-#include "xbox/xbox_console.h"
 #endif
 #if ( !defined(_DEBUG) && defined(USE_MEM_DEBUG) )
 #pragma message ("USE_MEM_DEBUG is enabled in a release build. Don't check this in!")

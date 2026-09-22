@@ -83,7 +83,6 @@ typedef int SOCKET;
 #endif
 
 #if defined( _X360 )
-#include "xbox/xbox_win32stubs.h"
 #endif
 
 #endif // NET_WS_HEADERS_H

@@ -36,7 +36,6 @@ ignorePaths = [
 	r"microsoft visual studio 10.0\vc",
 	r"microsoft visual studio 11.0\vc",
 	r"microsoft sdks\windows\v7.0a",
-	r"microsoft xbox 360 sdk\include",
 	r"windows kits\8.0\include",
 	r"thirdparty\dxsdk\include",
 	r"thirdparty\physx301\physxsdk",

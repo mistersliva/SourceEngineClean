@@ -43,7 +43,6 @@ def build(bld):
 		'cvballoctracker.cpp',
 		'vertexdecl.cpp',
 		'vertexshaderdx8.cpp',
-		#'textureheap.cpp',							[$X360]
 		'../../public/tier0/memoverride.cpp'
 	]
 

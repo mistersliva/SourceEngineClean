@@ -26,8 +26,6 @@
 #include "ctexturecompositor.h"
 
 #if defined( _X360 )
-#include "xbox/xbox_console.h"
-#include "xbox/xbox_win32stubs.h"
 #endif
 
 // NOTE: This must be the last file included!!!

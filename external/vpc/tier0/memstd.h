@@ -14,7 +14,6 @@
 #define _XBOX
 #include <xtl.h>
 #undef _XBOX
-#include "xbox/xbox_win32stubs.h"
 #define VA_COMMIT_FLAGS (MEM_COMMIT|MEM_NOZERO|MEM_LARGE_PAGES)
 #define VA_RESERVE_FLAGS (MEM_RESERVE|MEM_LARGE_PAGES)
 #elif defined( _PS3 )

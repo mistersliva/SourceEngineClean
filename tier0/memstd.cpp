@@ -36,7 +36,6 @@
 #include "mem_helpers.h"
 #include "memstd.h"
 #ifdef _X360
-#include "xbox/xbox_console.h"
 #endif
 
 

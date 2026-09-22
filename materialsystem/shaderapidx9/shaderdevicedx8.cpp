@@ -60,8 +60,6 @@ static double s_rdtsc_to_ms;
 #endif
 
 #if defined( _X360 )
-#include "xbox/xbox_console.h"
-#include "xbox/xbox_win32stubs.h"
 #endif
 
 

@@ -1655,7 +1655,6 @@ inline const char *GetPlatformExt( void )
 // Include additional dependant header components.
 //-----------------------------------------------------------------------------
 #if defined( PLATFORM_X360 )
-#include "xbox/xbox_core.h"
 #elif defined( PLATFORM_PS3 )
 #include "ps3/ps3_core.h"
 #endif

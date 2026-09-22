@@ -27,7 +27,6 @@
 #include <vgui/IInputInternal.h>
 #include "tier0/icommandline.h"
 #ifdef _X360
-#include "xbox/xbox_win32stubs.h"
 #endif
 #include "MatSystemSurface.h"
 

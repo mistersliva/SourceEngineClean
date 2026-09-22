@@ -38,7 +38,6 @@
 #include "filesystem/IQueuedLoader.h"
 #include "voice.h"
 #if defined( _X360 )
-#include "xbox/xbox_console.h"
 #include "xmp.h"
 #endif
 

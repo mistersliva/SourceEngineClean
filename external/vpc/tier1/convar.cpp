@@ -19,7 +19,6 @@
 #include "icvar.h"
 #include "tier0/dbg.h"
 #if defined( _X360 )
-#include "xbox/xbox_console.h"
 #endif
 #include "tier0/memdbgon.h"
 

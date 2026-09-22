@@ -16,7 +16,7 @@
 #include <vgui/IPanel.h>
 #include "materialsystem/imaterialsystemhardwareconfig.h"
 #include "filesystem.h"
-#include "../common/xbox/xboxstubs.h"
+#include "../common/xboxstubs.h"
 #include "steam/steam_api.h"
 
 // memdbgon must be the last include file in a .cpp file!!!

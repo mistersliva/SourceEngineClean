@@ -13,7 +13,6 @@
 #include "cmdlib.h"
 #include "scriplib.h"
 #if defined( _X360 )
-#include "xbox\xbox_win32stubs.h"
 #endif
 #if defined(POSIX)
 #include "../../filesystem/linux_support.h"

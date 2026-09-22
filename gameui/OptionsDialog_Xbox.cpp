@@ -15,7 +15,6 @@
 #include <vgui_controls/AnalogBar.h>
 
 #ifdef _X360
-	#include "xbox/xbox_launch.h"
 #endif
 #include "IGameUIFuncs.h"
 #include "GameUI_Interface.h"

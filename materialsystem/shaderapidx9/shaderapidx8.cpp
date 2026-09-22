@@ -84,9 +84,6 @@ mat_fullbright 1 doesn't work properly on alpha materials in testroom_standards
 #include "togl/rendermechanism.h"  // provides GLMPRINTF/GLMPRINTSTR / GLMPRINTEXT macros which only activate if GLMDEBUG is nonzero and POSIX is defined.
 
 #if defined( _X360 )
-#include "xbox/xbox_console.h"
-#include "xbox/xbox_win32stubs.h"
-#include "xbox/xbox_launch.h"
 #endif
 #include "tier0/tslist.h"
 #ifndef _X360

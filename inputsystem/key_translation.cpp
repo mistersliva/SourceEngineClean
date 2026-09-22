@@ -9,9 +9,8 @@
 #if !defined( _X360 )
 #include <wtypes.h>
 #include <winuser.h>
-#include "xbox/xboxstubs.h"
+#include "xboxstubs.h"
 #else
-#include "xbox/xbox_win32stubs.h"
 #endif
 #endif // WIN32
 

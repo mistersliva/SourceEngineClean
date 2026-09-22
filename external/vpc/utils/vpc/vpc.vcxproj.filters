@@ -212,12 +212,6 @@
     <ClCompile Include="projectgenerator_win32_2010.cpp">
       <Filter>VPC\Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="projectgenerator_xbox360.cpp">
-      <Filter>VPC\Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="projectgenerator_xbox360_2010.cpp">
-      <Filter>VPC\Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="projectscript.cpp">
       <Filter>VPC\Source Files</Filter>
     </ClCompile>
@@ -301,12 +295,6 @@
     <ClInclude Include="projectgenerator_win32_2010.h">
       <Filter>VPC\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="projectgenerator_xbox360.h">
-      <Filter>VPC\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="projectgenerator_xbox360_2010.h">
-      <Filter>VPC\Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="projectgenerator_xcode.h">
       <Filter>VPC\Header Files</Filter>
     </ClInclude>
@@ -339,12 +327,6 @@
     <None Include="projectgenerator_win32_2010.inc">
       <Filter>VPC\Header Files</Filter>
     </None>
-    <None Include="projectgenerator_xbox360.inc">
-      <Filter>VPC\Header Files</Filter>
-    </None>
-    <None Include="projectgenerator_xbox360_2010.inc">
-      <Filter>VPC\Header Files</Filter>
-    </None>
     <None Include="..\..\vpc_scripts\definitions\ps3.def">
       <Filter>VPC\definitions</Filter>
     </None>
@@ -352,12 +334,6 @@
       <Filter>VPC\definitions</Filter>
     </None>
     <None Include="..\..\vpc_scripts\definitions\win32_2010.def">
-      <Filter>VPC\definitions</Filter>
-    </None>
-    <None Include="..\..\vpc_scripts\definitions\xbox360.def">
-      <Filter>VPC\definitions</Filter>
-    </None>
-    <None Include="..\..\vpc_scripts\definitions\xbox360_2010.def">
       <Filter>VPC\definitions</Filter>
     </None>
   </ItemGroup>

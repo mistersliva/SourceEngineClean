@@ -53,7 +53,6 @@
 #include "tier0/dynfunction.h"
 
 #ifdef _X360
-#include "xbox/xbox_win32stubs.h"
 #endif
 
 #include <map>

@@ -40,7 +40,6 @@
 
 #ifdef _X360
 
-#include "xbox/xbox_console.h"
 
 #else // NOT _X360:
 

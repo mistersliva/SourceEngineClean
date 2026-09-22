@@ -19,7 +19,6 @@ static void initKeymap(void);
 #endif
 
 #ifdef _X360
-#include "xbox/xbox_win32stubs.h"
 #endif
 ConVar joy_xcontroller_found( "joy_xcontroller_found", "1", FCVAR_HIDDEN, "Automatically set to 1 if an xcontroller has been detected." );
 

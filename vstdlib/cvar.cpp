@@ -18,7 +18,6 @@
 #include "tier1/utlbuffer.h"
 
 #ifdef _X360
-#include "xbox/xbox_console.h"
 #endif
 
 #ifdef POSIX

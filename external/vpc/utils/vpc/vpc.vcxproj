@@ -149,8 +149,6 @@
     <ClCompile Include="projectgenerator_vcproj.cpp" />
     <ClCompile Include="projectgenerator_win32.cpp" />
     <ClCompile Include="projectgenerator_win32_2010.cpp" />
-    <ClCompile Include="projectgenerator_xbox360.cpp" />
-    <ClCompile Include="projectgenerator_xbox360_2010.cpp" />
     <ClCompile Include="projectscript.cpp" />
     <ClCompile Include="scriptsource.cpp" />
     <ClCompile Include="solutiongenerator_codelite.cpp" />
@@ -180,8 +178,6 @@
     <ClInclude Include="projectgenerator_vcproj.h" />
     <ClInclude Include="projectgenerator_win32.h" />
     <ClInclude Include="projectgenerator_win32_2010.h" />
-    <ClInclude Include="projectgenerator_xbox360.h" />
-    <ClInclude Include="projectgenerator_xbox360_2010.h" />
     <ClInclude Include="projectgenerator_xcode.h" />
     <ClInclude Include="scriptsource.h" />
     <ClInclude Include="sys_utils.h" />
@@ -191,14 +187,10 @@
     <None Include="..\..\vpc_scripts\definitions\ps3.def" />
     <None Include="..\..\vpc_scripts\definitions\win32_2005.def" />
     <None Include="..\..\vpc_scripts\definitions\win32_2010.def" />
-    <None Include="..\..\vpc_scripts\definitions\xbox360.def" />
-    <None Include="..\..\vpc_scripts\definitions\xbox360_2010.def" />
     <None Include="Makefile" />
     <None Include="projectgenerator_ps3.inc" />
     <None Include="projectgenerator_win32.inc" />
     <None Include="projectgenerator_win32_2010.inc" />
-    <None Include="projectgenerator_xbox360.inc" />
-    <None Include="projectgenerator_xbox360_2010.inc" />
     <None Include="vpc.opensdf" />
     <None Include="vpc.vpc" />
   </ItemGroup>

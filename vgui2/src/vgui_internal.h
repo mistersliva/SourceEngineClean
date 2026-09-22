@@ -15,7 +15,7 @@
 #include <vgui/VGUI.h>
 #include "interface.h"
 #include "tier3/tier3.h"
-#include "xbox/xboxstubs.h"
+#include "xboxstubs.h"
 
 namespace vgui
 {

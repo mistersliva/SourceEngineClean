@@ -8,8 +8,6 @@
 
 #include "tier0/valve_off.h"
 #ifdef _X360
-#include "xbox/xbox_console.h"
-#include "xbox/xbox_vxconsole.h"
 #elif defined( _PS3 )
 #include "ps3/ps3_console.h"
 #elif defined( _WIN32 )
