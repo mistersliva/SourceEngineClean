@@ -36,11 +36,6 @@ ConVar replay_debug( "replay_debug", "0", FCVAR_DONTRECORD );
 	
 //----------------------------------------------------------------------------------------
 
-// If you modify this list, you will also need to add the following line to the game's
-// client_*.vpc and server_*.vpc files:
-//
-//    $include "$SRCDIR\vpc_scripts\source_replay.vpc"
-//
 static const char *s_pSupportedReplayGames[] =
 {
 	"tf",

@@ -147,8 +147,15 @@ Phase 3 additions:
   both architectures; smoke checklist documented. (Reached when this
   commit lands green on `origin/main`.)
 - **Gate 1**: `x360_refs`, `isx360_fn`, `xbox_include` at 0; `dx9sdk/`,
-  `common/python/2.5`, `mathlib/3dnow.*`, `networksystem/`, `replay/`,
-  `gcsdk/`, `tracker/`, `stub_steam/`, `sourcevr/` deleted; build green.
+  `mathlib/3dnow.*` deleted; dead modules deleted (Phase 1b):
+  `networksystem/`, `common/networksystem/`, top-level `replay/`,
+  `gcsdk/`, `public/gcsdk/`, `tracker/`, `sourcevr/`, `common/python/`,
+  `public/python/`, `app/`, `devtools/swigwin-1.3.34/`, the dead GC
+  files (`portal_gc*`, `replayyoutubeapi.cpp`, `public/iexternaltest.h`);
+  build green.
+  Kept on purpose: `stub_steam/` (Steam API stub that lets the waf build
+  run without Steamworks), `common/replay/` + `game/client/replay/` (live
+  replay support) and `public/sourcevr/` (VR interface header).
 - **Gate 2**: x64-only build; `win32_long_no_ptr` and `inline_asm` at 0;
   no C4311/C4302 warnings; save/load works.
 - **Gate 3**: `d3d9_com_types` and `dx_to_gl_abstraction` at 0; `togl/`,

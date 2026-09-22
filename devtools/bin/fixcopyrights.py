@@ -92,7 +92,6 @@ rDirsToSkip = [
 	'lua',
 	'maxsdk',
 	'x360xdk',
-	'swigwin-1.3.34',
 	'sapi51',
 	'WMPSDK10',
 	'FontMaker',

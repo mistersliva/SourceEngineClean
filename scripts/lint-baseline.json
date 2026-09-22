@@ -1,7 +1,7 @@
 ﻿{
-    "x360_refs":  1918,
+    "x360_refs":  1911,
     "isx360_fn":  910,
-    "xbox_include":  168,
+    "xbox_include":  165,
     "dx_to_gl_abstraction":  216,
     "win32_long_no_ptr":  83,
     "inline_asm":  149,

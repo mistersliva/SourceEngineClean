@@ -2826,24 +2826,6 @@ void SV_Think( bool bIsSimulating )
 			HostState_Shutdown();
 		}
 	}
-//	if ( sv.IsDedicated() )
-//	{
-//		sv.UpdateReservedState();
-//		if ( sv.IsHibernating() )
-//		{
-//			// if we're hibernating, just sleep for a while and do not call server.dll to run a frame
-//			int nMilliseconds = sv_hibernate_ms.GetInt();
-//#ifndef DEDICATED // Non-Linux
-//			if ( g_bIsVGuiBasedDedicatedServer )
-//			{
-//				// Keep VGUi happy
-//				nMilliseconds = sv_hibernate_ms_vgui.GetInt();
-//			}
-//#endif
-//			g_pNetworkSystem->SleepUntilMessages( NS_SERVER, nMilliseconds );
-//			return;
-//		}
-//	}
 
 	g_ServerGlobalVariables.tickcount   = sv.m_nTickCount;
 	g_ServerGlobalVariables.curtime		= sv.GetTime();

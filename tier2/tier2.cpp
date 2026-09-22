@@ -13,7 +13,6 @@
 #include "materialsystem/idebugtextureinfo.h"
 #include "materialsystem/ivballoctracker.h"
 #include "inputsystem/iinputsystem.h"
-#include "networksystem/inetworksystem.h"
 #include "p4lib/ip4.h"
 #include "mdllib/mdllib.h"
 #include "filesystem/IQueuedLoader.h"
@@ -29,7 +28,6 @@ IFileSystem *g_pFullFileSystem = 0;
 IMaterialSystem *materials = 0;
 IMaterialSystem *g_pMaterialSystem = 0;
 IInputSystem *g_pInputSystem = 0;
-INetworkSystem *g_pNetworkSystem = 0;
 IMaterialSystemHardwareConfig *g_pMaterialSystemHardwareConfig = 0;
 IDebugTextureInfo *g_pMaterialSystemDebugTextureInfo = 0;
 IVBAllocTracker *g_VBAllocTracker = 0;
@@ -46,7 +44,7 @@ IQueuedLoader *g_pQueuedLoader = 0;
 void ConnectTier2Libraries( CreateInterfaceFn *pFactoryList, int nFactoryCount )
 {
 	// Don't connect twice..
-	Assert( !g_pFullFileSystem && !materials && !g_pInputSystem && !g_pNetworkSystem && 
+	Assert( !g_pFullFileSystem && !materials && !g_pInputSystem && 
 		!p4 && !mdllib && !g_pMaterialSystemDebugTextureInfo && !g_VBAllocTracker &&
 		!g_pMaterialSystemHardwareConfig && !g_pQueuedLoader );
 
@@ -63,10 +61,6 @@ void ConnectTier2Libraries( CreateInterfaceFn *pFactoryList, int nFactoryCount )
 		if ( !g_pInputSystem )
 		{
 			g_pInputSystem = ( IInputSystem * )pFactoryList[i]( INPUTSYSTEM_INTERFACE_VERSION, NULL );
-		}
-		if ( !g_pNetworkSystem )
-		{
-			g_pNetworkSystem = ( INetworkSystem * )pFactoryList[i]( NETWORKSYSTEM_INTERFACE_VERSION, NULL );
 		}
 		if ( !g_pMaterialSystemHardwareConfig )
 		{
@@ -107,7 +101,6 @@ void DisconnectTier2Libraries()
 	g_pMaterialSystemHardwareConfig = 0;
 	g_pMaterialSystemDebugTextureInfo = 0;
 	g_pInputSystem = 0;
-	g_pNetworkSystem = 0;
 	colorcorrection = 0;
 	p4 = 0;
 	mdllib = 0;
