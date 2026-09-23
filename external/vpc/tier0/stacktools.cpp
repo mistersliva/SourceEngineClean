@@ -148,7 +148,6 @@ int GetCallStack_Fast( void **pReturnAddressesOut, int iArrayCount, int iSkipCou
 {
 	//Only tested in windows. This function won't work with frame pointer omission enabled. "vpc /nofpo" all projects
 #if (defined(TIER0_FPO_DISABLED) || defined(_DEBUG)) && (defined(WIN32))
-	(defined( WIN32 ))
 	void *pStackCrawlEBP;
 	__asm
 	{
@@ -1435,7 +1434,6 @@ CStackTop_CopyParentStack::CStackTop_CopyParentStack( void * const *pParentStack
 #if defined( ENABLE_RUNTIME_STACK_TRANSLATION )
 	//miniature version of GetCallStack_Fast()
 #if (defined(TIER0_FPO_DISABLED) || defined(_DEBUG)) && (defined(WIN32))
-	(defined( WIN32 ))
 	void *pStackCrawlEBP;
 	__asm
 	{
@@ -1493,7 +1491,6 @@ CStackTop_ReferenceParentStack::CStackTop_ReferenceParentStack( void * const *pP
 #if defined( ENABLE_RUNTIME_STACK_TRANSLATION )
 	//miniature version of GetCallStack_Fast()
 #if (defined(TIER0_FPO_DISABLED) || defined(_DEBUG)) && (defined(WIN32))
-	(defined( WIN32 ))
 	void *pStackCrawlEBP;
 	__asm
 	{

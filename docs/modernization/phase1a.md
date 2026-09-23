@@ -215,6 +215,16 @@ gated by a 10-case synthetic self-test that runs before any tree edit:
   `g.if_line`) and also rewrote it; `del_set` wins in materialize → the `#if`
   line vanished, leaving bare code + dangling `#else`. Fixed by skipping
   `g.if_line` in that loop.
+- **Continuation-loss bug (found by the CI gate after push, missed by the
+  self-test):** REDUCE on a multi-line `#if cond &&\` directive wrote the
+  joined reduced condition to the head line *without* its trailing `\` but
+  left the continuation line behind as orphaned code (`defined(...)` at code
+  position → `error C3861`; windows-i386 only, because the surviving
+  condition is gated on `!defined(_M_X64)`). 6 sites repaired by deleting
+  the orphan lines (`tier0/stacktools.cpp` and
+  `external/vpc/tier0/stacktools.cpp` ×3 — the joined head line already
+  carried the correctly reduced condition). A tree+diff audit for lost
+  continuations (`audit_orphans.py`) reports no other site in the tree.
 
 Truth model: `_X360`/`_PS3`/`_XBOX` never defined; `NO_X360_XDK` TRUE at
 resolution time (its `wscript` + `bitmap/bitmap.vpc` defines removed by the
