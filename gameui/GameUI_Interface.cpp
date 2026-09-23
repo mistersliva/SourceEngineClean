@@ -193,7 +193,7 @@ void CGameUI::Initialize( CreateInterfaceFn factory )
 	}
 
 	// NOTE: g_pEngineReplay intentionally not checked here
-	if ( !enginesurfacefuncs || !gameuifuncs || !enginevguifuncs || !xboxsystem || (IsX360() && !matchmaking) )
+	if ( !enginesurfacefuncs  || !gameuifuncs  || !enginevguifuncs  || !xboxsystem )
 	{
 		Error( "CGameUI::Initialize() failed to get necessary interfaces\n" );
 	}
@@ -214,13 +214,7 @@ void CGameUI::Initialize( CreateInterfaceFn factory )
 
 void CGameUI::PostInit()
 {
-	if ( IsX360() )
-	{
-		enginesound->PrecacheSound( "UI/buttonrollover.wav", true, true );
-		enginesound->PrecacheSound( "UI/buttonclick.wav", true, true );
-		enginesound->PrecacheSound( "UI/buttonclickrelease.wav", true, true );
-		enginesound->PrecacheSound( "player/suit_denydevice.wav", true, true );
-	}
+
 }
 
 //-----------------------------------------------------------------------------
@@ -381,8 +375,7 @@ int __stdcall SendShutdownMsgFunc(WHANDLE hwnd, int lparam)
 //-----------------------------------------------------------------------------
 void CGameUI::PlayGameStartupSound()
 {
-	if ( IsX360() )
-		return;
+
 
 	if ( CommandLine()->FindParm( "-nostartupsound" ) )
 		return;
@@ -791,11 +784,7 @@ void CGameUI::OnGameUIHidden()
 //-----------------------------------------------------------------------------
 void CGameUI::RunFrame()
 {
-	if ( IsX360() && m_bOpenProgressOnStart )
-	{
-		StartProgressBar();
-		m_bOpenProgressOnStart = false;
-	}
+
 
 	// resize the background panel to the screen size
 	int wide, tall;
@@ -1028,7 +1017,7 @@ void CGameUI::StopProgressBar(bool bError, const char *failureReason, const char
 	if (!g_hLoadingDialog.Get())
 		return;
 
-	if ( !IsX360() && bError )
+	if ( bError )
 	{
 		// turn the dialog to error display mode
 		g_hLoadingDialog->DisplayGenericError(failureReason, extendedReason);

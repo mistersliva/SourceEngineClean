@@ -92,8 +92,7 @@ void CHud::Think(void)
 
 	if ( ( m_flScreenShotTime > 0 ) && ( m_flScreenShotTime < gpGlobals->curtime ) )
 	{
-		if ( !IsX360() )
-		{
+{
 			engine->ClientCmd( "screenshot" );
 		}
 

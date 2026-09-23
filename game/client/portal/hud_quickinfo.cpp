@@ -114,16 +114,7 @@ void CHUDQuickInfo::VidInit( void )
 
 	m_icon_c = gHUD.GetIcon( "crosshair" );
 
-	if ( IsX360() )
-	{
-		m_icon_rb = gHUD.GetIcon( "portal_crosshair_right_valid_x360" );
-		m_icon_lb = gHUD.GetIcon( "portal_crosshair_left_valid_x360" );
-		m_icon_rbe = gHUD.GetIcon( "portal_crosshair_last_placed_x360" );
-		m_icon_lbe = gHUD.GetIcon( "portal_crosshair_last_placed_x360" );
-		m_icon_rbn = gHUD.GetIcon( "portal_crosshair_right_invalid_x360" );
-		m_icon_lbn = gHUD.GetIcon( "portal_crosshair_left_invalid_x360" );
-	}
-	else
+
 	{
 		m_icon_rb = gHUD.GetIcon( "portal_crosshair_right_valid" );
 		m_icon_lb = gHUD.GetIcon( "portal_crosshair_left_valid" );

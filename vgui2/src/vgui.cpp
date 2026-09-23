@@ -515,7 +515,7 @@ void CVGui::RunFrame()
 		g_pSurface->SolveTraverse(g_pSurface->GetEmbeddedPanel());
 		g_pSurface->ApplyChanges();
 #ifdef WIN32
-		Assert( IsX360() || ( IsPC() && _heapchk() == _HEAPOK ) );
+		Assert( (IsPC()  && _heapchk() == _HEAPOK ));
 #endif
 	}
 

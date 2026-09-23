@@ -214,8 +214,7 @@ public:
 
 	FORCEINLINE void ActivateByteSwappingIfBigEndian( void )
 	{
-		if ( ( IsX360() || IsPS3() ) )
-			ActivateByteSwapping( true );
+
 	}
 
 
@@ -724,15 +723,7 @@ inline void CUtlBuffer::GetTypeBin< float >( float &dest )
 	if ( CheckGet( sizeof( float ) ) )
 	{
 		uintp pData = (uintp)PeekGet();
-		if ( ( IsX360() || IsPS3() ) && ( pData & 0x03 ) )
-		{
-			// handle unaligned read
-			((unsigned char*)&dest)[0] = ((unsigned char*)pData)[0];
-			((unsigned char*)&dest)[1] = ((unsigned char*)pData)[1];
-			((unsigned char*)&dest)[2] = ((unsigned char*)pData)[2];
-			((unsigned char*)&dest)[3] = ((unsigned char*)pData)[3];
-		}
-		else
+
 		{
 			memcpy( &dest, (void*)pData, sizeof(float) );
 		}
@@ -754,19 +745,7 @@ inline void CUtlBuffer::GetTypeBin< double >( double &dest )
 	if ( CheckGet( sizeof( double ) ) )
 	{
 		uintp pData = (uintp)PeekGet();
-		if ( ( IsX360() || IsPS3() ) && ( pData & 0x07 ) )
-		{
-			// handle unaligned read
-			((unsigned char*)&dest)[0] = ((unsigned char*)pData)[0];
-			((unsigned char*)&dest)[1] = ((unsigned char*)pData)[1];
-			((unsigned char*)&dest)[2] = ((unsigned char*)pData)[2];
-			((unsigned char*)&dest)[3] = ((unsigned char*)pData)[3];
-			((unsigned char*)&dest)[4] = ((unsigned char*)pData)[4];
-			((unsigned char*)&dest)[5] = ((unsigned char*)pData)[5];
-			((unsigned char*)&dest)[6] = ((unsigned char*)pData)[6];
-			((unsigned char*)&dest)[7] = ((unsigned char*)pData)[7];
-		}
-		else
+
 		{
 			// aligned read
 			dest = *(double *)pData;

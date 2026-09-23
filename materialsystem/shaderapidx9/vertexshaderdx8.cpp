@@ -895,8 +895,7 @@ void CShaderManager::Init()
 	m_bCreateShadersOnDemand = IsPC() && ( ShaderUtil()->InEditorMode() || CommandLine()->CheckParm( "-shadersondemand" ) );
 
 #ifdef DYNAMIC_SHADER_COMPILE
-	if( !IsX360() )
-	{
+{
 
 #ifdef REMOTE_DYNAMIC_SHADER_COMPILE
 	InitRemoteShaderCompile();
@@ -1242,12 +1241,7 @@ const CShaderManager::ShaderCombos_t *CShaderManager::FindOrCreateShaderCombos( 
 		}
 
 		// Check if line intended for platform lines
-		if( IsX360() )
-		{
-			if ( Q_stristr( line, "[PC]" ) )
-				continue;
-		}
-		else
+
 		{
 			if ( Q_stristr( line, "[360]" ) || Q_stristr( line, "[XBOX]" ) )
 				continue;
@@ -1574,7 +1568,7 @@ HardwareShader_t CShaderManager::CompileShader( const char *pShaderName,
 
 	CUtlVector<D3DXMACRO> macros;
 	// plus 1 for null termination, plus 1 for #define SHADER_MODEL_*
-	macros.SetCount( combos.m_DynamicCombos.Count() + combos.m_StaticCombos.Count() + 2 + ( IsX360() ? 1 : 0 ) );
+	macros.SetCount( combos.m_DynamicCombos.Count() + combos.m_StaticCombos.Count() + 2 + ( false ? 1 : 0 ) );
 
 	int nCombo = nStaticIndex + nDynamicIndex;
 	int macroIndex = 0;
@@ -1841,8 +1835,7 @@ retry_compile:
 #endif
 			goto retry_compile;
 		}
-		if( !IsX360() ) //errors make the 360 puke and die. We have a better solution for this particular error
-			Error( "Failed dynamic shader compile\nBuild shaderapidx9.dll in debug to find problem\n" );
+Error( "Failed dynamic shader compile\nBuild shaderapidx9.dll in debug to find problem\n" );
 #else
 		Assert( 0 );
 
@@ -2598,20 +2591,7 @@ bool CShaderManager::LoadAndCreateShaders( ShaderLookup_t &lookup, bool bVertexS
 	lookup.m_nDataOffset = nStartingOffset - nAlignedOffset;
 
 	bool bOK = true;
-	if ( IsX360() && g_pQueuedLoader->IsMapLoading() )
-	{
-		LoaderJob_t loaderJob;
-		loaderJob.m_pFilename = m_ShaderSymbolTable.String( pFileCache->m_Filename );
-		loaderJob.m_pPathID = "GAME";
-		loaderJob.m_pCallback = QueuedLoaderCallback;
-		loaderJob.m_pContext = (void *)&lookup;
-		loaderJob.m_pContext2 = (void *)pFileCache->IsOldVersion();
-		loaderJob.m_Priority = LOADERPRIORITY_DURINGPRELOAD;
-		loaderJob.m_nBytesToRead = nAlignedBytesToRead;
-		loaderJob.m_nStartOffset = nAlignedOffset;
-		g_pQueuedLoader->AddJob( &loaderJob );
-	}
-	else
+
 	{
 		//printf("\n CShaderManager::LoadAndCreateShaders - reading %d bytes from file offset %d", nAlignedBytesToRead, nAlignedOffset);
 		// single optimal read of all dynamic combos into monolithic buffer
@@ -3229,20 +3209,7 @@ void CShaderManager::SetVertexShader( VertexShader_t shader )
 		dxshader = CompileShader( m_ShaderSymbolTable.String( vshLookup.m_Name ), vshLookup.m_nStaticIndex, vshIndex, true );
 		Assert( dxshader != INVALID_HARDWARE_SHADER );
 
-		if( IsX360() )
-		{
-			//360 does not respond well at all to bad shaders or Error() calls. So we're staying here until we get something that compiles
-			while( dxshader == INVALID_HARDWARE_SHADER )
-			{
-				Warning( "A dynamically compiled vertex shader has failed to build. Pausing for 5 seconds and attempting rebuild.\n" );
-#ifdef _WIN32
-				Sleep( 5000 );
-#elif POSIX
-				usleep( 5000 );
-#endif
-				dxshader = CompileShader( m_ShaderSymbolTable.String( vshLookup.m_Name ), vshLookup.m_nStaticIndex, vshIndex, true );
-			}
-		}
+
 	}
 #else
 	if ( vshLookup.m_Flags & SHADER_FAILED_LOAD )
@@ -3332,20 +3299,7 @@ void CShaderManager::SetPixelShader( PixelShader_t shader )
 		dxshader = CompileShader( m_ShaderSymbolTable.String( pshLookup.m_Name ), pshLookup.m_nStaticIndex, pshIndex, false );
 //		Assert( dxshader != INVALID_HARDWARE_SHADER );
 
-		if( IsX360() )
-		{
-			//360 does not respond well at all to bad shaders or Error() calls. So we're staying here until we get something that compiles
-			while( dxshader == INVALID_HARDWARE_SHADER )
-			{
-				Warning( "A dynamically compiled pixel shader has failed to build. Pausing for 5 seconds and attempting rebuild.\n" );
-#ifdef _WIN32
-				Sleep( 5000 );
-#elif POSIX
-				usleep( 5000 );
-#endif
-				dxshader = CompileShader( m_ShaderSymbolTable.String( pshLookup.m_Name ), pshLookup.m_nStaticIndex, pshIndex, false );
-			}
-		}
+
 	}
 #else
 	if ( pshLookup.m_Flags & SHADER_FAILED_LOAD )

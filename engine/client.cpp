@@ -850,7 +850,7 @@ void CClientState::SetModel( int tableIndex )
 	CPrecacheItem *p = &model_precache[ tableIndex ];
 	const CPrecacheUserData *data = CL_GetPrecacheUserData( m_pModelPrecacheTable, tableIndex );
 
-	bool bLoadNow = ( data && ( data->flags & RES_PRELOAD ) ) || IsX360();
+	bool bLoadNow = ( data && ( data->flags & RES_PRELOAD ) ) || false;
 	if ( CommandLine()->FindParm( "-nopreload" ) ||	CommandLine()->FindParm( "-nopreloadmodels" ))
 	{
 		bLoadNow = false;
@@ -1030,7 +1030,7 @@ void CClientState::SetSound( int tableIndex )
 	CPrecacheItem *p = &sound_precache[ tableIndex ];
 	const CPrecacheUserData *data = CL_GetPrecacheUserData( m_pSoundPrecacheTable, tableIndex );
 
-	bool bLoadNow = ( data && ( data->flags & RES_PRELOAD ) ) || IsX360();
+	bool bLoadNow = ( data && ( data->flags & RES_PRELOAD ) ) || false;
 	if ( CommandLine()->FindParm( "-nopreload" ) ||	CommandLine()->FindParm( "-nopreloadsounds" ))
 	{
 		bLoadNow = false;
@@ -1412,10 +1412,7 @@ void CClientState::ReadPreserveEnt( CEntityReadInfo &u )
 //-----------------------------------------------------------------------------
 void CClientState::StartUpdatingSteamResources()
 {
-	if ( IsX360() )
-	{
-		return;
-	}
+
 
 	// we can only do this when in SIGNONSTATE_NEW, 
 	// since the completion of this triggers the continuation of SIGNONSTATE_NEW
@@ -1434,10 +1431,7 @@ void CClientState::StartUpdatingSteamResources()
 //-----------------------------------------------------------------------------
 void CClientState::CheckUpdatingSteamResources()
 {
-	if ( IsX360() )
-	{
-		return;
-	}
+
 
 	VPROF_BUDGET( "CheckUpdatingSteamResources", VPROF_BUDGETGROUP_STEAM );
 

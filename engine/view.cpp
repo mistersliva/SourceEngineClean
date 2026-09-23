@@ -86,8 +86,7 @@ FIXME:  Define this as a change function to the ConVar's below rather than polli
 */
 bool V_CheckGamma( void )
 {
-	if ( IsX360() )
-		return false;
+
 
 	tmZoneFiltered( TELEMETRY_LEVEL0, 50, TMZF_NONE, "%s", __FUNCTION__ );
 

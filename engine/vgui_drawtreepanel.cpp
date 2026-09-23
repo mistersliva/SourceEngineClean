@@ -537,8 +537,7 @@ void VGui_DrawHierarchy( void )
 {
 	VPROF( "VGui_DrawHierarchy" );
 
-	if ( IsX360() )
-		return;
+
 
 	if ( vgui_drawtree.GetInt() <= 0 )
 	{

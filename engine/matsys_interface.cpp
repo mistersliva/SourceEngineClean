@@ -150,11 +150,7 @@ static void NukeModeSwitchSaveGames( void )
 
 void mat_hdr_level_Callback( IConVar *var, const char *pOldString, float flOldValue )
 {
-	if ( IsX360() )
-	{
-		// can't support, expected to be static
-		return;
-	}
+
 
 #ifdef CSS_PERF_TEST
 	ConVarRef hdr( var );
@@ -401,8 +397,7 @@ static T OverrideVideoConfigFromCommandLine( const char *pCVarName, T curVal )
 static void ReadMaterialSystemConfigFromRegistry( MaterialSystem_Config_t &config )
 {
 #ifndef SWDS
-	if ( IsX360() )
-		return;
+
 
 	ReadVideoConfigInt( "ScreenWidth", &config.m_VideoMode.m_Width );
 	ReadVideoConfigInt( "ScreenHeight", &config.m_VideoMode.m_Height );
@@ -523,8 +518,7 @@ static void ReadMaterialSystemConfigFromRegistry( MaterialSystem_Config_t &confi
 static void WriteMaterialSystemConfigToRegistry( const MaterialSystem_Config_t &config )
 {
 #ifndef SWDS
-	if ( IsX360() )
-		return;
+
 
 #if defined( USE_SDL ) && !defined( SWDS )
 	// Save sdl_displayindex out to ScreenDisplayIndex.
@@ -562,12 +556,7 @@ static void WriteMaterialSystemConfigToRegistry( const MaterialSystem_Config_t &
 //-----------------------------------------------------------------------------
 static void OverrideMaterialSystemConfigFromCommandLine( MaterialSystem_Config_t &config )
 {
-	if ( IsX360() )
-	{
-		// these overrides cannot be supported
-		// the console configuration is explicit
-		return;
-	}
+
 
 	if ( CommandLine()->FindParm( "-dxlevel" ) )
 	{
@@ -996,8 +985,7 @@ CON_COMMAND_F( mat_suppress, "Supress a material from drawing", FCVAR_CHEAT )
 
 static ITexture *CreatePowerOfTwoFBTexture( void )
 {
-	if ( IsX360() )
-		return NULL;
+
 
 	return materials->CreateNamedRenderTargetTextureEx2( 
 		"_rt_PowerOfTwoFB",
@@ -1096,11 +1084,7 @@ static ITexture *CreateFullFrameFBTexture( int textureIndex, int iExtraFlags = 0
 	}
 
 	int rtFlags = iExtraFlags | CREATERENDERTARGETFLAGS_HDR;
-	if ( IsX360() )
-	{
-		// just make the system memory texture only
-		rtFlags |= CREATERENDERTARGETFLAGS_NOEDRAM;
-	}
+
 	return materials->CreateNamedRenderTargetTextureEx2(
 		textureName,
 		1, 1, RT_SIZE_FULL_FRAME_BUFFER, materials->GetBackBufferFormat(), 
@@ -1111,15 +1095,7 @@ static ITexture *CreateFullFrameFBTexture( int textureIndex, int iExtraFlags = 0
 
 static ITexture *CreateFullFrameDepthTexture( void )
 {
-	if ( IsX360() )
-	{
-		return materials->CreateNamedRenderTargetTextureEx2( "_rt_FullFrameDepth", 1, 1, 
-			RT_SIZE_FULL_FRAME_BUFFER, materials->GetShadowDepthTextureFormat(), MATERIAL_RT_DEPTH_NONE,
-			TEXTUREFLAGS_CLAMPS | TEXTUREFLAGS_CLAMPT | TEXTUREFLAGS_POINTSAMPLE,
-			CREATERENDERTARGETFLAGS_NOEDRAM );
 
-	}
-	else
 	{
 		materials->AddTextureAlias( "_rt_FullFrameDepth", "_rt_PowerOfTwoFB" );
 	}
@@ -1191,9 +1167,7 @@ void InitWellKnownRenderTargets( void )
 
 		// Used in Bloom effects
 		g_QuarterSizedFBTexture0.Init( CreateQuarterSizedFBTexture( 0, 0 ) );
-		if( IsX360() )
-			materials->AddTextureAlias( "_rt_SmallFB1", "_rt_SmallFB0" ); //an alias is good enough on the 360 since we don't have a texture lock problem during post processing
-		else
+
 			g_QuarterSizedFBTexture1.Init( CreateQuarterSizedFBTexture( 1, 0 ) );			
 	}
 
@@ -1207,10 +1181,7 @@ void InitWellKnownRenderTargets( void )
 	g_FullFrameFBTexture0.Init( CreateFullFrameFBTexture( 0 ) );
 	g_FullFrameFBTexture1.Init( CreateFullFrameFBTexture( 1 ) );
 
-	if ( IsX360() )
-	{
-		g_FullFrameFBTexture2.Init( CreateFullFrameFBTexture( 2, CREATERENDERTARGETFLAGS_TEMP ) );
-	}
+
 
 	g_FullFrameDepth.Init( CreateFullFrameDepthTexture() );
 	g_ResolvedFullFrameDepth.Init( CreateResolvedFullFrameDepthTexture() );
@@ -1250,13 +1221,7 @@ void InitWellKnownRenderTargets( void )
 void ShutdownWellKnownRenderTargets( void )
 {
 #if !defined( SWDS )
-	if ( IsX360() )
-	{
-		// cannot allowing RT's to reconstruct, causes other fatal problems
-		// many other 360 systems have been coded with this expected constraint
-		Assert( 0 );
-		return;
-	}
+
 
 	if ( IsPC() && mat_debugalttab.GetBool() )
 	{
@@ -1268,9 +1233,7 @@ void ShutdownWellKnownRenderTargets( void )
 		
 	g_QuarterSizedFBTexture0.Shutdown();
 	
-	if( IsX360() )
-		materials->RemoveTextureAlias( "_rt_SmallFB1" );
-	else
+
 		g_QuarterSizedFBTexture1.Shutdown();
 	
 	g_TeenyFBTexture0.Shutdown();
@@ -1278,10 +1241,7 @@ void ShutdownWellKnownRenderTargets( void )
 	g_TeenyFBTexture2.Shutdown();
 	g_FullFrameFBTexture0.Shutdown();
 	g_FullFrameFBTexture1.Shutdown();
-	if ( IsX360() )
-	{
-		g_FullFrameFBTexture2.Shutdown();
-	}
+
 	CMatRenderContextPtr pRenderContext( g_pMaterialSystem );
 	pRenderContext->SetNonInteractiveTempFullscreenBuffer( NULL, MATERIAL_NON_INTERACTIVE_MODE_LEVEL_LOAD );
 
@@ -1493,8 +1453,7 @@ static void ShutdownDebugMaterials( void )
 //-----------------------------------------------------------------------------
 void InitStartupScreen()
 {
-	if ( !IsX360() )
-		return;
+return;
 
 	int width, height;
 	materials->GetBackBufferDimensions( width, height );
@@ -1595,8 +1554,7 @@ void ReleaseMaterialSystemObjects()
 
 void RestoreMaterialSystemObjects( int nChangeFlags )
 {
-	if ( IsX360() )
-		return;
+
 
 	bool bThreadingAllowed = Host_AllowQueuedMaterialSystem( false );
 	g_LostVideoMemory = false;

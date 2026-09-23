@@ -601,8 +601,7 @@ void Sys_InitMemory( void )
 	}
 #endif // (_MSC_VER > 1200)
 
-	if ( !IsX360() )
-	{
+{
 		if ( host_parms.memsize == 0 )
 		{
 			MEMORYSTATUS lpBuffer;
@@ -653,10 +652,6 @@ void Sys_InitMemory( void )
 		{
 			host_parms.memsize = MAXIMUM_WIN_MEMORY;
 		}
-	}
-	else
-	{
-		host_parms.memsize = 128*1024*1024;
 	}
 #elif defined(POSIX)
 	uint64_t memsize = ONE_HUNDRED_TWENTY_EIGHT_MB;
@@ -1478,8 +1473,7 @@ void Sys_SetRegKeyValue( const char *pszSubKey, const char *pszElement,	const ch
 void Sys_CreateFileAssociations( int count, FileAssociationInfo *list )
 {
 #if defined(_WIN32)
-	if ( IsX360() )
-		return;
+
 
 	char appname[ 512 ];
 

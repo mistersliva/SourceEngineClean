@@ -106,18 +106,7 @@ bool CHudCrosshair::ShouldDraw( void )
 	*/
 
 	// draw a crosshair only if alive or spectating in eye
-	if ( IsX360() )
-	{
-		bNeedsDraw = m_pCrosshair && 
-			!engine->IsDrawingLoadingImage() &&
-			!engine->IsPaused() && 
-			( !pPlayer->IsSuitEquipped() || g_pGameRules->IsMultiplayer() ) &&
-			g_pClientMode->ShouldDrawCrosshair() &&
-			!( pPlayer->GetFlags() & FL_FROZEN ) &&
-			( pPlayer->entindex() == render->GetViewEntity() ) &&
-			( pPlayer->IsAlive() ||	( pPlayer->GetObserverMode() == OBS_MODE_IN_EYE ) || ( cl_observercrosshair.GetBool() && pPlayer->GetObserverMode() == OBS_MODE_ROAMING ) );
-	}
-	else
+
 	{
 		bNeedsDraw = m_pCrosshair && 
 			crosshair.GetInt() &&

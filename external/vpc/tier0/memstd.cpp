@@ -2281,9 +2281,7 @@ MemAllocFailHandler_t CStdMemAlloc::SetAllocFailHandler( MemAllocFailHandler_t p
 
 size_t CStdMemAlloc::DefaultFailHandler( size_t nBytes )
 {
-	if ( IsX360() )
-	{
-	}
+
 	return 0;
 }
 

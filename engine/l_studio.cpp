@@ -1106,10 +1106,7 @@ bool CModelRender::Init()
 	// start a managed section in the cache
 	CCacheClientBaseClass::Init( g_pDataCache, "ColorMesh" );
 
-	if ( IsX360() )
-	{
-		g_pQueuedLoader->InstallLoader( RESOURCEPRELOAD_STATICPROPLIGHTING, &s_ResourcePreloadPropLighting );
-	}
+
 
 	return true;
 }
@@ -3130,7 +3127,7 @@ int CModelRender::DrawStaticPropArrayFast( StaticPropRenderInfo_t *pProps, int c
 		}
 	}
 
-	if ( !IsX360() && ( r_flashlight_version2.GetInt() == 0 ) && shadowObjects.Count() )
+	if ( (r_flashlight_version2.GetInt() == 0 ) && shadowObjects.Count() )
 	{
 		drawFlags = STUDIORENDER_DRAW_ENTIRE_MODEL;
 		for ( int i = 0; i < shadowObjects.Count(); i++ )
@@ -3486,8 +3483,7 @@ void CModelRender::ComputeModelVertexLighting( IHandleEntity *pProp,
 	matrix3x4_t& matrix, Vector4D *pTempMem, color24 *pLighting )
 {
 #ifndef SWDS
-	if ( IsX360() )
-		return;
+
 
 	int i;
 	unsigned char *pInSolid = (unsigned char*)stackalloc( ((pModel->numvertices + 7) >> 3) * sizeof(unsigned char) );
@@ -3644,18 +3640,7 @@ void CModelRender::ValidateStaticPropColorData( ModelInstanceHandle_t handle )
 		Q_snprintf( fileName, sizeof( fileName ), "sp_hdr_%d%s.vhv", StaticPropMgr()->GetStaticPropIndex( pProp ), GetPlatformExt() );
 	}
 
-	if ( IsX360()  )
-	{
-		DataCacheHandle_t hColorMesh = GetCachedStaticPropColorData( fileName );
-		if ( hColorMesh != DC_INVALID_HANDLE )
-		{
-			// already have it
-			pInstance->m_ColorMeshHandle = hColorMesh;
-			pInstance->m_nFlags &= ~MODEL_INSTANCE_DISKCOMPILED_COLOR_BAD;
-			pInstance->m_nFlags |= MODEL_INSTANCE_HAS_DISKCOMPILED_COLOR;
-			return;
-		}
-	}
+
 
 	if ( !g_pFileSystem->ReadFile( fileName, "GAME", utlBuf, sizeof( HardwareVerts::FileHeader_t ), 0 ) )
 	{
@@ -3701,27 +3686,7 @@ void CModelRender::StaticPropColorMeshCallback( void *pContext, const void *pDat
 		goto cleanUp;
 	}
 
-	if ( IsX360() )
-	{
-		// only the 360 has compressed VHV data
-		// the compressed data is after the header
-		byte *pCompressedData = (byte *)pData + sizeof( HardwareVerts::FileHeader_t );
-		if ( CLZMA::IsCompressed( pCompressedData ) )
-		{
-			// create a buffer that matches the original
-			int actualSize = CLZMA::GetActualSize( pCompressedData );
-			pOriginalData = (byte *)malloc( sizeof( HardwareVerts::FileHeader_t ) + actualSize );
 
-			// place the header, then uncompress directly after it
-			V_memcpy( pOriginalData, pData, sizeof( HardwareVerts::FileHeader_t ) );
-			int outputLength = CLZMA::Uncompress( pCompressedData, pOriginalData + sizeof( HardwareVerts::FileHeader_t ) );
-			if ( outputLength != actualSize )
-			{
-				goto cleanUp;
-			}
-			pData = pOriginalData;
-		}
-	}
 
 	pVhvHdr = (HardwareVerts::FileHeader_t *)pData;
 
@@ -3780,15 +3745,7 @@ void CModelRender::StaticPropColorMeshCallback( void *pContext, const void *pDat
 		meshBuilder.End();
 	}
 cleanUp:
-	if ( IsX360() )
-	{
-		AUTO_LOCK( m_CachedStaticPropMutex );
-		// track the color mesh's datacache handle so that we can find it long after the model instance's are gone
-		// the static prop filenames are guaranteed uniquely decorated
-		m_CachedStaticPropColorData.Insert( pStaticPropContext->m_szFilenameVertex, pStaticPropContext->m_ColorMeshHandle );
 
-		// No support for lightmap textures on X360. 
-	}
 
 	// mark as completed in single atomic operation
 	pStaticPropContext->m_pColorMeshData->m_bColorMeshValid = true;
@@ -3954,22 +3911,7 @@ bool CModelRender::LoadStaticPropColorData( IHandleEntity *pProp, DataCacheHandl
 	pContextVertex->m_pColorMeshData = pColorMeshData;
 	V_strncpy( pContextVertex->m_szFilenameVertex, fileName, sizeof( pContextVertex->m_szFilenameVertex ) );
 
-	if ( IsX360() && g_pQueuedLoader->IsMapLoading() )
-	{
-		if ( !g_pQueuedLoader->ClaimAnonymousJob( fileName, QueuedLoaderCallback_PropLighting, (void *)pContextVertex ) )
-		{
-			// not there as expected
-			// as a less optimal fallback during loading, issue as a standard queued loader job
-			LoaderJob_t loaderJob;
-			loaderJob.m_pFilename = fileName;
-			loaderJob.m_pPathID = "GAME";
-			loaderJob.m_pCallback = QueuedLoaderCallback_PropLighting;
-			loaderJob.m_pContext = (void *)pContextVertex;
-			loaderJob.m_Priority = LOADERPRIORITY_BEFOREPLAY;
-			g_pQueuedLoader->AddJob( &loaderJob );
-		}
-		return true;
-	}
+
 
 	// async load the file
 	FileAsyncRequest_t fileRequest;
@@ -4280,10 +4222,7 @@ void CModelRender::ReleaseAllStaticPropColorData( void )
 	{
 		DestroyStaticPropColorData( i );
 	}
-	if ( IsX360() )
-	{
-		PurgeCachedStaticPropColorData();
-	}
+
 }
 
 
@@ -4466,7 +4405,7 @@ bool CModelRender::RecomputeStaticLighting( ModelInstanceHandle_t handle )
 void CModelRender::PurgeCachedStaticPropColorData( void )
 {
 	// valid for 360 only
-	Assert( IsX360() );
+	Assert( false);
 	if ( IsPC() )
 	{
 		return;
@@ -4488,7 +4427,7 @@ void CModelRender::PurgeCachedStaticPropColorData( void )
 bool CModelRender::IsStaticPropColorDataCached( const char *pName )
 {
 	// valid for 360 only
-	Assert( IsX360() );
+	Assert( false);
 	if ( IsPC() )
 	{
 		return false;
@@ -4517,7 +4456,7 @@ bool CModelRender::IsStaticPropColorDataCached( const char *pName )
 DataCacheHandle_t CModelRender::GetCachedStaticPropColorData( const char *pName )
 {
 	// valid for 360 only
-	Assert( IsX360() );
+	Assert( false);
 	if ( IsPC() )
 	{
 		return DC_INVALID_HANDLE;
@@ -4538,7 +4477,7 @@ DataCacheHandle_t CModelRender::GetCachedStaticPropColorData( const char *pName 
 
 void CModelRender::SetupColorMeshes( int nTotalVerts )
 {
-	Assert( IsX360() );
+	Assert( false);
 	if ( IsPC() )
 	{
 		return;
@@ -4593,9 +4532,7 @@ void CModelRender::DestroyInstance( ModelInstanceHandle_t handle )
 	// can only persist props with disk based lighting
 	// check for dvd mode as a reasonable assurance that the queued loader will be responsible for a possible purge
 	// if the queued loader doesn't run, the purge will get caught later than intended
-	bool bPersistLighting = IsX360() && 
-		( m_ModelInstances[handle].m_nFlags & MODEL_INSTANCE_HAS_DISKCOMPILED_COLOR ) && 
-		( g_pFullFileSystem->GetDVDMode() == DVDMODE_STRICT );
+	bool bPersistLighting = false;
 	if ( !bPersistLighting )
 	{
 		DestroyStaticPropColorData( handle );

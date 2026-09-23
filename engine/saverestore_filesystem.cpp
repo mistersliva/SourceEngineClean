@@ -838,7 +838,7 @@ bool CSaveRestoreFileSystem::LoadFileFromDisk( const char *pFilename )
 		return false;
 
 	// Open the file off the disk
-	FileHandle_t hDiskFile = g_pFileSystem->OpenEx( pFilename, "rb", ( IsX360() ) ? FSOPEN_NEVERINPACK : 0 );
+	FileHandle_t hDiskFile = g_pFileSystem->OpenEx( pFilename, "rb", 0);
 	if ( !hDiskFile )
 		return false;
 
@@ -992,16 +992,14 @@ void CSaveRestoreFileSystem::AuditFiles( void )
 
 CON_COMMAND( audit_save_in_memory, "Audit the memory usage and files in the save-to-memory system" )
 {
-	if ( !IsX360() )
-		return;
+return;
 
 	g_pSaveRestoreFileSystem->AuditFiles();
 }
 
 CON_COMMAND( dump_x360_saves, "Dump X360 save games to disk" )
 {
-	if ( !IsX360() )
-	{
+{
 		Warning("dump_x360 only available on X360 platform!\n");
 		return;
 	}
@@ -1049,8 +1047,7 @@ CON_COMMAND( dump_x360_saves, "Dump X360 save games to disk" )
 
 CON_COMMAND( dump_x360_cfg, "Dump X360 config files to disk" )
 {
-	if ( !IsX360() )
-	{
+{
 		Warning("dump_x360 only available on X360 platform!\n");
 		return;
 	}
@@ -1398,8 +1395,7 @@ ISaveRestoreFileSystem *g_pSaveRestoreFileSystem = &s_SaveRestoreFileSystemPasst
 //-----------------------------------------------------------------------------
 void SaveInMemoryCallback( IConVar *pConVar, const char *pOldString, float flOldValue )
 {
-	if ( !IsX360() )
-	{
+{
 		Warning( "save_in_memory is compatible with only the Xbox 360!\n" );
 		return;
 	}
@@ -1416,22 +1412,22 @@ void SaveInMemoryCallback( IConVar *pConVar, const char *pOldString, float flOld
 		g_pSaveRestoreFileSystem = &s_SaveRestoreFileSystem;
 
 		// Clear memory and load
-		s_SaveRestoreFileSystem.DirectoryClear( "*.hl?", IsX360() );
+		s_SaveRestoreFileSystem.DirectoryClear( "*.hl?", false);
 		s_SaveRestoreFileSystem.LoadSaveDirectoryFromDisk( szPath );
 
 		// Clear disk
-		s_SaveRestoreFileSystemPassthrough.DirectoryClear( szPath, IsX360() );
+		s_SaveRestoreFileSystemPassthrough.DirectoryClear( szPath, false);
 	}
 	else
 	{
 		g_pSaveRestoreFileSystem = &s_SaveRestoreFileSystemPassthrough;
 
 		// Clear disk and write
-		s_SaveRestoreFileSystemPassthrough.DirectoryClear( szPath, IsX360() );
+		s_SaveRestoreFileSystemPassthrough.DirectoryClear( szPath, false);
 		s_SaveRestoreFileSystem.WriteSaveDirectoryToDisk();
 
 		// Clear memory
-		s_SaveRestoreFileSystem.DirectoryClear( "*.hl?", IsX360() );
+		s_SaveRestoreFileSystem.DirectoryClear( "*.hl?", false);
 	}
 }
 

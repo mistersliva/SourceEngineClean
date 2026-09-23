@@ -1228,7 +1228,7 @@ public:
 
 			dstVertex.m_vecTexCoord = vert.m_vecTexCoord; 
 
-			if ( IsX360() || nDX8VertexFormat )
+			if ( nDX8VertexFormat )
 			{
 				Assert( dstVertex.m_vecUserData.w == -1.0f || dstVertex.m_vecUserData.w == 1.0f );
 
@@ -2051,8 +2051,7 @@ template<VertexCompressionType_t T> void CStudioRender::R_StudioRestoreMesh( mst
 {
 	Vector4D *pStudioTangentS;
 
-	if ( IsX360() )
-		return;
+
 
 	// get at the vertex data
 	const mstudio_meshvertexdata_t *vertData = GetFatVertexData( pmesh, m_pStudioHdr );
@@ -2212,7 +2211,7 @@ void CStudioRender::ComputeFlexWeights( int nFlexCount, mstudioflex_t *pFlex, Mo
 //-----------------------------------------------------------------------------
 inline VertexFormat_t CStudioRender::ComputeSWSkinVertexFormat( IMaterial *pMaterial ) const
 {
-	bool bDX8OrHigherVertex = IsX360() || ( UserDataSize( pMaterial->GetVertexFormat() ) != 0 );
+	bool bDX8OrHigherVertex = (UserDataSize( pMaterial->GetVertexFormat() ) != 0 );
 	VertexFormat_t fmt = VERTEX_POSITION | VERTEX_NORMAL | VERTEX_COLOR | VERTEX_BONE_INDEX | 
 		VERTEX_BONEWEIGHT( 2 ) | VERTEX_TEXCOORD_SIZE( 0, 2 );
 	if ( bDX8OrHigherVertex )

@@ -1156,8 +1156,7 @@ static float LightIntensityAndDirectionInBox( dworldlight_t* pLight,
 bool ComputeVertexLightingFromSphericalSamples( const Vector& vecVertex, 
 	const Vector &vecNormal, IHandleEntity *pIgnoreEnt, Vector *pLinearColor )
 {
-	if ( IsX360() )
-		return false;
+
 
 	// Check to see if this vertex is in solid
 	trace_t tr;

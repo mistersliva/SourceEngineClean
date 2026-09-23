@@ -44,8 +44,7 @@ int GetOverlayTick()
 
 bool OverlayText_t::IsDead()
 {
-	if ( IsXbox() && cl.IsPaused() )
-		return false;
+
 
 	if ( m_nServerCount != cl.m_nServerCount )
 		return true;
@@ -111,8 +110,7 @@ struct OverlayBase_t
 
 	bool IsDead()
 	{
-		if ( IsXbox() && cl.IsPaused() )
-			return false;
+
 
 		if ( m_nServerCount != cl.m_nServerCount )
 			return true;

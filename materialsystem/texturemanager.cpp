@@ -1853,7 +1853,7 @@ void CTextureManager::CleanupPossiblyUnreferencedTextures()
 void CTextureManager::RestoreNonRenderTargetTextures( )
 {
 	// 360 should not have gotten here
-	Assert( !IsX360() );
+	Assert( true);
 
 	for ( int i = m_TextureList.First(); i != m_TextureList.InvalidIndex(); i = m_TextureList.Next( i ) )
 	{
@@ -1870,7 +1870,7 @@ void CTextureManager::RestoreNonRenderTargetTextures( )
 void CTextureManager::RestoreRenderTargets()
 {
 	// 360 should not have gotten here
-	Assert( !IsX360() );
+	Assert( true);
 
 	for ( int i = m_TextureList.First(); i != m_TextureList.InvalidIndex(); i = m_TextureList.Next( i ) )
 	{
@@ -1903,8 +1903,7 @@ void CTextureManager::ReloadTextures()
 
 static void ForceTextureIntoHardware( ITexture *pTexture, IMaterial *pMaterial, IMaterialVar *pBaseTextureVar )
 {
-	if ( IsX360() )
-		return;
+
 
 	pBaseTextureVar->SetTextureValue( pTexture );
 
@@ -1945,8 +1944,7 @@ static void ForceTextureIntoHardware( ITexture *pTexture, IMaterial *pMaterial, 
 //-----------------------------------------------------------------------------
 void CTextureManager::ForceAllTexturesIntoHardware( void )
 {
-	if ( IsX360() )
-		return;
+
 	
 	IMaterial *pMaterial = MaterialSystem()->FindMaterial( "engine/preloadtexture", "texture preload" );
 	pMaterial = ((IMaterialInternal *)pMaterial)->GetRealTimeVersion(); //always work with the realtime material internally
@@ -2437,19 +2435,7 @@ void CTextureManager::ReloadFilesInList( IFileList *pFilesToReload )
 
 void CTextureManager::ReleaseTempRenderTargetBits( void )
 {
-	if( IsX360() ) //only sane on 360
-	{
-		int iNext;
-		for ( int i = m_TextureList.First(); i != m_TextureList.InvalidIndex(); i = iNext )
-		{
-			iNext = m_TextureList.Next( i );
 
-			if ( m_TextureList[i]->IsTempRenderTarget() )
-			{
-				m_TextureList[i]->ReleaseMemory();
-			}
-		}
-	}
 }
 
 void CTextureManager::DebugPrintUsedTextures( void )

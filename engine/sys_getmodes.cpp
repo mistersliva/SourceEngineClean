@@ -828,8 +828,7 @@ void CVideoMode_Common::SetupStartupGraphic()
 //-----------------------------------------------------------------------------
 void CVideoMode_Common::DrawStartupVideo()
 {
-    if ( IsX360() )
-        return;
+
 
 	CETWScope timer( "CVideoMode_Common::DrawStartupGraphic" );
 
@@ -847,8 +846,7 @@ void CVideoMode_Common::DrawStartupVideo()
 //-----------------------------------------------------------------------------
 void CVideoMode_Common::DrawStartupGraphic()
 {
-    if ( IsX360() )
-        return;
+
 
 	char debugstartup = CommandLine()->FindParm("-debugstartupscreen");
 
@@ -995,8 +993,7 @@ void CVideoMode_Common::DrawStartupGraphic()
 void CVideoMode_Common::BlitGraphicToHDCWithAlpha(HDC hdc, byte *rgba, int imageWidth, int imageHeight, int x0, int y0, int x1, int y1)
 {
 #ifdef WIN32
-    if ( IsX360() )
-        return;
+
 
     int x = x0;
     int y = y0;
@@ -1047,8 +1044,7 @@ void CVideoMode_Common::InvalidateWindow()
 void CVideoMode_Common::DrawNullBackground( void *hHDC, int w, int h )
 {
 #ifdef WIN32
-    if ( IsX360() )
-        return;
+
 
     HDC hdc = (HDC)hHDC;
 
@@ -1170,8 +1166,7 @@ typedef GUID UUID;
 //-----------------------------------------------------------------------------
 void CVideoMode_Common::BlitGraphicToHDC(HDC hdc, byte *rgba, int imageWidth, int imageHeight, int x0, int y0, int x1, int y1)
 {
-    if ( IsX360() )
-        return;
+
 
 #ifdef WIN32
     int x = x0;
@@ -1692,12 +1687,7 @@ ITexture *CVideoMode_Common::GetFullFrameFB0( void )
 
 void CVideoMode_Common::BlitHiLoScreenBuffersTo16Bit( void )
 {
-    if ( IsX360() )
-    {
-        // FIXME: this breaks in 480p due to (at least) the multisampled depth buffer (need to cache, clear and restore the depth target)
-        Assert( 0 );
-        return;
-    }
+
     
     IMaterial *pHDRCombineMaterial = materials->FindMaterial( "dev/hdrcombineto16bit", TEXTURE_GROUP_OTHER, true );
 //  if( IsErrorMaterial( pHDRCombineMaterial ) )
@@ -1774,12 +1764,7 @@ void GetCubemapOffset( CubeMapFaceIndex_t faceIndex, int &x, int &y, int &faceDi
 //-----------------------------------------------------------------------------
 void CVideoMode_Common::TakeSnapshotPFMRect( const char *pFilename, int x, int y, int w, int h, int resampleWidth, int resampleHeight, CubeMapFaceIndex_t faceIndex )
 {
-    if ( IsX360() )
-    {
-        // FIXME: this breaks in 480p due to (at least) the multisampled depth buffer (need to cache, clear and restore the depth target)
-        Assert( 0 );
-        return;
-    }
+
 
     if ( g_pMaterialSystemHardwareConfig->GetHDRType() == HDR_TYPE_NONE )
     {
@@ -1857,11 +1842,7 @@ void CVideoMode_Common::TakeSnapshotPFMRect( const char *pFilename, int x, int y
 //-----------------------------------------------------------------------------
 void CVideoMode_Common::TakeSnapshotTGARect( const char *pFilename, int x, int y, int w, int h, int resampleWidth, int resampleHeight, bool bPFM, CubeMapFaceIndex_t faceIndex )
 {
-    if ( IsX360() )
-    {
-        Assert( 0 );
-        return;
-    }
+
 
     if ( bPFM )
     {
@@ -2485,8 +2466,7 @@ void CVideoMode_MaterialSystem::SetGameWindow( void *hWnd )
 //-----------------------------------------------------------------------------
 void CVideoMode_MaterialSystem::ReleaseVideo( void )
 {
-    if ( IsX360() )
-        return;
+
 
     if ( IsWindowedMode() )
         return;
@@ -2500,8 +2480,7 @@ void CVideoMode_MaterialSystem::ReleaseVideo( void )
 //-----------------------------------------------------------------------------
 void CVideoMode_MaterialSystem::RestoreVideo( void )
 {
-    if ( IsX360() )
-        return;
+
 
     if ( IsWindowedMode() )
         return;
@@ -2520,8 +2499,7 @@ void CVideoMode_MaterialSystem::RestoreVideo( void )
 //-----------------------------------------------------------------------------
 void CVideoMode_MaterialSystem::ReleaseFullScreen( void )
 {
-    if ( IsX360() )
-        return;
+
 
     if ( IsWindowedMode() )
         return;
@@ -2544,8 +2522,7 @@ void CVideoMode_MaterialSystem::ReleaseFullScreen( void )
 //-----------------------------------------------------------------------------
 void CVideoMode_MaterialSystem::ChangeDisplaySettingsToFullscreen( int nWidth, int nHeight, int nBPP )
 {
-    if ( IsX360() )
-        return;
+
 
     if ( IsWindowedMode() )
         return;

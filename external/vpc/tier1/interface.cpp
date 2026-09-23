@@ -210,10 +210,7 @@ static HMODULE Sys_LoadLibraryGuts( const char *pLibraryName )
 	V_strncpy( str, pLibraryName, sizeof(str) );
 	if ( !V_stristr( str, pModuleExtension ) )
 	{
-		if ( IsX360() )
-		{
-			V_StripExtension( str, str, sizeof(str) );
-		}
+
 		V_strncat( str, pModuleAddition, sizeof(str) );
 	}
 	V_FixSlashes( str );
@@ -367,17 +364,7 @@ CSysModule *Sys_LoadModule( const char *pModuleName )
 	HMODULE hDLL = NULL;
 
 	char alteredFilename[ MAX_PATH ];
-	if ( IsPS3() )
-	{
-		// PS3's load module *must* be fed extensions. If the extension is missing, add it. 
-		if (!( strstr(pModuleName, ".sprx") || strstr(pModuleName, ".prx") ))
-		{
-			strncpy( alteredFilename, pModuleName, MAX_PATH );
-			strncat( alteredFilename, DLL_EXT_STRING, MAX_PATH );
-			pModuleName = alteredFilename;
-		}
-	}
-	else
+
 	{
 		alteredFilename; // just to quash the warning
 	}
@@ -388,14 +375,7 @@ CSysModule *Sys_LoadModule( const char *pModuleName )
 		char szAbsoluteModuleName[1024];
 		char szCwd[1024];
 		_getcwd( szCwd, sizeof( szCwd ) );
-		if ( IsX360() )
-		{
-			int i = CommandLine()->FindParm( "-basedir" );
-			if ( i )
-			{
-				strcpy( szCwd, CommandLine()->GetParm( i+1 ) );
-			}
-		}
+
 		if (szCwd[strlen(szCwd) - 1] == '/' || szCwd[strlen(szCwd) - 1] == '\\' )
 		{
 			szCwd[strlen(szCwd) - 1] = 0;

@@ -196,8 +196,6 @@
 #define IsLinux()	IsPlatformLinux() 
 #define IsOSX()		IsPlatformOSX()
 #define IsPosix()	IsPlatformPosix()
-#define IsX360()	IsPlatformX360()
-#define IsPS3()		IsPlatformPS3()
 
 // Setup platform defines.
 #ifdef COMPILER_MSVC

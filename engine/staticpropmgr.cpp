@@ -1816,36 +1816,7 @@ void CStaticPropMgr::PrecacheLighting()
 	COM_TimestampedLog( "CStaticPropMgr::PrecacheLighting - start");
 
 	int numVerts = 0;
-	if ( IsX360() )
-	{
-		if ( g_bLoadedMapHasBakedPropLighting && g_pMaterialSystemHardwareConfig->SupportsStreamOffset() )
-		{
-			// total the static prop verts
-			int i = m_StaticProps.Count();
-			while ( --i >= 0 )
-			{
-				if ( PropHasBakedLightingDisabled( m_StaticProps[i].GetEntityHandle() ) ) 
-				{
-					continue;
-				}
 
-				studiohwdata_t *pStudioHWData = g_pMDLCache->GetHardwareData( ( (model_t*)m_StaticProps[i].GetModel() )->studio );
-				for ( int lodID = pStudioHWData->m_RootLOD; lodID < pStudioHWData->m_NumLODs; lodID++ )
-				{
-					studioloddata_t *pLOD = &pStudioHWData->m_pLODs[lodID];
-					for ( int meshID = 0; meshID < pStudioHWData->m_NumStudioMeshes; meshID++ )
-					{
-						studiomeshdata_t *pMesh = &pLOD->m_pMeshData[meshID];
-						for ( int groupID = 0; groupID < pMesh->m_NumGroup; groupID++ )
-						{
-							numVerts += pMesh->m_pMeshGroup[groupID].m_NumVertices;
-						}
-					}
-				}
-			}
-		}
-		modelrender->SetupColorMeshes( numVerts );
-	}
 
 	int i = m_StaticProps.Count();
 	while ( --i >= 0 )
@@ -2162,8 +2133,7 @@ void CStaticPropMgr::ComputePropOpacity( CStaticProp &prop )
 	}
 
 #ifndef SWDS
-	if ( !IsXbox() )
-	{
+{
 		// Fade all props, if we have a default level setting
 		// But only change the fade if it's more translucent than any other fades we might have
 		unsigned char alpha = modelinfoclient->ComputeLevelScreenFade( prop.GetRenderOrigin(), prop.Radius(), prop.ForcedFadeScale() ); 

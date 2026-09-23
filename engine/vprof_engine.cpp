@@ -390,15 +390,7 @@ DEFERRED_CON_COMMAND( vprof_on, "Turn on VProf profiler" )
 		Msg("VProf enabled.\n");
 		g_VProfCurrentProfile.Start();
 		g_fVprofOnByUI = true;
-		if ( IsX360() && !g_bVProfNoVSyncOff )
-		{
-			ConVarRef mat_vsyncref( "mat_vsync" );
-			if ( mat_vsyncref.GetBool() )
-			{
-				Warning( "Disabling vsync (via mat_vsync) to increase profiling accuracy.\n" );
-				mat_vsyncref.SetValue( false );
-			}
-		}
+
 	}
 }
 
@@ -803,8 +795,7 @@ static int FindSentGroupIndex( VProfListenInfo_t &info, const char *pGroupName )
 //-----------------------------------------------------------------------------
 void WriteRemoteVProfGroupData( VProfListenInfo_t &info )
 {
-	if ( IsX360() )
-		return;
+
 
 	int nGroupCount = g_pVProfileForDisplay->GetNumBudgetGroups();
 	int nInitialCount = info.m_SentGroups.Count();
@@ -847,8 +838,7 @@ void WriteRemoteVProfGroupData( VProfListenInfo_t &info )
 static ConVar rpt_vprof_time( "rpt_vprof_time","0.25", FCVAR_HIDDEN | FCVAR_DONTRECORD, "" );
 void WriteRemoteVProfData()
 {
-	if ( IsX360() )
-		return;
+
 
 	// Throttle sending too much data
 	float flMaxDelta = rpt_vprof_time.GetFloat();

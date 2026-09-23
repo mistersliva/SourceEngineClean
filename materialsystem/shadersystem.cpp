@@ -314,8 +314,7 @@ void CShaderSystem::LoadAllShaderDLLs( )
 	SetupShaderDictionary( i );
 
 	// 360 has the the debug shaders in its dx9 dll
-	if ( IsPC() || !IsX360() )
-	{
+{
 		// Always need the debug shaders
 		LoadShaderDLL( "stdshader_dbg" DLL_EXT_STRING );
 	}
@@ -326,7 +325,7 @@ void CShaderSystem::LoadAllShaderDLLs( )
 	dxSupportLevel /= 10;
 
 	// 360 only supports its dx9 dll
-	int dxStart = IsX360() ? 9 : 6;
+	int dxStart = 6;
 	char buf[32];
 	for ( i = dxStart; i <= dxSupportLevel; ++i )
 	{
@@ -376,8 +375,7 @@ const char *COM_GetModDirectory()
 
 void CShaderSystem::LoadModShaderDLLs( int dxSupportLevel )
 {
-	if ( IsX360() )
-		return;
+
 
 	// Don't do this for Valve mods. They don't need them, and attempting to load them is an opportunity for cheaters to get their code into the process
 	const char *pGameDir = COM_GetModDirectory();
@@ -937,8 +935,7 @@ void CShaderSystem::PrepForShaderDraw( IShader *pShader,
 
 	// 360 runs the console remotely, spew cannot cause the matsys to be reentrant
 	// 360 sidesteps the other negative affect that *all* buffered spew redirects as warning text
-	if ( IsPC() || !IsX360() )
-	{
+{
 		Assert( !m_SaveSpewOutput );
 		m_SaveSpewOutput = GetSpewOutputFunc();
 		SpewOutputFunc( MySpewOutputFunc );
@@ -951,8 +948,7 @@ void CShaderSystem::PrepForShaderDraw( IShader *pShader,
 
 void CShaderSystem::DoneWithShaderDraw()
 {
-	if ( IsPC() || !IsX360() )
-	{
+{
 		SpewOutputFunc( m_SaveSpewOutput );
 		PrintBufferedSpew();
 		m_SaveSpewOutput = NULL;

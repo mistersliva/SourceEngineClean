@@ -441,8 +441,7 @@ void CBaseClient::SetName(const char * playerName)
 
 	// Don't care about duplicate names on the xbox. It can only occur when a player
 	// is reconnecting after crashing, and we don't want to ever show the (X) then.
-	if ( !IsX360() )
-	{
+{
 		// Check to see if another user by the same name exists
 		while ( true )
 		{

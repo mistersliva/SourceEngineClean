@@ -2784,7 +2784,7 @@ bool CBaseEntity::FVisible( CBaseEntity *pEntity, int traceMask, CBaseEntity **p
 	Vector vecTargetOrigin = pEntity->EyePosition();
 
 	trace_t tr;
-	if ( !IsXbox() && ai_LOS_mode.GetBool() )
+	if ( ai_LOS_mode.GetBool() )
 	{
 		UTIL_TraceLine(vecLookerOrigin, vecTargetOrigin, traceMask, this, COLLISION_GROUP_NONE, &tr);
 	}
@@ -4584,10 +4584,7 @@ static CUtlCachedFileData< CModelSoundsCache > g_ModelSoundsCache( "modelsounds.
 
 void ClearModelSoundsCache()
 {
-	if ( IsX360() )
-	{
-		return;
-	}
+
 
 	g_ModelSoundsCache.Reload();
 }
@@ -4598,10 +4595,7 @@ void ClearModelSoundsCache()
 //-----------------------------------------------------------------------------
 bool ModelSoundsCacheInit()
 {
-	if ( IsX360() )
-	{
-		return true;
-	}
+
 
 	return g_ModelSoundsCache.Init();
 }
@@ -4611,10 +4605,7 @@ bool ModelSoundsCacheInit()
 //-----------------------------------------------------------------------------
 void ModelSoundsCacheShutdown()
 {
-	if ( IsX360() )
-	{
-		return;
-	}
+
 
 	g_ModelSoundsCache.Shutdown();
 }
@@ -4628,10 +4619,7 @@ public:
 	}
 	virtual void LevelInitPostEntity()
 	{
-		if ( IsX360() )
-		{
-			return;
-		}
+
 
 		if ( g_ModelSoundsCache.IsDirty() )
 		{
@@ -4640,14 +4628,7 @@ public:
 	}
 	virtual void LevelShutdownPostEntity()
 	{
-		if ( IsX360() )
-		{
-			// Unforunate that this table must persist through duration of level.
-			// It is the common case that PrecacheModel() still gets called (and needs this table),
-			// after LevelInitPostEntity, as PrecacheModel() redundantly precaches.
-			g_ModelSoundsSymbolHelper.RemoveAll();
-			return;
-		}
+
 
 		if ( g_ModelSoundsCache.IsDirty() )
 		{
@@ -4707,8 +4688,7 @@ static CWatchForModelAccess g_WatchForModels;
 //-----------------------------------------------------------------------------
 void CBaseEntity::PrecacheSoundHelper( const char *pName )
 {
-	if ( !IsX360() )
-	{
+{
 		// 360 only
 		Assert( 0 );
 		return;
@@ -4832,63 +4812,7 @@ void CBaseEntity::PrecacheModelComponents( int nModelIndex )
 					// The disk based solution was not needed. Now at runtime partly due to already crawling the sequences
 					// for the particles and the expensive part was redundant PrecacheScriptSound(), which is now prevented
 					// by a local symbol table.
-					if ( IsX360() )
-					{
-						switch ( pEvent->event )
-						{
-						default:
-							{
-								if ( ( pEvent->type & AE_TYPE_NEWEVENTSYSTEM ) && ( pEvent->event == AE_SV_PLAYSOUND ) )
-								{
-									PrecacheSoundHelper( pEvent->pszOptions() );
-								}
-							}
-							break;
-						case CL_EVENT_FOOTSTEP_LEFT:
-						case CL_EVENT_FOOTSTEP_RIGHT:
-							{
-								char soundname[256];
-								char const *options = pEvent->pszOptions();
-								if ( !options || !options[0] )
-								{
-									options = "NPC_CombineS";
-								}
 
-								Q_snprintf( soundname, sizeof( soundname ), "%s.RunFootstepLeft", options );
-								PrecacheSoundHelper( soundname );
-								Q_snprintf( soundname, sizeof( soundname ), "%s.RunFootstepRight", options );
-								PrecacheSoundHelper( soundname );
-								Q_snprintf( soundname, sizeof( soundname ), "%s.FootstepLeft", options );
-								PrecacheSoundHelper( soundname );
-								Q_snprintf( soundname, sizeof( soundname ), "%s.FootstepRight", options );
-								PrecacheSoundHelper( soundname );
-							}
-							break;
-						case AE_CL_PLAYSOUND:
-							{
-								if ( !( pEvent->type & AE_TYPE_CLIENT ) )
-									break;
-
-								if ( pEvent->pszOptions()[0] )
-								{
-									PrecacheSoundHelper( pEvent->pszOptions() );
-								}
-								else
-								{
-									Warning( "-- Error --:  empty soundname, .qc error on AE_CL_PLAYSOUND in model %s, sequence %s, animevent # %i\n", 
-										studioHdr.GetRenderHdr()->pszName(), seq.pszLabel(), j+1 );
-								}
-							}
-							break;
-						case CL_EVENT_SOUND:
-						case SCRIPT_EVENT_SOUND:
-						case SCRIPT_EVENT_SOUND_VOICE:
-							{
-								PrecacheSoundHelper( pEvent->pszOptions() );
-							}
-							break;
-						}
-					}
 				}
 			}
 		}

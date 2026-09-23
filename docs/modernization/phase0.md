@@ -40,7 +40,7 @@ powershell -File scripts/lint-legacy.ps1 -UpdateBaseline
 | id                     | count | meaning / target phase |
 |------------------------|------:|------------------------|
 | x360_refs              |  1918 | `_X360` conditionals - Phase 1a |
-| isx360_fn              |   910 | `IsX360()` calls - Phase 1a |
+| isx360_fn              |   910 | `IsX360` calls - Phase 1a |
 | xbox_include           |   168 | `#include "xbox/..."` / xboxstubs - Phase 1a |
 | dx_to_gl_abstraction   |   216 | fake-D3D9-over-GL define - Phase 3 |
 | win32_long_no_ptr      |    83 | `Get/SetWindowLong` (truncates on x64) - Phase 2a |

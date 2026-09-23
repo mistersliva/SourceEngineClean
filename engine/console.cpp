@@ -206,8 +206,7 @@ Con_HideConsole_f
 */
 void Con_HideConsole_f( void )
 {
-	if ( IsX360() )
-		return;
+
 
 	if ( EngineVGui()->IsConsoleVisible() )
 	{
@@ -223,8 +222,7 @@ Con_ShowConsole_f
 */
 void Con_ShowConsole_f( void )
 {
-	if ( IsX360() )
-		return;
+
 
 	if ( vgui::input()->GetAppModalSurface() )
 	{
@@ -252,8 +250,7 @@ void Con_ShowConsole_f( void )
 //-----------------------------------------------------------------------------
 void Con_ToggleConsole_f( void )
 {
-	if ( IsX360() )
-		return;
+
 
 	if (EngineVGui()->IsConsoleVisible())
 	{
@@ -273,8 +270,7 @@ void Con_ToggleConsole_f( void )
 //-----------------------------------------------------------------------------
 void Con_Clear_f( void )
 {	
-	if ( IsX360() )
-		return;
+
 
 	EngineVGui()->ClearConsole();
 	Con_ClearNotify();

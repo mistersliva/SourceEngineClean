@@ -160,10 +160,7 @@ void CItem::Spawn( void )
 	SetBlocksLOS( false );
 	AddEFlags( EFL_NO_ROTORWASH_PUSH );
 	
-	if( IsX360() )
-	{
-		AddEffects( EF_ITEM_BLINK );
-	}
+
 
 	// This will make them not collide with the player, but will collide
 	// against other items + weapons

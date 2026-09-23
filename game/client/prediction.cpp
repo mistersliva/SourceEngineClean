@@ -931,8 +931,7 @@ void CPrediction::SetIdealPitch ( C_BasePlayer *player, const Vector& origin, co
 		return;
 	
 	// Don't do this on the 360..
-	if ( IsX360() )
-		return;
+
 
 	AngleVectors( angles, &forward );
 	forward[2] = 0;

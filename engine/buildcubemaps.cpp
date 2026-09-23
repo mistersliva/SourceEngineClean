@@ -95,8 +95,7 @@ void VTex_Unload( CSysModule *pModule )
 static void TakeCubemapSnapshot( const Vector &origin, const char *pFileNameBase, int screenBufSize,
 						 int tgaSize, bool bPFM )
 {
-	if ( IsX360() )
-		return;
+
 
 	if ( g_LostVideoMemory )
 		return;
@@ -292,8 +291,7 @@ static void TakeCubemapSnapshot( const Vector &origin, const char *pFileNameBase
 //-----------------------------------------------------------------------------
 void* CubemapsFSFactory( const char *pName, int *pReturnCode )
 {
-	if ( IsX360() )
-		return NULL;
+
 
 	if ( Q_stricmp( pName, FILESYSTEM_INTERFACE_VERSION ) == 0 )
 		return g_pFileSystem;
@@ -308,8 +306,7 @@ void* CubemapsFSFactory( const char *pName, int *pReturnCode )
 static void BuildSingleCubemap( const char *pVTFName, const Vector &vecOrigin,
 	int nSize, bool bHDR, const char *pGameDir, IVTex *ivt )
 {
-	if ( IsX360() )
-		return;
+
 
 	int nScreenBufSize = 4 * nSize;
 	TakeCubemapSnapshot( vecOrigin, pVTFName, nScreenBufSize, nSize, bHDR );
@@ -361,8 +358,7 @@ static void BuildSingleCubemap( const char *pVTFName, const Vector &vecOrigin,
 //-----------------------------------------------------------------------------
 CON_COMMAND( envmap, "" )
 {
-	if ( IsX360() )
-		return;
+
 
 	char	base[ 256 ];
 	IClientEntity *world = entitylist->GetClientEntity( 0 );
@@ -486,8 +482,7 @@ CON_COMMAND( lightprobe,
 	"Creates a cubemap and a file indicating the local lighting in a subdirectory called 'materials/lightprobes'\n."
 	"The lightprobe command requires you specify a base file name.\n" )
 {
-	if ( IsX360() )
-		return;
+
 
 	if ( args.ArgC() < 2 ) 
 	{
@@ -548,8 +543,7 @@ CON_COMMAND( lightprobe,
 
 static bool LoadSrcVTFFiles( IVTFTexture *pSrcVTFTextures[6], const char *pSkyboxBaseName )
 {
-	if ( IsX360() )
-		return false;
+
 
 	int i;
 	for( i = 0; i < 6; i++ )
@@ -586,8 +580,7 @@ static bool LoadSrcVTFFiles( IVTFTexture *pSrcVTFTextures[6], const char *pSkybo
 
 void Cubemap_CreateDefaultCubemap( const char *pMapName, IBSPPack *iBSPPack )
 {
-	if ( IsX360() )
-		return;
+
 
 	// NOTE: This implementation depends on the fact that all VTF files contain
 	// all mipmap levels
@@ -769,8 +762,7 @@ void Cubemap_CreateDefaultCubemap( const char *pMapName, IBSPPack *iBSPPack )
 
 static void AddSampleToBSPFile( bool bHDR, mcubemapsample_t *pSample, const char *matDir, IBSPPack *iBSPPack )
 {
-	if ( IsX360() )
-		return;
+
 
 	char textureName[MAX_PATH] = { 0 };
 	const char *pHDRExtension = "";
@@ -959,8 +951,7 @@ void R_BuildCubemapSamples_PostBuild()
 }
 void R_BuildCubemapSamples( int numIterations )
 {
-	if ( IsX360() )
-		return;
+
 
 	// Make sure that the file is writable before building cubemaps.
 	Assert( g_pFileSystem->FileExists( cl.m_szLevelFileName, "GAME" ) );

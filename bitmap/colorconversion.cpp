@@ -1467,12 +1467,7 @@ bool ConvertImageFormat( const uint8 *src, ImageFormat srcImageFormat,
 		if( ( srcImageFormat == dstImageFormat ) || 
 			((srcImageFormat == IMAGE_FORMAT_BGRA8888) && (dstImageFormat == IMAGE_FORMAT_BGRX8888)) )
 		{
-			if ( IsX360() && ( srcStride == dstStride ) && ( width*srcPixelSize == srcStride ) )
-			{
-				// fastest path
-				memcpy( dst, src, height*srcStride ); 
-				return true;
-			}
+
 
 			for ( line = 0; line < height; ++line )
 			{

@@ -55,10 +55,7 @@ void ClearModelSoundsCache();
 
 void WaveTrace( char const *wavname, char const *funcname )
 {
-	if ( IsX360() && !IsDebug() )
-	{
-		return;
-	}
+
 
 	static CUtlSymbolTable s_WaveTrace;
 

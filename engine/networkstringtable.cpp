@@ -248,7 +248,7 @@ CNetworkStringTable::CNetworkStringTable( TABLEID id, const char *tableName, int
 		Host_Error( "String tables must be powers of two in size!, %i is not a power of 2\n", maxentries );
 	}
 
-	if ( IsXbox() || bIsFilenames )
+	if ( bIsFilenames )
 	{
 		m_bIsFilenames = true;
 		m_pItems = new CNetworkStringFilenameDict;

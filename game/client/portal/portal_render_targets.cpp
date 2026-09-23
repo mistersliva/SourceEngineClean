@@ -17,12 +17,7 @@
 //-----------------------------------------------------------------------------
 ITexture* CPortalRenderTargets::InitPortal1Texture( IMaterialSystem* pMaterialSystem )
 {
-	if ( IsX360() )
-	{
-		// shouldn't be using
-		Assert( 0 );
-		return NULL;
-	}
+
 
 	return pMaterialSystem->CreateNamedRenderTargetTextureEx2(
 		"_rt_Portal1",
@@ -47,12 +42,7 @@ ITexture* CPortalRenderTargets::GetPortal1Texture()
 //-----------------------------------------------------------------------------
 ITexture* CPortalRenderTargets::InitPortal2Texture( IMaterialSystem* pMaterialSystem )
 {
-	if ( IsX360() )
-	{
-		// shouldn't be using
-		Assert( 0 );
-		return NULL;
-	}
+
 
 	return pMaterialSystem->CreateNamedRenderTargetTextureEx2(
 		"_rt_Portal2",
@@ -95,10 +85,7 @@ ITexture* CPortalRenderTargets::GetDepthDoublerTexture()
 
 void CPortalRenderTargets::InitPortalWaterTextures( IMaterialSystem* pMaterialSystem )
 {
-	if ( IsX360() )
-	{
-		return;
-	}
+
 
 	//Reflections
 	m_WaterReflectionTextures[0].Init( 
@@ -144,10 +131,7 @@ void CPortalRenderTargets::InitPortalWaterTextures( IMaterialSystem* pMaterialSy
 
 ITexture* CPortalRenderTargets::GetWaterReflectionTextureForStencilDepth( int iStencilDepth )
 {
-	if ( IsX360() )
-	{
-		return NULL;
-	}
+
 
 	if ( iStencilDepth > 2 )
 		return NULL;
@@ -160,10 +144,7 @@ ITexture* CPortalRenderTargets::GetWaterReflectionTextureForStencilDepth( int iS
 
 ITexture* CPortalRenderTargets::GetWaterRefractionTextureForStencilDepth( int iStencilDepth )
 {
-	if ( IsX360() )
-	{
-		return NULL;
-	}
+
 
 	if ( iStencilDepth > 2 )
 		return NULL;
@@ -186,16 +167,14 @@ void CPortalRenderTargets::InitClientRenderTargets( IMaterialSystem* pMaterialSy
 	// TODO: When stencils are default, do the below check before bothering to allocate the RTs
 	//		and make sure that switching from Stencil<->RT mode reinits the material system.
 //	if ( materials->StencilBufferBits() == 0 )
-	if ( IsPC() || !IsX360() )
-	{
+{
 		m_Portal1Texture.Init( InitPortal1Texture( pMaterialSystem ) );
 		m_Portal2Texture.Init( InitPortal2Texture( pMaterialSystem ) );
 	}
 
 	m_DepthDoublerTexture.Init( InitDepthDoublerTexture( pMaterialSystem ) );
 
-	if ( IsPC() || !IsX360() )
-	{
+{
 		InitPortalWaterTextures( pMaterialSystem );
 	}
 

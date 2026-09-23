@@ -1792,7 +1792,7 @@ void CGameServer::FinishRestore()
 
 	// Reset
 	m_bLoadgame = false;
-	saverestore->SetIsXSave( IsX360() );
+	saverestore->SetIsXSave( false);
 #endif
 }
 
@@ -2004,8 +2004,7 @@ void SV_BroadcastVoiceData(IClient * pClient, int nBytes, char * data, int64 xui
 		bool bHearsPlayer = pDestClient->IsHearingClient( voiceData.m_nFromClient );
 		voiceData.m_bProximity = pDestClient->IsProximityHearingClient( voiceData.m_nFromClient );
 
-		if ( IsX360() && bSelf == true )			
-			continue;
+
 			
 		if ( !bHearsPlayer && !bSelf )
 			continue;	
@@ -2494,10 +2493,7 @@ bool CGameServer::SpawnServer( const char *szMapName, const char *szMapFile, con
 	if ( g_FlushMemoryOnNextServer )
 	{
 		g_FlushMemoryOnNextServer = false;
-		if ( IsX360() )
-		{
-			g_pQueuedLoader->PurgeAll();
-		}
+
 		g_pDataCache->Flush();
 		g_pMaterialSystem->CompactMemory();
 		g_pFileSystem->AsyncFinishAll();
@@ -2595,7 +2591,7 @@ bool CGameServer::SpawnServer( const char *szMapName, const char *szMapFile, con
 
 	COM_TimestampedLog( "modelloader->GetModelForName(%s) -- Finished", szMapFile );
 
-	if ( IsMultiplayer() && !IsX360() )
+	if ( IsMultiplayer() )
 	{
 #ifndef SWDS
 		EngineVGui()->UpdateProgressBar(PROGRESS_CRCMAP);

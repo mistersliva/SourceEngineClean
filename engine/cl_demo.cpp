@@ -385,15 +385,8 @@ void CDemoRecorder::RecordServerClasses( ServerClass *pClasses )
 	CUtlBuffer bigBuff;
 
 	int buffSize = 256*1024;
-	if ( !IsX360() )
-	{
+{
 		pBigBuffer = (char*)stackalloc( buffSize );
-	}
-	else
-	{
-		// keep temp large allocations off of stack
-		bigBuff.EnsureCapacity( buffSize );
-		pBigBuffer = (char*)bigBuff.Base();
 	}
 
 	bf_write buf( pBigBuffer, buffSize );

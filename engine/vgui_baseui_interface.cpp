@@ -482,7 +482,7 @@ public:
 		int snappedProgress = progress * 15;
 
 		// Need excessive updates on the 360 to keep the XBox slider inny bar active
-		if ( !IsX360() && ( snappedProgress <= m_SnappedProgress ) )
+		if ( (snappedProgress <= m_SnappedProgress ) )
 		{
 			// prevent excessive updates
 			return;
@@ -610,7 +610,7 @@ void CEngineVGui::Init()
 		return;
 	}
 
-	if ( IsX360() || IsSteamDeck() )
+	if ( IsSteamDeck() )
 	{
 		CCommand ccommand;
 		if ( CL_ShouldLoadBackgroundLevel( ccommand ) )
@@ -806,11 +806,7 @@ void CEngineVGui::Init()
 		staticGameConsole->SetParent(staticGameUIPanel->GetVPanel());
 	}
 
-	if ( IsX360() )
-	{
-		// provide an interface for loader to send progress notifications
-		g_pQueuedLoader->InstallProgress( &s_LoaderProgress ); 
-	}
+
 
 	// show the game UI
 	COM_TimestampedLog( "ActivateGameUI()" );
@@ -848,8 +844,7 @@ void CEngineVGui::Connect()
 //-----------------------------------------------------------------------------
 void CEngineVGui::CreateVProfPanels( vgui::Panel *pParent )
 {
-	if ( IsX360() )
-		return;
+
 
 #ifdef VPROF_ENABLED
 	m_pVProfPanel = new CVProfPanel( pParent, "VProfPanel" );
@@ -861,8 +856,7 @@ void CEngineVGui::CreateVProfPanels( vgui::Panel *pParent )
 
 void CEngineVGui::DestroyVProfPanels( )
 {
-	if ( IsX360() )
-		return;
+
 
 #ifdef VPROF_ENABLED
 	if ( m_pVProfPanel )
@@ -1112,8 +1106,7 @@ bool CEngineVGui::HideGameUI()
 //-----------------------------------------------------------------------------
 void CEngineVGui::HideConsole()
 {
-	if ( IsX360() )
-		return;
+
 
 	if ( staticGameConsole )
 	{
@@ -1126,8 +1119,7 @@ void CEngineVGui::HideConsole()
 //-----------------------------------------------------------------------------
 void CEngineVGui::ShowConsole()
 {
-	if ( IsX360() )
-		return;
+
 
 	ActivateGameUI();
 
@@ -1267,7 +1259,7 @@ void CEngineVGui::OnLevelLoadingStarted()
 		}
 	}
 	
-	if ( IsX360() || IsSteamDeck() )
+	if ( IsSteamDeck() )
 	{
 		// TCR requirement, always!!!
 		m_bShowProgressDialog = true;
@@ -1590,12 +1582,7 @@ bool CEngineVGui::Key_Event( const InputEvent_t &event )
 			}
 			return true;
 		}
-		if ( IsX360() && !IsGameUIVisible() )
-		{
-			// 360 UI does not toggle, engine does "show", but UI needs to handle "hide"
-			Cbuf_AddText( "gameui_activate" );
-			return true;
-		}
+
 	}
 
 	if ( g_pMatSystemSurface && g_pMatSystemSurface->HandleInputEvent( event ) )
@@ -1907,7 +1894,7 @@ void VGui_PlaySound( const char *pFileName )
 		S_MarkUISound( pSound );
 
 		StartSoundParams_t params;
-		params.staticsound = IsX360() ? true : false;
+		params.staticsound = false;
 		params.soundsource = cl.m_nViewEntity;
 		params.entchannel = CHAN_AUTO;
 		params.pSfx = pSound;

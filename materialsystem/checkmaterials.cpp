@@ -23,11 +23,7 @@ void CheckMateralsInDirectoryRecursive( const char *pRoot, const char *pDirector
 //-----------------------------------------------------------------------------
 static bool DoesTextureUseAlpha( const char *pTextureName, const char *pMaterialName )
 {
-	if ( IsX360() )
-	{
-		// not supporting
-		return false;
-	}
+
 
 	// Special textures start with '_'..
 	if ( pTextureName[0] == '_' )
@@ -87,11 +83,7 @@ static bool DoesTextureUseNormal( const char *pTextureName, const char *pMateria
 	nSizeInBytes = 0;
 	bUsesAlpha = false;
 
-	if ( IsX360() )
-	{
-		// not supporting
-		return false;
-	}
+
 
 	// Special textures start with '_'..
 	if ( !pTextureName || ( pTextureName[0] == '_' ) || ( pTextureName[0] == 0 ) )

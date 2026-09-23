@@ -79,10 +79,7 @@ void CSoundscapeSystem::AddSoundscapeFile( const char *filename )
 				}
 				m_soundscapes.AddString( pKeys->GetName(), m_soundscapeCount );
 
-				if ( IsX360() )
-				{
-					AddSoundscapeSounds( pKeys, m_soundscapeCount );
-				}
+
 				m_soundscapeCount++;
 			}
 			pKeys = pKeys->GetNextKey();
@@ -183,10 +180,7 @@ void CSoundscapeSystem::Shutdown()
 	m_soundscapeEntities.RemoveAll();
 	m_activeIndex = 0;
 
-	if ( IsX360() )
-	{
-		m_soundscapeSounds.Purge();
-	}
+
 }
 
 void CSoundscapeSystem::LevelInitPreEntity()
@@ -197,10 +191,7 @@ void CSoundscapeSystem::LevelInitPreEntity()
 
 void CSoundscapeSystem::LevelInitPostEntity()
 {
-	if ( IsX360() )
-	{
-		m_soundscapeSounds.Purge();
-	}
+
 	CUtlVector<bbox_t> clusterbounds;
 	int clusterCount = engine->GetClusterCount();
 	clusterbounds.SetCount( clusterCount );
@@ -367,8 +358,7 @@ void CSoundscapeSystem::FrameUpdatePostEntityThink()
 
 void CSoundscapeSystem::AddSoundscapeSounds( KeyValues *pSoundscape, int soundscapeIndex )
 {
-	if ( !IsX360() )
-	{
+{
 		return;
 	}
 
@@ -431,8 +421,7 @@ void CSoundscapeSystem::AddSoundscapeSounds( KeyValues *pSoundscape, int soundsc
 
 void CSoundscapeSystem::PrecacheSounds( int soundscapeIndex )
 {
-	if ( !IsX360() )
-	{
+{
 		return;
 	}
 

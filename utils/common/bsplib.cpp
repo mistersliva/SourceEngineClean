@@ -795,7 +795,7 @@ void ForceAlignment( IZip *pak, bool bAlign, bool bCompatibleFormat, unsigned in
 static void WritePakFileLump( void )
 {
 	CUtlBuffer buf( 0, 0 );
-	GetPakFile()->ActivateByteSwapping( IsX360() );
+	GetPakFile()->ActivateByteSwapping( false);
 	GetPakFile()->SaveToBuffer( buf );
 
 	// must respect pak file alignment
@@ -2304,7 +2304,7 @@ void LoadBSPFile( const char *filename )
 	int paksize = CopyVariableLump<byte>( FIELD_CHARACTER, LUMP_PAKFILE, ( void ** )&pakbuffer );
 	if ( paksize > 0 )
 	{
-		GetPakFile()->ActivateByteSwapping( IsX360() );
+		GetPakFile()->ActivateByteSwapping( false);
 		GetPakFile()->ParseFromBuffer( pakbuffer, paksize );
 	}
 	else
@@ -4299,7 +4299,7 @@ void SwapPakfileLumpToDisk( const char *pInFilename )
 	int paksize = CopyVariableLump<byte>( FIELD_CHARACTER, LUMP_PAKFILE, ( void ** )&pakbuffer );
 	if ( paksize > 0 )
 	{
-		GetPakFile()->ActivateByteSwapping( IsX360() );
+		GetPakFile()->ActivateByteSwapping( false);
 		GetPakFile()->ParseFromBuffer( pakbuffer, paksize );
 
 		ConvertPakFileContents( pInFilename );
@@ -4449,12 +4449,7 @@ bool CompressGameLump( dheader_t *pInBSPHeader, dheader_t *pOutBSPHeader, CUtlBu
 	dgamelumpheader_t* pInGameLumpHeader = (dgamelumpheader_t*)(((byte *)pInBSPHeader) + pInBSPHeader->lumps[LUMP_GAME_LUMP].fileofs);
 	dgamelump_t* pInGameLump = (dgamelump_t*)(pInGameLumpHeader + 1);
 
-	if ( IsX360() )
-	{
-		byteSwap.ActivateByteSwapping( true );
-		byteSwap.SwapFieldsToTargetEndian( pInGameLumpHeader );
-		byteSwap.SwapFieldsToTargetEndian( pInGameLump, pInGameLumpHeader->lumpCount );
-	}
+
 
 	unsigned int newOffset = outputBuffer.TellPut();
 	// Make room for gamelump header and gamelump structs, which we'll write at the end
@@ -4530,12 +4525,7 @@ bool CompressGameLump( dheader_t *pInBSPHeader, dheader_t *pOutBSPHeader, CUtlBu
 	int lastLump = sOutGameLumpHeader.lumpCount-1;
 	sOutGameLump[lastLump].fileofs = outputBuffer.TellPut();
 
-	if ( IsX360() )
-	{
-		// fix the output for 360, swapping it back
-		byteSwap.SwapFieldsToTargetEndian( sOutGameLump, sOutGameLumpHeader.lumpCount );
-		byteSwap.SwapFieldsToTargetEndian( &sOutGameLumpHeader );
-	}
+
 
 	pOutBSPHeader->lumps[LUMP_GAME_LUMP].fileofs = newOffset;
 	pOutBSPHeader->lumps[LUMP_GAME_LUMP].filelen = outputBuffer.TellPut() - newOffset;
@@ -4584,19 +4574,14 @@ bool RepackBSP( CUtlBuffer &inputBuffer, CUtlBuffer &outputBuffer, CompressFunc_
 {
 	dheader_t *pInBSPHeader = (dheader_t *)inputBuffer.Base();
 	// The 360 swaps this header to disk. For some reason.
-	if ( pInBSPHeader->ident != ( IsX360() ? BigLong( IDBSPHEADER ) : IDBSPHEADER ) )
+	if ( pInBSPHeader->ident != ( false ? BigLong( IDBSPHEADER ) : IDBSPHEADER ) )
 	{
 		Warning( "RepackBSP given invalid input data\n" );
 		return false;
 	}
 
 	CByteswap	byteSwap;
-	if ( IsX360() )
-	{
-		// bsp is 360, swap the header back
-		byteSwap.ActivateByteSwapping( true );
-		byteSwap.SwapFieldsToTargetEndian( pInBSPHeader );
-	}
+
 
 	unsigned int headerOffset = outputBuffer.TellPut();
 	outputBuffer.Put( pInBSPHeader, sizeof( dheader_t ) );
@@ -4732,12 +4717,7 @@ bool RepackBSP( CUtlBuffer &inputBuffer, CUtlBuffer &outputBuffer, CompressFunc_
 		}
 	}
 
-	if ( IsX360() )
-	{
-		// fix the output for 360, swapping it back
-		byteSwap.SetTargetBigEndian( true );
-		byteSwap.SwapFieldsToTargetEndian( &sOutBSPHeader );
-	}
+
 
 	// Write out header
 	unsigned int endOffset = outputBuffer.TellPut();

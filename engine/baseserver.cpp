@@ -173,7 +173,7 @@ static ConVar	sv_enableoldqueries( "sv_enableoldqueries", "0", 0, "Enable suppor
 static ConVar	sv_password( "sv_password", "", FCVAR_NOTIFY | FCVAR_PROTECTED | FCVAR_DONTRECORD, "Server password for entry into multiplayer games" );
 ConVar			sv_tags( "sv_tags", "", FCVAR_NOTIFY, "Server tags. Used to provide extra information to clients when they're browsing for servers. Separate tags with a comma.", SvTagsChangeCallback );
 ConVar			sv_visiblemaxplayers( "sv_visiblemaxplayers", "-1", 0, "Overrides the max players reported to prospective clients" );
-ConVar			sv_alternateticks( "sv_alternateticks", ( IsX360() ) ? "1" : "0", FCVAR_SPONLY, "If set, server only simulates entities on even numbered ticks.\n" );
+ConVar			sv_alternateticks( "sv_alternateticks", "0", FCVAR_SPONLY, "If set, server only simulates entities on even numbered ticks.\n" );
 ConVar			sv_allow_wait_command( "sv_allow_wait_command", "1", FCVAR_REPLICATED, "Allow or disallow the wait command on clients connected to this server." );
 ConVar			sv_allow_color_correction( "sv_allow_color_correction", "1", FCVAR_REPLICATED, "Allow or disallow clients to use color correction on this server." );
 
@@ -308,8 +308,7 @@ bool CBaseServer::CheckChallengeNr( netadr_t &adr, int nChallengeValue )
 		return true;
 
 	// X360TBD: network
-	if ( IsX360() )
-		return true;
+
 
 	uint64 challenge = ((uint64)adr.GetIPNetworkByteOrder() << 32) + m_CurrentRandomNonce;
 	CRC32_t hash;
@@ -1528,8 +1527,7 @@ bool CBaseServer::CheckIPRestrictions( const netadr_t &adr, int nAuthProtocol )
 		return true;
 
 	// X360TBD: network
-	if ( IsX360() )
-		return true;
+
 
 	// allow other users if they're on the same ip range
 	if ( Steam3Server().BLanOnly() )

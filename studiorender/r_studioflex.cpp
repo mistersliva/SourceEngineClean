@@ -519,8 +519,7 @@ void CStudioRender::PrecacheGlint()
 		// Begin block in which all render targets should be allocated
 		g_pMaterialSystem->EndRenderTargetAllocation();
 
-		if ( !IsX360() )
-		{
+{
 			// Get the texture that we are going to be updating procedurally.
 			s_pProcGlint = g_pMaterialSystem->CreateProceduralTexture( 
 				"proc_eyeglint", TEXTURE_GROUP_MODEL, 32, 32, IMAGE_FORMAT_BGRA8888, TEXTUREFLAGS_NOMIP|TEXTUREFLAGS_NOLOD );
@@ -533,7 +532,7 @@ void CStudioRender::PrecacheGlint()
 		// For now, just hardcode one
 		// UNDONE: Add a $lodtexture to the eyes shader.  Maybe add a $lodsize too.
 		// UNDONE: Make eyes texture load $lodtexture and switch to that here instead of black
-		m_pGlintLODTexture = g_pMaterialSystem->FindTexture( IsX360() ? "black" : "vgui/black", NULL, false );
+		m_pGlintLODTexture = g_pMaterialSystem->FindTexture( false? "black" : "vgui/black", NULL, false );
 		m_pGlintLODTexture->IncrementReferenceCount();
 	}
 }
@@ -745,10 +744,7 @@ ITexture* CStudioRender::RenderGlintTexture( const eyeballstate_t *pState,
 	pRenderContext->MatrixMode( MATERIAL_PROJECTION );
 	pRenderContext->PopMatrix();
 
-	if ( IsX360() )
-	{
-		pRenderContext->CopyRenderTargetToTextureEx( m_pGlintTexture, 0, NULL, NULL );
-	}
+
 
 	pRenderContext->PopRenderTargetAndViewport( );
 
@@ -789,7 +785,7 @@ void CStudioRender::R_StudioEyeballGlint( const eyeballstate_t *pstate, IMateria
 	}
 
 	// Legacy method for DX8
-	if ( !IsX360() && ( r_glint_procedural.GetInt() || g_pMaterialSystemHardwareConfig->GetDXSupportLevel() < 90 ) )
+	if ( (r_glint_procedural.GetInt()  || g_pMaterialSystemHardwareConfig->GetDXSupportLevel() < 90 ) )
 	{
 		// Set up the texture regenerator
 		s_GlintTextureRegen.m_pVRight = &vright;

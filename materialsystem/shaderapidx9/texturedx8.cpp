@@ -175,18 +175,7 @@ IDirect3DBaseTexture* CreateD3DTexture( int width, int height, int nDepth,
 	if ( bSysmem )
 		pool = D3DPOOL_SYSTEMMEM;
 
-	if ( IsX360() )
-	{
-		// 360 does not support vertex textures
-		// 360 render target creation path is for the target as a texture source (NOT the EDRAM version)
-		// use normal texture format rules
-		Assert( !bVertexTexture );
-		if ( !bVertexTexture )
-		{
-			d3dFormat = ImageLoader::ImageFormatToD3DFormat( FindNearestSupportedFormat( dstFormat, false, false, false ) );
-		}
-	}
-	else
+
 	{
 		d3dFormat = ImageLoader::ImageFormatToD3DFormat( FindNearestSupportedFormat( dstFormat, bVertexTexture, bIsRenderTarget, bAllowNonFilterable ) );
 	}

@@ -1328,12 +1328,10 @@ void CSaveGameBrowserDialog::ScanSavedGames( bool bIgnoreAutosave )
 	// Get the search path
 	char szDirectory[_MAX_PATH];
 
-	if ( IsX360() )
-		Q_snprintf( szDirectory, sizeof( szDirectory ), "%s:/*", COM_GetModDirectory() );
-	else
+
 		Q_snprintf( szDirectory, sizeof( szDirectory ), "save/*" );
 
-	Q_DefaultExtension( szDirectory, IsX360() ? ".360.sav" : ".sav", sizeof( szDirectory ) );
+	Q_DefaultExtension( szDirectory, ".sav", sizeof( szDirectory ) );
 	Q_FixSlashes( szDirectory );
 
 	// iterate the saved files
@@ -1349,9 +1347,7 @@ void CSaveGameBrowserDialog::ScanSavedGames( bool bIgnoreAutosave )
 
 		char szFileName[_MAX_PATH];
 
-		if ( IsX360() )
-			Q_snprintf(szFileName, sizeof( szFileName ), "%s:/%s", COM_GetModDirectory(), pFileName );
-		else
+
 			Q_snprintf(szFileName, sizeof( szFileName ), "save/%s", pFileName);
 
 		Q_FixSlashes( szFileName );

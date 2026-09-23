@@ -33,10 +33,7 @@ void AddReleaseFunc( void )
 static CTextureReference s_pPowerOfTwoFrameBufferTexture;
 ITexture *GetPowerOfTwoFrameBufferTexture( void )
 {
-	if ( IsX360() )
-	{
-		return GetFullFrameFrameBufferTexture( 1 );
-	}
+
 
 	if ( !s_pPowerOfTwoFrameBufferTexture )
 	{
@@ -224,11 +221,7 @@ ITexture *GetSmallBuffer1( void )
 static CTextureReference s_TeenyTextures[MAX_TEENY_TEXTURES];
 ITexture *GetTeenyTexture( int which )
 {
-	if ( IsX360() )
-	{
-		Assert( 0 );
-		return NULL;
-	}
+
 
 	Assert( which < MAX_TEENY_TEXTURES );
 

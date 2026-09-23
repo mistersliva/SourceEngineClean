@@ -1111,7 +1111,7 @@ void CGame::InputDetachFromGameWindow()
 
 void CGame::PlayStartupVideos( void )
 {
-	if ( IsX360() || Plat_IsInBenchmarkMode() )
+	if ( Plat_IsInBenchmarkMode() )
 		return;
 
 #ifndef SWDS

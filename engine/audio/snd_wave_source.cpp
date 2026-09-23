@@ -241,7 +241,7 @@ bool CAudioSourceWave::IsAsyncLoad()
 {
 	VPROF("CAudioSourceWave::IsAsyncLoad");
 
-	if ( ( IsPC() || !IsX360() ) && !m_AudioCacheHandle.IsValid() )
+	if ( !m_AudioCacheHandle.IsValid() )
 	{
 		m_AudioCacheHandle.Get( GetType(), m_pSfx->IsPrecachedSound(), m_pSfx, &m_nCachedDataSize );
 	}
@@ -258,11 +258,7 @@ bool CAudioSourceWave::IsAsyncLoad()
 //-----------------------------------------------------------------------------
 void CAudioSourceWave::CheckAudioSourceCache()
 {
-	if ( IsX360() )
-	{
-		// 360 does not use audio cache files
-		return;
-	}
+
 
 	Assert( m_pSfx );
 
@@ -473,10 +469,7 @@ void CAudioSourceWave::ParseSentence( IterateRIFF &walk )
 //-----------------------------------------------------------------------------
 CSentence *CAudioSourceWave::GetSentence( void )
 {
-	if ( IsX360() )
-	{
-		return m_pTempSentence;
-	}
+
 
 	// Already checked and this wav doesn't have sentence data...
 	if ( m_bNoSentence == true )
@@ -912,7 +905,7 @@ void CAudioSourceWave::ReferenceRemove( CAudioMixer *pMixer )
 {
 	m_refCount--;
 
-	if ( m_refCount == 0 && ( ( IsPC() && IsPlayOnce() ) || ( IsX360() && IsStreaming() ) ) )
+	if ( m_refCount == 0  && ((IsPC()  && IsPlayOnce() )) )
 	{
 		SetPlayOnce( false ); // in case it gets used again
 		CacheUnload();
@@ -998,26 +991,7 @@ CAudioSourceMemWave::CAudioSourceMemWave( CSfxTable *pSfx ) :
 	m_hCache = 0;
 	m_hStream = INVALID_STREAM_HANDLE;
 
-	if ( IsX360() )
-	{
-		bool bValid = GetXboxAudioStartupData();
-		if ( !bValid )
-		{
-			// failed, substitute placeholder
-			pSfx->m_bUseErrorFilename = true;
-			bValid = GetXboxAudioStartupData();
-			if ( bValid )
-			{
-				DevWarning( "Failed to load sound \"%s\", substituting \"%s\"\n", pSfx->getname(), pSfx->GetFileName() );
-			}
-		}
-	
-		if ( bValid )
-		{
-			// a 360 memory wave is a critical resource kept locked in memory, load its data now
-			CacheLoad();
-		}
-	}
+
 }
 
 CAudioSourceMemWave::CAudioSourceMemWave( CSfxTable *pSfx, CAudioSourceCachedInfo *info ) :
@@ -1082,8 +1056,7 @@ int CAudioSourceMemWave::GetOutputData( void **pData, int samplePosition, int sa
 		}
 		else
 		{
-			if ( IsPC() || !IsX360() )
-			{
+{
 				// Start async loader if we haven't already done so
 				CacheLoad();
 
@@ -1095,11 +1068,6 @@ int CAudioSourceMemWave::GetOutputData( void **pData, int samplePosition, int sa
 
 				// Point at preloaded/cached data from .cache file for now
 				*pData = GetCachedDataPointer();
-			}
-			else
-			{
-				// for 360, memory wave data should have already been loaded and locked in cache
-				Assert( 0 );
 			}
 		}
 
@@ -1310,8 +1278,7 @@ void CAudioSourceMemWave::ParseDataChunk( IterateRIFF &walk )
 
 	// 360 streaming model loads data later, but still needs critical member setup
 	char *pData = NULL;
-	if ( IsPC() || !IsX360() )
-	{
+{
 		pData = GetDataPointer();
 		if ( !pData )
 		{
@@ -1356,8 +1323,7 @@ int CAudioSourceMemWave::GetCacheStatus( void )
 {
 	VPROF("CAudioSourceMemWave::GetCacheStatus");
 
-	if ( IsPC() || !IsX360() )
-	{
+{
 		// NOTE: This will start the load if it isn't started
 		bool bCacheValid;
 		bool bCompleted = wavedatacache->IsDataLoadCompleted( m_hCache, &bCacheValid );
@@ -1370,10 +1336,6 @@ int CAudioSourceMemWave::GetCacheStatus( void )
 		if ( wavedatacache->IsDataLoadInProgress( m_hCache ) )
 			return AUDIO_LOADING;
 	}
-	else
-	{
-		return wavedatacache->IsStreamedDataReady( m_hStream ) ? AUDIO_IS_LOADED : AUDIO_NOT_LOADED;
-	}
 
 	return AUDIO_NOT_LOADED;
 }
@@ -1383,8 +1345,7 @@ int CAudioSourceMemWave::GetCacheStatus( void )
 //-----------------------------------------------------------------------------
 void CAudioSourceMemWave::CacheLoad( void )
 {
-	if ( IsPC() || !IsX360() )
-	{
+{
 		// Commence lazy load?
 		if ( m_hCache != 0 )
 		{
@@ -1399,42 +1360,6 @@ void CAudioSourceMemWave::CacheLoad( void )
 
 		m_hCache = wavedatacache->AsyncLoadCache( m_pSfx->GetFileName(), m_dataSize, m_dataStart );
 	}
-	else
-	{
-		if ( m_hStream == INVALID_STREAM_HANDLE )
-		{
-			// memory wave is resident
-			const char *pFilename = m_pSfx->GetFileName();
-			streamFlags_t streamFlags = STREAMED_FROMDVD;
-			char szFilename[MAX_PATH];
-			if ( m_format == WAVE_FORMAT_XMA || m_format == WAVE_FORMAT_PCM )
-			{
-				V_strcpy_safe( szFilename, pFilename );
-				V_SetExtension( szFilename, ".360.wav", sizeof( szFilename ) );
-				pFilename = szFilename;
-
-				// memory resident xma waves use the queued loader
-				// restricting to XMA due to not correctly running a post ConvertSamples, which is not an issue for XMA
-				if ( g_pQueuedLoader->IsMapLoading() )
-				{
-					// hint the wave data cache
-					streamFlags |= STREAMED_QUEUEDLOAD;
-				}
-			}
-
-			// open stream to load as a single monolithic buffer
-			m_hStream = wavedatacache->OpenStreamedLoad( pFilename, m_dataSize, m_dataStart, 0, -1, m_dataSize, 1, streamFlags );
-			if ( m_hStream != INVALID_STREAM_HANDLE && !( streamFlags & STREAMED_QUEUEDLOAD ) )
-			{
-				// block and finish load, convert data once right now
-				char *pWaveData = (char *)wavedatacache->GetStreamedDataPointer( m_hStream, true );
-				if ( pWaveData )
-				{
-					ConvertSamples( pWaveData, m_dataSize/m_sampleSize );
-				}
-			}
-		}
-	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1442,19 +1367,10 @@ void CAudioSourceMemWave::CacheLoad( void )
 //-----------------------------------------------------------------------------
 void CAudioSourceMemWave::CacheUnload( void )
 {
-	if ( IsPC() || !IsX360() )
-	{
+{
 		if ( m_hCache != 0 )
 		{
 			wavedatacache->Unload( m_hCache );
-		}
-	}
-	else
-	{
-		if ( m_hStream != INVALID_STREAM_HANDLE )
-		{
-			wavedatacache->CloseStreamedLoad( m_hStream );
-			m_hStream = INVALID_STREAM_HANDLE;
 		}
 	}
 }
@@ -1468,8 +1384,7 @@ char *CAudioSourceMemWave::GetDataPointer( void )
 {
 	char *pWaveData = NULL;
 
-	if ( IsPC() || !IsX360() )
-	{
+{
 		bool bSamplesConverted = false;
 
 		if ( m_hCache == 0 )
@@ -1494,14 +1409,6 @@ char *CAudioSourceMemWave::GetDataPointer( void )
 		{
 			ConvertSamples( pWaveData, m_dataSize/m_sampleSize );
 			wavedatacache->SetPostProcessed( m_hCache, true );
-		}
-	}
-	else
-	{
-		if ( m_hStream != INVALID_STREAM_HANDLE )
-		{
-			// expected to be valid, unless failure during setup
-			pWaveData = (char *)wavedatacache->GetStreamedDataPointer( m_hStream, true );
 		}
 	}
 
@@ -1560,20 +1467,7 @@ CAudioSourceStreamWave::CAudioSourceStreamWave( CSfxTable *pSfx ) : CAudioSource
 	m_dataSize = 0;
 	m_sampleCount = 0;
 
-	if ( IsX360() )
-	{
-		bool bValid = GetXboxAudioStartupData();
-		if ( !bValid )
-		{
-			// failed, substitute placeholder
-			pSfx->m_bUseErrorFilename = true;
-			bValid = GetXboxAudioStartupData();
-			if ( bValid )
-			{
-				DevWarning( "Failed to load sound \"%s\", substituting \"%s\"\n", pSfx->getname(), pSfx->GetFileName() );
-			}
-		}
-	}
+
 }
 
 CAudioSourceStreamWave::CAudioSourceStreamWave( CSfxTable *pSfx, CAudioSourceCachedInfo *info ) : 
@@ -1602,24 +1496,7 @@ CAudioMixer *CAudioSourceStreamWave::CreateMixer( int initialStreamPosition )
 {
 	char fileName[MAX_PATH];
 	const char *pFileName = m_pSfx->GetFileName();
-	if ( IsX360() && ( m_format == WAVE_FORMAT_XMA || m_format == WAVE_FORMAT_PCM ) )
-	{
-		V_strcpy_safe( fileName, pFileName );
-		V_SetExtension( fileName, ".360.wav", sizeof( fileName ) );
-		pFileName = fileName;
 
-		// for safety, validate the initial stream position
-		// not trusting save/load
-		if ( m_format == WAVE_FORMAT_XMA )
-		{
-			if ( ( initialStreamPosition % XBOX_DVD_SECTORSIZE ) || 
-				( initialStreamPosition % XMA_BLOCK_SIZE ) ||
-				( initialStreamPosition >= m_dataSize ) )
-			{
-				initialStreamPosition = 0;
-			}
-		}
-	}
 
 	// BUGBUG: Source constructs the IWaveData, mixer frees it, fix this?
 	IWaveData *pWaveData = CreateWaveDataStream( *this, static_cast<IWaveStreamSource *>(this), pFileName, m_dataStart, m_dataSize, m_pSfx, initialStreamPosition );
@@ -1774,8 +1651,7 @@ CAudioSource *CreateWave( CSfxTable *pSfx, bool bStreaming )
 
 	CAudioSourceWave *pWave = NULL;
 
-	if ( IsPC() || !IsX360() )
-	{
+{
 		// Caching should always work, so if we failed to cache, it's a problem reading the file data, etc.
 		bool bIsMapSound = pSfx->IsPrecachedSound();
 		CAudioSourceCachedInfo *pInfo = audiosourcecache->GetInfo( CAudioSource::AUDIO_SOURCE_WAV, bIsMapSound, pSfx );
@@ -1791,19 +1667,6 @@ CAudioSource *CreateWave( CSfxTable *pSfx, bool bStreaming )
 			{
 				pWave = new CAudioSourceMemWave( pSfx, pInfo );
 			}
-		}
-	}
-	else
-	{
-		// 360 does not use audio cache system
-		// create the desired type
-		if ( bStreaming )
-		{
-			pWave = new CAudioSourceStreamWave( pSfx );
-		}
-		else
-		{
-			pWave = new CAudioSourceMemWave( pSfx );
 		}
 	}
 
@@ -1880,11 +1743,7 @@ void MaybeReportMissingWav( char const *wav )
 
 static float Audio_GetWaveDuration( char const *pName )
 {
-	if ( IsX360() )
-	{
-		// should have precached
-		return 0;
-	}
+
 
 	char formatBuffer[1024];
 	WAVEFORMATEX *pfmt = (WAVEFORMATEX *)formatBuffer;
@@ -2372,11 +2231,7 @@ bool CAudioSourceCache::Init( unsigned int memSize )
 		return false;
 	}
 
-	if ( IsX360() )
-	{
-		// 360 doesn't use audio source caches
-		return true;
-	}
+
 
 	// Gather up list of search paths
 	CUtlVector< CUtlString > vecSearchPaths;
@@ -2475,10 +2330,7 @@ void CAudioSourceCache::Shutdown()
 //-----------------------------------------------------------------------------
 void CAudioSourceCache::CheckCacheBuild()
 {
-	if ( IsX360() )
-	{
-		return;
-	}
+
 
 	// !FIXME! We'll just do everything lazily for now!
 	FOR_EACH_VEC( m_vecCaches, idx )
@@ -2506,10 +2358,7 @@ void CAudioSourceCache::CheckSaveDirtyCaches()
 //-----------------------------------------------------------------------------
 unsigned int CAudioSourceCache::AsyncLookaheadMetaChecksum( void )
 {
-	if ( IsX360() )
-	{
-		return 0;
-	}
+
 
 	CRC32_t crc;
 	CRC32_Init( &crc );
@@ -2551,10 +2400,7 @@ void CAudioSourceCache::GetSoundFilename( char *szResult, int nResultSize, const
 //-----------------------------------------------------------------------------
 CAudioSourceCache::SearchPathCache *CAudioSourceCache::LookUpCacheEntry( const char *fn, int audiosourcetype, bool soundisprecached, CSfxTable *sfx )
 {
-	if ( IsX360() )
-	{
-		return NULL;
-	}
+
 
 	// Hack to remember the type of audiosource to create if we need to recreate it
 	CAudioSourceCachedInfo::s_CurrentType = audiosourcetype;
@@ -2596,11 +2442,7 @@ CAudioSourceCachedInfo *CAudioSourceCache::GetInfo( int audiosourcetype, bool so
 {
 	VPROF("CAudioSourceCache::GetInfo");
 
-	if ( IsX360() )
-	{
-		// 360 not using
-		return NULL;
-	}
+
 
 	Assert( sfx );
 
@@ -2633,11 +2475,7 @@ void CAudioSourceCache::RebuildCacheEntry( int audiosourcetype, bool soundisprec
 {
 	VPROF("CAudioSourceCache::RebuildCacheEntry");
 
-	if ( IsX360() )
-	{
-		// 360 not using
-		return;
-	}
+
 
 	Assert( sfx );
 
@@ -2663,10 +2501,7 @@ void CAudioSourceCache::ForceRecheckDiskInfo()
 //-----------------------------------------------------------------------------
 void CAudioSourceCache::RemoveCache( char const *cachename )
 {
-	if ( IsX360() )
-	{
-		return;
-	}
+
 
 	if ( g_pFullFileSystem->FileExists( cachename, "MOD" ) )
 	{

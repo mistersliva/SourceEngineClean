@@ -74,11 +74,7 @@ bool CVGuiSystemModuleLoader::IsPlatformReady()
 //-----------------------------------------------------------------------------
 bool CVGuiSystemModuleLoader::InitializeAllModules(CreateInterfaceFn *factorylist, int factorycount)
 {
-	if ( IsX360() )
-	{
-		// not valid for 360
-		return false;
-	}
+
 
 	bool bSuccess = true;
 
@@ -125,11 +121,7 @@ bool CVGuiSystemModuleLoader::InitializeAllModules(CreateInterfaceFn *factorylis
 //-----------------------------------------------------------------------------
 bool CVGuiSystemModuleLoader::LoadPlatformModules(CreateInterfaceFn *factorylist, int factorycount, bool useSteamModules)
 {
-	if ( IsX360() )
-	{
-		// not valid for 360
-		return false;
-	}
+
 
 	bool bSuccess = true;
 
@@ -205,11 +197,7 @@ bool CVGuiSystemModuleLoader::LoadPlatformModules(CreateInterfaceFn *factorylist
 //-----------------------------------------------------------------------------
 void CVGuiSystemModuleLoader::ShutdownPlatformModules()
 {
-	if ( IsX360() )
-	{
-		// not valid for 360
-		return;
-	}
+
 
 	// static include guard to prevent recursive calls
 	static bool runningFunction = false;

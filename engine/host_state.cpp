@@ -390,14 +390,7 @@ void CHostState::State_LoadGame()
 	// run the server at the console
 	SetState( HS_RUN, true );
 	
-	if ( IsX360() )
-	{
-		// On the 360 we need to return to the background map
-		g_ServerGlobalVariables.bMapLoadFailed = true;
-		Cbuf_Clear();
-		Cbuf_AddText( "startupmenu force" );
-		Cbuf_Execute();
-	}
+
 }
 
 

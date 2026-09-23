@@ -446,7 +446,7 @@ void CMapLoadHelper::Init( model_t *pMapModel, const char *loadname )
 		V_strcpy_safe( s_szMapName, pMapModel->strName );
 	}
 
-	s_MapFileHandle = g_pFileSystem->OpenEx( s_szMapName, "rb", IsX360() ? FSOPEN_NEVERINPACK : 0, IsX360() ? "GAME" : NULL );
+	s_MapFileHandle = g_pFileSystem->OpenEx( s_szMapName, "rb", 0, NULL);
 	if ( s_MapFileHandle == FILESYSTEM_INVALID_HANDLE )
 	{
 		Host_Error( "CMapLoadHelper::Init, unable to open %s\n", s_szMapName );
@@ -545,7 +545,7 @@ void CMapLoadHelper::InitFromMemory( model_t *pMapModel, const void *pData, int 
 {
 	// valid for 360 only 
 	// 360 has reorganized bsp format and no external lump files
-	Assert( IsX360() && pData && nDataSize );
+	Assert( false);
 
 	if ( ++s_nMapLoadRecursion > 1 )
 	{
@@ -633,34 +633,7 @@ void CMapLoadHelper::Shutdown( void )
 //-----------------------------------------------------------------------------
 void CMapLoadHelper::FreeLightingLump( void )
 {
-	if ( IsX360() && ( s_MapFileHandle == FILESYSTEM_INVALID_HANDLE ) && s_MapBuffer.Base() )
-	{
-		int lightingLump = LumpSize( LUMP_LIGHTING_HDR ) ? LUMP_LIGHTING_HDR : LUMP_LIGHTING;
-		// Should never have both lighting lumps on 360
-		Assert( ( lightingLump == LUMP_LIGHTING ) || ( LumpSize( LUMP_LIGHTING ) == 0 ) );
 
-		if ( LumpSize( lightingLump ) )
-		{
-			// Check that the lighting lump is the last one in the BSP
-			int lightingOffset = LumpOffset( lightingLump );
-			for ( int i = 0;i < HEADER_LUMPS; i++ )
-			{
-				if ( ( LumpOffset( i ) > lightingOffset ) && ( i != LUMP_PAKFILE ) )
-				{
-					Warning( "CMapLoadHelper: Cannot free lighting lump (should be last before the PAK lump). Regenerate the .360.bsp file with the latest version of makegamedata." );
-					return;
-				}
-			}
-
-			// Flag the lighting chunk as gone from the BSP (principally, this sets 'filelen' to 0)
-			V_memset( &s_MapHeader.lumps[ lightingLump ], 0, sizeof( lump_t ) );
-
-			// Shrink the buffer to free up the space that was used by the lighting lump
-			void * shrunkBuffer = realloc( s_MapBuffer.Base(), lightingOffset );
-			Assert( shrunkBuffer == s_MapBuffer.Base() ); // A shrink would surely never move!!!
-			s_MapBuffer.SetExternalBuffer( shrunkBuffer, lightingOffset, lightingOffset );
-		}
-	}
 }
 
 
@@ -939,13 +912,7 @@ void EnableHDR( bool bEnable )
 
 	g_pMaterialSystemHardwareConfig->SetHDREnabled( bEnable );
 
-	if ( IsX360() )
-	{
-		// cannot do what the pc does and ditch resources, we're loading!
-		// can safely do the state update only, knowing that the state change won't affect 360 resources
-		((MaterialSystem_Config_t *)g_pMaterialSystemConfig)->SetFlag( MATSYS_VIDCFG_FLAGS_ENABLE_HDR, bEnable );
-		return;
-	}
+
 
 	ShutdownWellKnownRenderTargets();
 	InitWellKnownRenderTargets();
@@ -1024,12 +991,7 @@ bool Map_CheckForHDR( model_t *pModel, const char *pLoadName )
 	CMapLoadHelper::Init( pModel, pLoadName );
 
 	bool bHasHDR = false;
-	if ( IsX360() )
-	{
-		// If this is true, the 360 MUST use HDR, because the LDR data gets stripped out.
-		bHasHDR = CMapLoadHelper::LumpSize( LUMP_LIGHTING_HDR ) > 0;
-	}
-	else
+
 	{
 		// might want to also consider the game lumps GAMELUMP_DETAIL_PROP_LIGHTING_HDR
 		bHasHDR = CMapLoadHelper::LumpSize( LUMP_LIGHTING_HDR ) > 0 &&
@@ -1042,7 +1004,7 @@ bool Map_CheckForHDR( model_t *pModel, const char *pLoadName )
 		bHasHDR = false;
 	}
 	
-	bool bEnableHDR = ( IsX360() && bHasHDR ) ||
+	bool bEnableHDR = ( false && bHasHDR ) ||
 		( bHasHDR &&
 		( g_pMaterialSystemHardwareConfig->GetDXSupportLevel() >= 90 ) );
 	
@@ -1129,11 +1091,7 @@ void Mod_LoadLighting( CMapLoadHelper &lh )
 	AllocateLightingData( lh.GetMap(), lh.LumpSize() );
 	memcpy( lh.GetMap()->lightdata, lh.LumpBase(), lh.LumpSize());
 
-	if ( IsX360() )
-	{
-		// Free the lighting lump, to increase the amount of memory free during the rest of loading
-		CMapLoadHelper::FreeLightingLump();
-	}
+
 }
 
 //-----------------------------------------------------------------------------
@@ -3644,7 +3602,7 @@ model_t	*CModelLoader::LoadModel( model_t *mod, REFERENCETYPE *pReferencetype )
 
 			// the map may have explicit texture exclusion
 			// the texture state needs to be established before any loading work
-			if ( IsX360() || mat_excludetextures.GetBool() )
+			if ( mat_excludetextures.GetBool() )
 			{
 				char szExcludePath[MAX_PATH];
 				sprintf( szExcludePath, "//MOD/maps/%s_exclude.lst", m_szLoadName );
@@ -3657,24 +3615,10 @@ model_t	*CModelLoader::LoadModel( model_t *mod, REFERENCETYPE *pReferencetype )
 			//NotifyHunkBeginMapLoad( m_szActiveMapName );
 
 			bool bQueuedLoader = false;
-			if ( IsX360() )
-			{
-				// must establish the bsp feature set first to ensure proper state during queued loading
-				Map_CheckForHDR( mod, m_szLoadName );
 
-				// Do not optimize map-to-same-map loading in TF
-				// FIXME/HACK: this fixes a bug (when shipping Orange Box) where static props would sometimes
-				//             disappear when a client disconnects and reconnects to the same map+server
-				//             (static prop lighting data persists when loading map A after map A)
-				bool bIsTF = !V_stricmp( COM_GetModDirectory(), "tf" );
-				bool bOptimizeMapReload = !bIsTF;
-
-				// start the queued loading process
-				bQueuedLoader = g_pQueuedLoader->BeginMapLoading( mod->strName, g_pMaterialSystemHardwareConfig->GetHDREnabled(), bOptimizeMapReload );
-			}
 
 			// the queued loader process needs to own the actual texture update
-			if ( !bQueuedLoader && ( IsX360() || mat_excludetextures.GetBool() ) )
+			if ( !bQueuedLoader  && (mat_excludetextures.GetBool() ) )
 			{
 				g_pMaterialSystem->UpdateExcludedTextures();
 			}
@@ -3921,12 +3865,7 @@ void CModelLoader::UnloadAllModels( bool bCheckReference )
 			model->nLoadFlags &= ~FMODELLOADER_REFERENCEMASK;
 		}
 
-		if ( IsX360() && g_pQueuedLoader->IsMapLoading() && ( model->nLoadFlags & FMODELLOADER_LOADED_BY_PRELOAD ) )
-		{
-			// models preloaded by the queued loader are not initially claimed and MUST remain until the end of the load process
-			// unclaimed models get unloaded during the post load purge
-			continue;
-		}
+
 
 		if ( model->nLoadFlags & ( FMODELLOADER_LOADED | FMODELLOADER_LOADED_BY_PRELOAD ) )
 		{		
@@ -4464,10 +4403,7 @@ void CModelLoader::Map_LoadModel( model_t *mod )
 	// HDR and features must be established first
 	COM_TimestampedLog( "  Map_CheckForHDR" );
 	m_bMapHasHDRLighting = Map_CheckForHDR( mod, m_szLoadName );
-	if ( IsX360() && !m_bMapHasHDRLighting )
-	{
-		Warning( "Map '%s' lacks exepected HDR data! 360 does not support accurate LDR visuals.", m_szLoadName );
-	}
+
 
 	// Load the collision model
 	COM_TimestampedLog( "  CM_LoadMap" );
@@ -5162,11 +5098,7 @@ void CModelLoader::Studio_UnloadModel( model_t *pModel )
 	// leave these flags alone since we are going to return from alt-tab at some point.
 	//	Assert( !( mod->needload & FMODELLOADER_REFERENCEMASK ) );
 	pModel->nLoadFlags &= ~( FMODELLOADER_LOADED | FMODELLOADER_LOADED_BY_PRELOAD );
-	if ( IsX360() )
-	{
-		// 360 doesn't need to keep the reference flags, but the PC does
-		pModel->nLoadFlags &= ~FMODELLOADER_REFERENCEMASK;
-	}
+
 
 #ifdef DBGFLAG_ASSERT
 	int nRef = 
@@ -5368,11 +5300,7 @@ bool CModelLoader::Map_IsValid( char const *pMapFile, bool bQuiet /* = false */ 
 	char szMapFile[MAX_PATH] = { 0 };
 	V_strncpy( szMapFile, pMapFile, sizeof( szMapFile ) );
 
-	if ( IsX360() && !V_stricmp( szMapFile, s_szLastMapFile ) )
-	{
-		// already been checked, no reason to do multiple i/o validations
-		return true;
-	}
+
 
 	// Blacklist some characters
 	// - Don't allow characters not allowed on all supported platforms for consistency
@@ -5408,12 +5336,7 @@ bool CModelLoader::Map_IsValid( char const *pMapFile, bool bQuiet /* = false */ 
 
 	FileHandle_t mapfile;
 
-	if ( IsX360() )
-	{
-		char szMapName360[MAX_PATH];
-		UpdateOrCreate( szMapFile, szMapName360, sizeof( szMapName360 ), false );
-		V_strcpy_safe( szMapFile, szMapName360 );
-	}
+
 
 	bool bHaveBspFormatInPath = strstr(szMapFile, ".bsp");
 	bool bHaveMapsInPath = strstr(szMapFile, "maps/");
@@ -5424,7 +5347,7 @@ bool CModelLoader::Map_IsValid( char const *pMapFile, bool bQuiet /* = false */ 
 	if( !bHaveBspFormatInPath )
 		strncat(szMapFile, ".bsp", sizeof(szMapFile));
 
-	mapfile = g_pFileSystem->OpenEx( szMapFile, "rb", IsX360() ? FSOPEN_NEVERINPACK : 0, "GAME" );
+	mapfile = g_pFileSystem->OpenEx( szMapFile, "rb", 0, "GAME" );
 	if ( mapfile != FILESYSTEM_INVALID_HANDLE )
 	{
 		dheader_t header;

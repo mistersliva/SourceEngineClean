@@ -368,7 +368,7 @@ void FileWeaponInfo_t::Parse( KeyValues *pKeyValuesData, const char *szWeaponNam
 #ifdef CLIENT_DLL
 	if ( hud_fastswitch.GetInt() == 2 )
 #else
-	if ( IsX360() )
+	if ( false )
 #endif
 	{
 		iSlot = pKeyValuesData->GetInt( "bucket_360", iSlot );

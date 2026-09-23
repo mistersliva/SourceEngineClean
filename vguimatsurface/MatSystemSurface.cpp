@@ -520,8 +520,7 @@ bool CMatSystemSurface::SupportsFeature(SurfaceFeature_e feature)
 		return true;
 
 	case ISurface::OUTLINE_FONTS:
-		if ( IsX360() )
-			return false;
+
 		return true;
 
 	case ISurface::ESCAPE_KEY:
@@ -1568,12 +1567,7 @@ void CMatSystemSurface::DrawSetTexture( int id )
 		DrawFlushText();
 		m_iBoundTexture = id;
 
-		if ( IsX360() && id == -1 )
-		{
-			// ensure we unbind current material that may go away
-			CMatRenderContextPtr pRenderContext( g_pMaterialSystem );
-			pRenderContext->Bind( m_pWhite );
-		}
+
 	}
 }
 
@@ -1823,12 +1817,7 @@ void CMatSystemSurface::GetTextSize(HFont font, const wchar_t *text, int &wide, 
 //-----------------------------------------------------------------------------
 bool CMatSystemSurface::AddCustomFontFile( const char *fontName, const char *fontFileName )
 {
-	if ( IsX360() )
-	{
-		// custom fonts are not supported (not needed) on xbox, all .vfonts are offline converted to ttfs
-		// ttfs are mounted/handled elsewhere
-		return true;
-	}
+
 	MAT_FUNC;
 
 	char fullPath[MAX_PATH];
@@ -1998,7 +1987,7 @@ bool CMatSystemSurface::AddBitmapFontFile( const char *fontFileName )
 	MAT_FUNC;
 
 	bool bFound = false;
-	bFound = ( ( g_pFullFileSystem->GetDVDMode() == DVDMODE_STRICT ) || g_pFullFileSystem->FileExists( fontFileName, IsX360() ? "GAME" : NULL ) );
+	bFound = ( ( g_pFullFileSystem->GetDVDMode() == DVDMODE_STRICT ) || g_pFullFileSystem->FileExists( fontFileName, NULL) );
 	if ( !bFound )
 	{
 		Msg( "Couldn't find bitmap font file '%s'\n", fontFileName );
@@ -2591,8 +2580,7 @@ void CMatSystemSurface::OnScreenSizeChanged( int nOldWidth, int nOldHeight )
 void CMatSystemSurface::ResetFontCaches()
 {
 	// Don't do this on x360!!!
-	if ( IsX360() )
-		return;
+
 
 	// clear font texture cache
 	g_FontTextureCache.Clear();
@@ -3293,11 +3281,7 @@ void CMatSystemSurface::Begin3DPaint( int iLeft, int iTop, int iRight, int iBott
 {
 	MAT_FUNC;
 
-	if ( IsX360() )
-	{
-		Assert( 0 );
-		return;
-	}
+
 
 	Assert( iRight > iLeft );
 	Assert( iBottom > iTop );
@@ -3374,11 +3358,7 @@ void CMatSystemSurface::End3DPaint()
 {
 	MAT_FUNC;
 
-	if ( IsX360() )
-	{
-		Assert( 0 );
-		return;
-	}
+
 
 	// Can't use this feature when drawing into the 3D world
 	Assert( !m_bDrawingIn3DWorld );

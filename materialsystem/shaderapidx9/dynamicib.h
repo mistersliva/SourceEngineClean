@@ -308,11 +308,7 @@ inline CIndexBuffer::CIndexBuffer( IDirect3DDevice9 *pD3D, int count,
 		VPROF_INCREMENT_GROUP_COUNTER( "TexGroup_global_" TEXTURE_GROUP_STATIC_INDEX_BUFFER, 
 			COUNTER_GROUP_TEXTURE_GLOBAL, IndexCount() * IndexSize() );
 	}
-	else if ( IsX360() )
-	{
-		VPROF_INCREMENT_GROUP_COUNTER( "TexGroup_global_" TEXTURE_GROUP_DYNAMIC_INDEX_BUFFER, 
-			COUNTER_GROUP_TEXTURE_GLOBAL, IndexCount() * IndexSize() );
-	}
+	
 #endif
 }
 
@@ -438,11 +434,7 @@ inline CIndexBuffer::~CIndexBuffer()
 			VPROF_INCREMENT_GROUP_COUNTER( "TexGroup_global_" TEXTURE_GROUP_STATIC_INDEX_BUFFER,
 				COUNTER_GROUP_TEXTURE_GLOBAL, - IndexCount() * IndexSize() );
 		}
-		else if ( IsX360() )
-		{
-			VPROF_INCREMENT_GROUP_COUNTER( "TexGroup_global_" TEXTURE_GROUP_DYNAMIC_INDEX_BUFFER,
-				COUNTER_GROUP_TEXTURE_GLOBAL, - IndexCount() * IndexSize() );
-		}
+		
 	}
 #endif
 }
@@ -488,7 +480,7 @@ inline unsigned short* CIndexBuffer::Lock( bool bReadOnly, int numIndices, int& 
 		return 0; 
 	}
 	
-	if ( !IsX360() && !m_pIB && !m_pSysmemBuffer )
+	if ( !m_pIB  && !m_pSysmemBuffer )
 		return 0;
 
 	DWORD dwFlags;
@@ -578,13 +570,8 @@ inline unsigned short* CIndexBuffer::Lock( bool bReadOnly, int numIndices, int& 
 
 	Assert( pLockedData != NULL );
 	   
-	if ( !IsX360() )
-	{
+{
 		startIndex = position;
-	}
-	else
-	{
-		startIndex = 0;
 	}
 
 	Assert( m_bLocked == false );
@@ -603,7 +590,7 @@ inline void CIndexBuffer::Unlock( int numIndices )
 //	if( m_bDynamic )
 //		numIndices = ALIGN_VALUE( numIndices, 2 );
 
-	if ( !IsX360() && !m_pIB && !m_pSysmemBuffer )
+	if ( !m_pIB  && !m_pSysmemBuffer )
 		return;
 
 	RECORD_COMMAND( DX8_UNLOCK_INDEX_BUFFER, 1 );

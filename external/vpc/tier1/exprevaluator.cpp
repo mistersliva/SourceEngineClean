@@ -40,12 +40,12 @@ bool DefaultConditionalSymbolProc( const char *pKey )
 	
 	if ( !V_stricmp( pKey, "X360" ) )
 	{
-		return IsX360();
+		return false;
 	}
 
 	if ( !V_stricmp( pKey, "PS3" ) )
 	{
-		return IsPS3();
+		return false;
 	}
 
 	if ( !V_stricmp( pKey, "OSX" ) )

@@ -1046,7 +1046,7 @@ CDbgMemAlloc::CDbgMemAlloc() : m_sMemoryAllocFailed( (size_t)0 )
 	m_OutputFunc = DefaultHeapReportFunc;
 	m_bInitialized = true;
 
-	if ( !IsDebug() && !IsX360() )
+	if ( !IsDebug() )
 	{
 		Plat_DebugString( "USE_MEM_DEBUG is enabled in a release build. Don't check this in!\n" );
 	}
@@ -2132,10 +2132,7 @@ void CDbgMemAlloc::DumpCallStackFlow( char const *pchFileBase )
 	static int s_FileCount = 0;
 	
 	char *pPath = "";
-	if ( IsX360() )
-	{
-		pPath = "D:\\";
-	}
+
 
 #if defined( _MEMTEST ) && defined( _WIN32 )
 	char szXboxName[32];

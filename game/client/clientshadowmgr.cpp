@@ -2572,7 +2572,7 @@ void CClientShadowMgr::BuildFlashlight( ClientShadowHandle_t handle )
 	// For the 360, we just draw flashlights with the main geometry
 	// and bypass the entire shadow casting system.
 	ClientShadow_t &shadow = m_Shadows[handle];
-	if ( IsX360() || r_flashlight_version2.GetInt() )
+	if ( r_flashlight_version2.GetInt() )
 	{
 		// This will update the matrices, but not do work to add the flashlight to surfaces
 		shadowmgr->ProjectFlashlight( shadow.m_ShadowHandle, shadow.m_WorldToShadow, 0, NULL );
@@ -3713,7 +3713,7 @@ bool CClientShadowMgr::DrawRenderToTextureShadow( unsigned short clientShadowHan
 		// Sets the viewport state
 		int x, y, w, h;
 		m_ShadowAllocator.GetTextureRect( shadow.m_ShadowTexture, x, y, w, h );
-		pRenderContext->Viewport( IsX360() ? 0 : x, IsX360() ? 0 : y, w, h ); 
+		pRenderContext->Viewport( false? 0 : x, y, w, h ); 
 
 		// Clear the selected viewport only (don't need to clear depth)
 		pRenderContext->ClearBuffers( true, false );
@@ -3724,13 +3724,7 @@ bool CClientShadowMgr::DrawRenderToTextureShadow( unsigned short clientShadowHan
 		if ( DrawShadowHierarchy( pRenderable, shadow ) )
 		{
 			bDrewTexture = true;
-			if ( IsX360() )
-			{
-				// resolve render target to system memory texture
-				Rect_t srcRect = { 0, 0, w, h };
-				Rect_t dstRect = { x, y, w, h };
-				pRenderContext->CopyRenderTargetToTextureEx( m_ShadowAllocator.GetTexture(), 0, &srcRect, &dstRect );
-			}
+
 		}
 		else
 		{
@@ -3848,7 +3842,7 @@ void CClientShadowMgr::SetViewFlashlightState( int nActiveFlashlightCount, Clien
 	// NOTE: On the 360, we render the entire scene with the flashlight state
 	// set and don't render flashlights additively in the shadow mgr at a far later time
 	// because the CPU costs are prohibitive
-	if ( !IsX360() && !r_flashlight_version2.GetInt() )
+	if ( !r_flashlight_version2.GetInt() )
 		return;
 
 	Assert( nActiveFlashlightCount<= 1 ); 
@@ -3990,7 +3984,7 @@ void CClientShadowMgr::ComputeShadowTextures( const CViewSetup &view, int leafCo
 
 	pRenderContext->PushRenderTargetAndViewport( m_ShadowAllocator.GetTexture() );
 
-	if ( !IsX360() && m_bRenderTargetNeedsClear )
+	if ( m_bRenderTargetNeedsClear )
 	{
 		// don't need to clear absent depth buffer
 		pRenderContext->ClearBuffers( true, false );

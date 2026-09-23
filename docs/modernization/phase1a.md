@@ -10,12 +10,12 @@ is green.
 |---|---|---|
 | `_X360` condition lines | 1,531 lead-shape + 177 mixed | `#ifdef` 295 · `#ifndef` 244 · `#if !defined` 382 · `#if defined` 610 |
 | `_X360` non-condition (comments/code) | ~278 | manual sweep |
-| `IsX360()` call sites | 911 | `if()` 456 · `if(!…)` 88 · `&&` 135 · `\|\|` 78 · ternary 53 · `return` 4 |
+| `IsX360` call sites | 911 | `if()` 456 · `if(!…)` 88 · `&&` 135 · `\|\|` 78 · ternary 53 · `return` 4 |
 | `#include "xbox/…"` | 165 (lint) | most guarded by `_X360`/`!_X360`; a few unguarded (`WinApp.cpp`) |
 | `$X360` VPC condition lines | 164 | `projects.vgc`, `groups.vgc`, per-project `.vpc` |
 | `mathlib/3dnow.*` refs | 125 | consumers below |
 | `_PS3` (bonus, confirmed) | 742 | `_PS3` only defined under `#ifdef SN_TARGET_PS3` — never true for waf/CI |
-| `IsPS3()` (bonus, confirmed) | 19 | same shape as `IsX360()` |
+| `IsPS3` (bonus, confirmed) | 19 | same shape as `IsX360` |
 
 Distribution (x360_refs): materialsystem 474 · engine 245 · public 245 · external/vpc 232 ·
 game 129 · tier0 118 · vgui2 84 · gameui 67 · utils 50 · studiorender 36 · rest ≤ 32 each.
@@ -71,7 +71,7 @@ Phase 1b CI reports green (each stage then gets its own CI run).
    - `X360 || PS3` → fully dead;
    - then manual sweep for ~278 stragglers (comments, `#define`-adjacent, macro bodies).
    Verification: full local build + `git grep` counts → condition lines at 0.
-4. **`IsX360()` / `IsPS3()` elimination.** Brace-matching script for the 544 `if()` forms
+4. **`IsX360` / `IsPS3` elimination.** Brace-matching script for the 544 `if()` forms
    (fold else-arms), logical simplification for the 213 `&&`/`||`, manual ternaries (53)
    and `return` (4); delete macro definitions in `public/tier0/platform.h` (lines ~121/142/155)
    + `IsPlatformX360` plumbing; hunt `git grep` to 0.
@@ -262,6 +262,63 @@ comments & identifiers (e.g. `INLINE_ON_PS3`); `REVERSE_DEPTH_ON_X360` in
 unwrapped C++ side); `CX360SmallBlockPool` / `USE_PHYSICAL_SMALL_BLOCK_HEAP`
 (no `_X360` substring; the whole block is dead — later deletion candidate);
 `.pl`/`.bat` x360 modes and docs mentions (Stage-1 deferrals).
+
+## Stage 4 execution notes (runtime platform-check folds)
+
+Tool: a deterministic folding script gated by a **20-case exact-output
+self-test** that runs before every tree pass. Layered passes, in order:
+
+1. **Statement fold** — three-valued evaluation (true/false/unknown) of `if`
+   conditions over a comment/string-blanked skeleton: false headers deleted
+   with their then-arm (else-arm promoted where present), true `else if`
+   arms unwrapped, unknown conditions rewritten with the atom folded out.
+2. **Ternary fold** — `atom ? a : b` with a statically known atom picks the
+   live branch (the chosen text is sliced from the original source, never
+   the skeleton).
+3. **Value-expression fold** — assignment/initializer extents containing the
+   atom evaluate to `false`/`true`/reduced text.
+4. **Atom → `false` fallback** — any remaining code-position call replaced
+   textually (the macro is compile-time `false` on PC, so this is always
+   semantics-preserving); comment/string positions are skipped via the
+   skeleton mask.
+5. **Define deletion** — the seven predicate macro definition lines (five in
+   `public/tier0/platform.h`, two in the VPC copy) removed only after the
+   tree reports zero code-position call sites.
+
+Safety model: structural oddities (unmatched `#endif` inside a statement
+span, conditions split across `#if/#else` branches,
+assignment-inside-comparison conds, statements inside MSVC `__asm` comment
+regions) are **skipped per candidate with a recorded reason** instead of
+aborting the whole file — the atom still folds to `false` via pass 4, so
+output stays correct while preprocessor structure is preserved; a final
+batch balance-check is the only file-level abort. Two length-preserving
+skeletons (statement + atom) drive all offset math; raw bytes round-trip
+(utf-8 + surrogateescape) so CRLF and CP1252 files are untouched.
+
+Bug found by the compiler (and fixed): the first version sourced
+unknown-condition rewrite text from the skeleton, whose masking blanks
+string literals — `FindParm( "-allowdebug" )` came out as
+`FindParm(               )`. The lexer now tokenizes the skeleton for
+structure but carries original-source leaf text (gap-attached, so literals
+and comments between tokens survive). Four affected files (`interface.cpp`,
+`host_saverestore.cpp`, `mouseoverpanelbutton.h`, `BonusMapsDatabase.cpp`)
+were reverted and re-folded; two independent diff detectors (interior
+3+-space / empty-paren signature, per-hunk quote-count loss) then scanned
+every added line — remaining hits are correct ternary folds plus one
+pre-existing spacing quirk (`NVFMT_INTZ   `).
+
+Manual comment sweep: 13 source lines where a predicate call survived only
+inside comments — six were wholesale deletions of Valve's own
+`/* commented out ... remove entirely when new implementation settles */`
+blocks across the four `threadtools` copies plus `CColorCorrection.cpp` and
+`cmatlightmaps.cpp` (617 lines of dead text), the rest single `//` lines
+(11 lines) and stale doc mentions (doc prose now names the symbols without
+call parens so the repo-wide grep gate holds).
+
+Result: **251 files changed, +864/−5,760**; zero call-form matches for the
+three predicates repo-wide (code, comments, docs); idempotent re-run changes
+0 files with 0 residue and 0 aborts; lint `isx360_fn` **886 → 0** (baseline
+ratcheted); full local build green (2,214/2,214 tasks).
 
 ## Gate 1 completion criteria (updated)
 

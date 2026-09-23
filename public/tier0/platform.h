@@ -88,10 +88,6 @@
 #define IsDebug() false
 #endif
 
-// Deprecating, infavor of IsX360() which will revert to IsXbox()
-// after confidence of xbox 1 code flush
-#define IsXbox()	false
-
 #ifdef _WIN32
 	#define IsLinux() false
 	#define IsOSX() false
@@ -101,8 +97,6 @@
 		#define IsWindows() true
 		#define IsPC() true
 		#define IsConsole() false
-		#define IsX360() false
-		#define IsPS3() false
 		#define IS_WINDOWS_PC
 		#define PLATFORM_WINDOWS_PC 1 // Windows PC
 		#ifdef _WIN64
@@ -124,8 +118,6 @@
 	#define IsPC() true
 	#define IsWindows() false
 	#define IsConsole() false
-	#define IsX360() false
-	#define IsPS3() false
 	#if defined( LINUX )
 		#define IsLinux() true
 	#else
@@ -1321,7 +1313,7 @@ PLATFORM_INTERFACE bool Is64BitOS();
 
 inline const char *GetPlatformExt( void )
 {
-	return IsX360() ? ".360" : "";
+	return "";
 }
 
 // flat view, 6 hw threads

@@ -257,7 +257,7 @@ inline CVertexBuffer::CVertexBuffer(IDirect3DDevice9 * pD3D, VertexFormat_t fmt,
 	}
 
 #ifdef VPROF_ENABLED
-	if ( IsX360() || !m_bDynamic )
+	if ( !m_bDynamic )
 	{
 		Assert( m_pGlobalCounter );
 		*m_pGlobalCounter += m_nBufferSize;
@@ -369,7 +369,7 @@ inline CVertexBuffer::~CVertexBuffer()
 #endif
 
 #ifdef VPROF_ENABLED
-		if ( IsX360() || !m_bDynamic )
+		if ( !m_bDynamic )
 		{
 			Assert( m_pGlobalCounter );
 			*m_pGlobalCounter -= m_nBufferSize;
@@ -439,7 +439,7 @@ inline unsigned char* CVertexBuffer::Lock( int numVerts, int& baseVertexIndex )
 	baseVertexIndex = 0;
 	int nBufferSize = numVerts * m_VertexSize;
 
-	Assert( IsPC() || ( IsX360() && !m_bLocked ) );
+	Assert( IsPC() || ( false && !m_bLocked ) );
 
 	// Ensure there is enough space in the VB for this data
 	if ( numVerts > m_VertexCount ) 
@@ -448,7 +448,7 @@ inline unsigned char* CVertexBuffer::Lock( int numVerts, int& baseVertexIndex )
 		return 0; 
 	}
 	
-	if ( !IsX360() && !m_pVB && !m_pSysmemBuffer )
+	if ( !m_pVB  && !m_pSysmemBuffer )
 		return 0;
 
 	DWORD dwFlags;
@@ -476,12 +476,7 @@ inline unsigned char* CVertexBuffer::Lock( int numVerts, int& baseVertexIndex )
 		m_Position = 0;
 	}
 
-	if ( IsX360() && m_bDynamic )
-	{
-		// Block until we have enough room in the buffer, this affects the result of NextLockOffset() in wrap conditions.
-		BlockUntilUnused( nBufferSize );
-		m_pVB = NULL;
-	}
+
 
 	int nLockOffset = NextLockOffset( );
 	RECORD_COMMAND( DX8_LOCK_VERTEX_BUFFER, 4 );
@@ -517,13 +512,8 @@ inline unsigned char* CVertexBuffer::Lock( int numVerts, int& baseVertexIndex )
 
 	Assert( pLockedData != 0 );
 	m_bLocked = true;
-	if ( !IsX360() )
-	{
+{
 		baseVertexIndex = nLockOffset / m_VertexSize;
-	}
-	else
-	{
-		baseVertexIndex = 0;
 	}
 	return pLockedData;
 }
@@ -582,7 +572,7 @@ inline void CVertexBuffer::Unlock( int numVerts )
 	if ( !m_bLocked )
 		return;
 
-	if ( !IsX360() && !m_pVB && !m_pSysmemBuffer )
+	if ( !m_pVB  && !m_pSysmemBuffer )
 		return;
 
 	int nLockOffset = NextLockOffset();

@@ -488,8 +488,7 @@ int NET_OpenSocket ( const char *net_interface, int& port, int protocol )
 	
 	if ( protocol == IPPROTO_TCP )
 	{
-		if ( !IsX360() ) // SO_KEEPALIVE unsupported on the 360
-		{
+{
 			opt = 1; // set TCP options: keep TCP connection alive
 			VCR_NONPLAYBACKFN( setsockopt(newsocket, SOL_SOCKET, SO_KEEPALIVE, (char *)&opt, sizeof(opt)), ret, "setsockopt" );
 			if (ret == -1)
@@ -2620,11 +2619,7 @@ void NET_OpenSockets (void)
 		OpenSocketInternal( NS_HLTV, hltvport.GetInt(), PORT_HLTV, "hltv", nProtocol, false );
 	}
 
-	if ( IsX360() )
-	{
-		OpenSocketInternal( NS_MATCHMAKING, matchmakingport.GetInt(), PORT_MATCHMAKING, "matchmaking", nProtocol, false );
-		OpenSocketInternal( NS_SYSTEMLINK, systemlinkport.GetInt(), PORT_SYSTEMLINK, "systemlink", IPPROTO_UDP, false );
-	}
+
 
 #ifdef LINUX
 	// On Linux, if you bind to a specific address then you will NOT receive broadcast messages.

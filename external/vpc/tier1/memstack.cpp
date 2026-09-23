@@ -307,8 +307,7 @@ void CMemoryStack::SetAllocOwner( const char *pszAllocOwner )
 void CMemoryStack::RegisterAllocation()
 {
 	// 'physical' allocations on PS3 come from RSX local memory, so we don't count them here:
-	if ( IsPS3() && m_bPhysical )
-		return;
+
 
 	if ( GetSize() )
 	{
@@ -329,8 +328,7 @@ void CMemoryStack::RegisterAllocation()
 void CMemoryStack::RegisterDeallocation( bool bShouldSpewSize )
 {
 	// 'physical' allocations on PS3 come from RSX local memory, so we don't count them here:
-	if ( IsPS3() && m_bPhysical )
-		return;
+
 
 	if ( GetSize() )
 	{

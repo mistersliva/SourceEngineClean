@@ -321,10 +321,7 @@ const tchar* GetProcessorVendorId()
 		{
 			_tcscpy( VendorID, _T( "Generic_x86" ) ); 
 		}
-		else if ( IsX360() )
-		{
-			_tcscpy( VendorID, _T( "PowerPC" ) ); 
-		}
+		
 	}
 	else
 	{

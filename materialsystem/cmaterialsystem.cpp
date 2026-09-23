@@ -414,11 +414,7 @@ void CMaterialSystem::CreateDebugMaterials()
 		pVMTKeyValues->SetInt( "$vertexcolor", 1 );
 		m_pBufferClearObeyStencil[BUFFER_CLEAR_COLOR_AND_ALPHA_AND_DEPTH] = static_cast<IMaterialInternal*>(CreateMaterial( "___buffer_clear_obey_stencil7.vmt", pVMTKeyValues ))->GetRealTimeVersion();
 
-		if ( IsX360() )
-		{
-			pVMTKeyValues = new KeyValues( "RenderTargetBlit" );
-			m_pRenderTargetBlitMaterial = static_cast<IMaterialInternal*>(CreateMaterial( "___renderTargetBlit.vmt", pVMTKeyValues ))->GetRealTimeVersion();
-		}
+
 
 		ShaderSystem()->CreateDebugMaterials();
 	}
@@ -483,12 +479,7 @@ void CMaterialSystem::CleanUpDebugMaterials()
 			m_pBufferClearObeyStencil[i] = NULL;
 		}
 
-		if ( IsX360() )
-		{
-			m_pRenderTargetBlitMaterial->DecrementReferenceCount();
-			RemoveMaterial( m_pRenderTargetBlitMaterial );
-			m_pRenderTargetBlitMaterial = NULL;
-		}
+
 
 		ShaderSystem()->CleanUpDebugMaterials();
 	}
@@ -823,11 +814,7 @@ InitReturnVal_t CMaterialSystem::Init()
 	CreateCompositorMaterials();
 #endif
 
-	if ( IsX360() )
-	{
-		g_pQueuedLoader->InstallLoader( RESOURCEPRELOAD_MATERIAL, &s_ResourcePreloadMaterial );
-		g_pQueuedLoader->InstallLoader( RESOURCEPRELOAD_CUBEMAP, &s_ResourcePreloadCubemap );
-	}
+
 
 	// Set up a default material system config
 //	GenerateConfigFromConfigKeyValues( &g_config, false );
@@ -1318,12 +1305,7 @@ bool CMaterialSystem::SetMode( void* hwnd, const MaterialSystem_Config_t &config
 			TextureManager()->WarmTextureCache();
 		}
 
-		if ( IsX360() )
-		{
-			// shaderapi was not viable at init time, it is now
-			TextureManager()->ReloadTextures();
-			AllocateStandardTextures();
-		}
+
 	}
 
 	g_pShaderDevice->SetHardwareGammaRamp( config.m_fMonitorGamma, config.m_fGammaTVRangeMin, config.m_fGammaTVRangeMax, 
@@ -2431,7 +2413,7 @@ bool CMaterialSystem::OverrideConfig( const MaterialSystem_Config_t &_config, bo
 	// toggle wait for vsync
 	// In GL, we just check this and it's just a function call--no need for device shenanigans.
 #if !defined( DX_TO_GL_ABSTRACTION )
-	if ( (IsX360() || !config.Windowed()) && (config.WaitForVSync() != g_config.WaitForVSync()) )
+	if ( (!config.Windowed()) && (config.WaitForVSync() != g_config.WaitForVSync()) )
 	{
 		{
 			if ( mat_debugalttab.GetBool() )
@@ -2463,8 +2445,7 @@ bool CMaterialSystem::OverrideConfig( const MaterialSystem_Config_t &_config, bo
 	}
 
 	// 360 does not support various configuration changes and cannot reload materials
-	if ( !IsX360() )
-	{
+{
 		if ( bResetAnisotropy || recomputeSnapshots || bRedownloadLightmaps ||
 			bRedownloadTextures || bResetAnisotropy || bVideoModeChange ||
 			bSetStandardVertexShaderConstants || bResetTextureFilter )
@@ -2474,7 +2455,7 @@ bool CMaterialSystem::OverrideConfig( const MaterialSystem_Config_t &_config, bo
 			hLock = Lock();
 		}
 	}
-	if ( bReloadMaterials && !IsX360() )
+	if ( bReloadMaterials )
 	{
 		if ( mat_debugalttab.GetBool() )
 		{
@@ -2486,7 +2467,7 @@ bool CMaterialSystem::OverrideConfig( const MaterialSystem_Config_t &_config, bo
 	// 360 does not support various configuration changes and cannot reload textures
 	// 360 has no reason to reload textures, it's unnecessary and massively expensive
 	// 360 does not use this path as an init affect to get its textures into memory
-	if ( bRedownloadTextures && !IsX360() )
+	if ( bRedownloadTextures )
 	{
 		if ( mat_debugalttab.GetBool() )
 		{
@@ -3013,12 +2994,7 @@ void CMaterialSystem::UncacheUnusedMaterials( bool bRecomputeStateSnapshots )
 		}
 	}
 
-	if ( IsX360() && bRecomputeStateSnapshots )
-	{
-		// Always recompute snapshots because the queued loading process skips it during pre-purge,
-		// allowing it to happen just once, here.
-		bDidUncacheMaterial = true;
-	}
+
 
 	if ( bDidUncacheMaterial && bRecomputeStateSnapshots )
 	{
@@ -3096,7 +3072,7 @@ void CMaterialSystem::ReloadTextures( void )
 	ForceSingleThreaded();
 
 	// 360 should not have gotten here
-	Assert( !IsX360() );
+	Assert( true);
 
 	KeyValuesSystem()->InvalidateCache();
 
@@ -3221,11 +3197,7 @@ void CMaterialSystem::AllocateStandardTextures()
 	int tcFlags = TEXTURE_CREATE_MANAGED;
 	int tcFlagsSRGB = TEXTURE_CREATE_MANAGED | TEXTURE_CREATE_SRGB;
 	
-	if ( IsX360() )
-	{
-		tcFlags |= TEXTURE_CREATE_CANCONVERTFORMAT;
-		tcFlagsSRGB |= TEXTURE_CREATE_CANCONVERTFORMAT;
-	}
+
 
 	// allocate a white, single texel texture for the fullbright lightmap
 	// note: make sure and redo this when changing gamma, etc.
@@ -3491,11 +3463,7 @@ void CMaterialSystem::ThreadExecuteQueuedContext( CMatQueuedRenderContext *pCont
 
 IThreadPool *CMaterialSystem::CreateMatQueueThreadPool()
 {
-	if( IsX360() )
-	{
-		return g_pThreadPool;
-	}
-	else if( !m_pMatQueueThreadPool )
+ if( !m_pMatQueueThreadPool )
 	{
 		ThreadPoolStartParams_t startParams;
 
@@ -3667,13 +3635,7 @@ void CMaterialSystem::EndFrame( void )
 			m_pRenderContext.Set( &m_QueuedRenderContexts[m_iCurQueuedContext] );
 
 			m_pActiveAsyncJob = new CFunctorJob( CreateFunctor( this, &CMaterialSystem::ThreadExecuteQueuedContext, pPrevContext ), "ThreadExecuteQueuedContext" );
-			if ( IsX360() )
-			{
-				if ( m_nServiceThread >= 0 )
-				{
-					m_pActiveAsyncJob->SetServiceThread( m_nServiceThread );
-				}
-			}
+
 
 			pThreadPool->AddJob( m_pActiveAsyncJob );
 			break;
@@ -4277,8 +4239,7 @@ bool CMaterialSystem::GetRecommendedConfigurationInfo( int nDXLevel, KeyValues *
 //-----------------------------------------------------------------------------
 void CMaterialSystem::HandleDeviceLost()
 {
-	if ( IsX360() )
-		return;
+
 
 	g_pShaderAPI->HandleDeviceLost();
 }

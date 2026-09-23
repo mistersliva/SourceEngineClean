@@ -3297,25 +3297,7 @@ bool CParticleSystemMgr::ReadParticleConfigFile( const char *pFileName, bool bPr
 		++pFileName;
 	}
 
-	if ( IsX360() )
-	{
-		char szTargetName[MAX_PATH];
-		CreateX360Filename( pFileName, szTargetName, sizeof( szTargetName ) );
 
-		CUtlBuffer fileBuffer;
-		bool bHaveParticles = g_pFullFileSystem->ReadFile( szTargetName, "GAME", fileBuffer );
-		if ( bHaveParticles )
-		{			
-			fileBuffer.SetBigEndian( false );
-			return ReadParticleConfigFile( fileBuffer, bPrecache, bDecommitTempMemory, szTargetName );
-		}
-		else if ( g_pFullFileSystem->GetDVDMode() != DVDMODE_OFF )
-		{
-			// 360 version should have been there, 360 zips can only have binary particles
-			Warning( "Particles: Missing '%s'\n", szTargetName );
-			return false;
-		}
-	}
 
 	char pFallbackBuf[MAX_PATH];
 	if ( IsPC() )
@@ -3348,11 +3330,7 @@ bool CParticleSystemMgr::ReadParticleConfigFile( const char *pFileName, bool bPr
 	}
 
 	CUtlBuffer buf( 0, 0, 0 );
-	if ( IsX360() )
-	{
-		// fell through, load as pc particle resource file
-		buf.ActivateByteSwapping( true );
-	}
+
 
 	if ( g_pFullFileSystem->ReadFile( pFileName, "GAME", buf ) )
 	{
