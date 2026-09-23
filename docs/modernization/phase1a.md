@@ -382,3 +382,16 @@ changes 0 files; full local build green (2,214/2,214 tasks).
 `mathlib/3dnow.*` deleted;
 dead modules deleted (done — Phase 1b); full local build green; CI green on the stage
 commits. ~~`dx9sdk/` deleted~~ → moved to **Gate 3**.
+
+**Verdict: PASS — verified at `27a2f3a9`; Phase 1a complete.**
+All four lint ids read `0 / 0 ok`; no `3dnow*` file remains anywhere in the
+tree (outside `build/`); the dead modules were removed back in Phase 1b
+(`d7fc33a6`); the local build is green (2,214/2,214 tasks); and CI is green
+on `main` across every stage commit (`8b9421c2`, `5cc7d959`, `2a9acbc7` +
+follow-up fixes, `19707d61`, `27a2f3a9`). Stage 5's `local_minmax_macro`
+residue (`6`) is a documented ratchet, not a gate failure — it counts only
+the infrastructure header and the vendored MySQL header that Gate 1 never
+covered. Next: **Phase 2 — x64 port**, working the `win32_long_no_ptr`
+(`63`), `inline_asm` (`127`) and `suspicious_ptr_cast` (`45`) ratchet ids;
+`dx_to_gl_abstraction` (`215`) and `d3d9_com_types` (`924`) wait for
+Gate 3 / Phase 3.
