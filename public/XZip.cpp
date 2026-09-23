@@ -699,8 +699,6 @@ void copy_block     (TState &state,char *buf, unsigned len, int header);
 // Mapping from a distance to a distance code. dist is the distance - 1 and
 // must not have side effects. dist_code[256] and dist_code[257] are never used.
 
-#define Max(a,b) (a >= b ? a : b)
-/* the arguments must not have side effects */
 
 /* ===========================================================================
  * Allocate the match buffer, initialize the various tables and save the
@@ -1036,7 +1034,7 @@ void build_tree(TState &state,tree_desc *desc)
 
         /* Create a new node father of n and m */
         tree[node].fc.freq = (ush)(tree[n].fc.freq + tree[m].fc.freq);
-        state.ts.depth[node] = (uch) (Max(state.ts.depth[n], state.ts.depth[m]) + 1);
+        state.ts.depth[node] = (uch) ((((state.ts.depth[n]) >= (state.ts.depth[m])) ? (state.ts.depth[n]) : (state.ts.depth[m])) + 1);
         tree[n].dl.dad = tree[m].dl.dad = (ush)node;
         /* and insert the new node in the heap */
         state.ts.heap[SMALLEST] = node++;

@@ -17,9 +17,6 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include <tier0/memdbgon.h>
 
-#ifndef max
-#define max(a,b)            (((a) > (b)) ? (a) : (b))
-#endif
 
 using namespace vgui;
 
@@ -105,13 +102,12 @@ void QueryBox::PerformLayout()
 
 	int btnWide, btnTall;
 	m_pCancelButton->GetContentSize(btnWide, btnTall);
-	btnWide = max(oldWide, btnWide + 10 * scale);
-	btnTall = max(oldTall, btnTall + 10 * scale);
+	btnWide = (((oldWide) > (btnWide + 10 * scale)) ? (oldWide) : (btnWide + 10 * scale));
+	btnTall = (((oldTall) > (btnTall + 10 * scale)) ? (oldTall) : (btnTall + 10 * scale));
 	m_pCancelButton->SetSize(btnWide, btnTall);
 
 //nt boxWidth, boxTall;
 	GetSize(boxWidth, boxTall);
-//	wide = max(wide, btnWide * 2 + 100);
 //	SetSize(wide, tall);
 
 	m_pOkButton->SetPos((wide/2)-(m_pOkButton->GetWide())-1 + x, tall - m_pOkButton->GetTall() - 15 * scale);

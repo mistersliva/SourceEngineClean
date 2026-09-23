@@ -88,6 +88,11 @@ $checks = @(
         id = 'suspicious_ptr_cast'
         pattern = '\([[:space:]]*(unsigned[[:space:]]+int|int|signed[[:space:]]+int|long|unsigned[[:space:]]+long|DWORD|uint32|int32)[[:space:]]*\)[[:space:]]*(\([[:space:]]*(const[[:space:]]+)?(void|char|unsigned[[:space:]]+char|signed[[:space:]]+char|wchar_t|struct[[:space:]]+[[:alnum:]_]+|[[:alnum:]_:]+)[[:space:]]*\*+[[:space:]]*\)|&[[:space:]]*[[:alnum:]_])|reinterpret_cast<[[:space:]]*(int|unsigned([[:space:]]+int)?|long|DWORD|uint32|int32)[[:space:]]*>'
         why = 'Pointer -> 32-bit int casts (Phase 2a; compiler C4311/C4302 is the ultimate gate)'
+    },
+    [pscustomobject]@{
+        id = 'local_minmax_macro'
+        pattern = '#[[:space:]]*define[[:space:]]+(min|max|Max)([^[:alnum:]_]|$)'
+        why = 'Local file-scope min/max macro wrappers (Phase 1a Stage 5; residue = valve_minmax_on.h + vendored my_global.h)'
     }
 )
 

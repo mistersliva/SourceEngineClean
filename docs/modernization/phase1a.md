@@ -320,6 +320,62 @@ three predicates repo-wide (code, comments, docs); idempotent re-run changes
 0 files with 0 residue and 0 aborts; lint `isx360_fn` **886 → 0** (baseline
 ratcheted); full local build green (2,214/2,214 tasks).
 
+## Stage 5 execution notes (local min/max macro wrappers)
+
+Scope rule (applied repo-wide via case-sensitive `git grep`, complete for
+tracked code): **file-scope hand-rolled `min`/`Max` wrappers in first-party
+code are in; the uppercase `MIN`/`MAX` convention and infrastructure are out.**
+
+In scope = **16 defines across 15 files**: the 15 lowercase `#define min`/
+`#define max` wrappers (voice_record_openal, voice_codec_frame, the seven
+vgui_controls files, TextEntryBox, career_box, buypreset_listbox, entcount)
+plus `public/XZip.cpp`'s mixed-case `Max`. Eleven wrappers had call sites;
+five were dead on arrival (ListPanel's `max`, RichText's `max`, ProgressBox,
+career_box, buypreset — each guarded `#ifndef` had made the local define a
+silent no-op wherever `platform.h` already supplied one).
+
+Kept on purpose: **uppercase `MIN`/`MAX`** — `basetypes.h` (+ the vpc copy)
+is public API consumed by **452 files**, `texpow2.h`/`jpeglib` follow the
+same convention; **`valve_minmax_on.h`** — deliberate tier0 infrastructure
+(included from `platform.h`, paired with `valve_minmax_off.h`); **vendored**
+`utils/vmpi_private/mysql/include/my_global.h`; the **`ivp` submodule**
+(`geompack.hxx`, invisible to `git grep` anyway); and ListPanel's **`clamp`**
+wrapper — its `min`/`max` are macro *parameter* names (substituted before
+rescan, fully independent of the wrappers), it has a live call site, and it
+is not `min`/`max` per the stage definition.
+
+Tool: deterministic script gated by a **19-case exact-output self-test**
+that runs before every tree pass. Pass A is line-based (delete a matching
+`#ifndef`/`#define`/`#endif` triplet or a plain `#define`, plus two
+explicitly-listed dead comment lines that document the removed macro).
+Pass B rewrites call sites to a fixed point through a linear state scanner
+that skips comments, string/char literals and preprocessor directive lines,
+rejects qualified calls (`::`/`.`/`.`-style), parses balanced parens with
+depth-0 comma splitting, and emits each macro's **exact expansion** —
+`(((A) < (B)) ? (A) : (B))` (or `>`/`>=` as written in that macro's body;
+XZip's `Max` really uses `>=`). The pre-run self-test caught five real
+defects before the tree was touched: guard-triplet detection reading the
+wrong line, the search phase not being comment-aware, the `Max` operator
+map, an inverted exit code, and a mismatched fixture.
+
+Why the ternary and not `std::min`/`std::max`: the emitted text is
+token-identical to today's preprocessing (same operand parenthesization,
+same double-evaluation, same mixed-type usual arithmetic conversions).
+`std::min`/`std::max` would *not compile* at the QueryBox/MessageBox sites
+(`max(oldWide, btnWide + 10 * scale)` mixes `int` and `float`) and would
+silently change evaluation count everywhere — out of bounds for a
+behavior-preserving stage. RichText's two `min` call sites looked external
+and were: they resolve through `platform.h` → `valve_minmax_on.h` (a macro,
+not `std::min`), so they were converted to the identical expansion too.
+
+Result: **15 files changed, +23/−67**; 16 defines deleted, 25 call
+expressions converted (23 source lines — the nested voice_codec call
+duplicates its inner expression exactly as the macro did), 2 dead comment
+lines removed; call-form grep over the 15 files = **0**; residual wrapper
+grep = **6** (the documented `valve_minmax_on.h` + `my_global.h` residue);
+new lint id `local_minmax_macro` ratcheted **22 → 6**; idempotent re-run
+changes 0 files; full local build green (2,214/2,214 tasks).
+
 ## Gate 1 completion criteria (updated)
 
 `x360_refs = 0`, `isx360_fn = 0`, `xbox_include = 0`, `fn3dnow = 0` in lint;

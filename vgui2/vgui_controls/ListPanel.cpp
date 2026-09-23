@@ -43,13 +43,7 @@ enum
 };
 
 
-#ifndef max
-#define max(a,b)            (((a) > (b)) ? (a) : (b))
-#endif
 
-#ifndef min
-#define min(a,b)    (((a) < (b)) ? (a) : (b))
-#endif
 
 #ifndef clamp
 #define clamp( val, min, max ) ( ((val) > (max)) ? (max) : ( ((val) < (min)) ? (min) : (val) ) )
@@ -1092,7 +1086,7 @@ void ListPanel::IndexItem(int itemID)
 	FastSortListPanelItem *newitem = (FastSortListPanelItem*) m_DataItems[itemID];
 
 	// remove the item from the indexes and re-add
-	int maxCount = min(m_ColumnsHistory.Count(), newitem->m_SortedTreeIndexes.Count());
+	int maxCount = (((m_ColumnsHistory.Count()) < (newitem->m_SortedTreeIndexes.Count())) ? (m_ColumnsHistory.Count()) : (newitem->m_SortedTreeIndexes.Count()));
 	for (int i = 0; i < maxCount; i++)
 	{
 		IndexRBTree_t &rbtree = m_ColumnsData[m_ColumnsHistory[i]].m_SortedTree;
@@ -1478,7 +1472,7 @@ Panel *ListPanel::GetCellRenderer(int itemID, int col)
 		// set cell size
 		Panel *header = column.m_pHeader;
 	    int wide = header->GetWide();
-		m_pTextImage->SetSize( min( cw, wide - 5 ), tall);
+		m_pTextImage->SetSize( (((cw) < (wide - 5)) ? (cw) : (wide - 5)), tall);
 
 		m_pLabel->SetTextImageIndex( 0 );
 		m_pLabel->SetImageAtIndex(0, m_pTextImage, 3);
@@ -1981,7 +1975,7 @@ void ListPanel::Paint()
 
 				render->SetPos( xpos, (drawcount * m_iRowHeight) + m_iTableStartY);
 
-				int right = min( xpos + hWide, maxw );
+				int right = (((xpos + hWide) < (maxw)) ? (xpos + hWide) : (maxw));
 				int usew = right - xpos;
 				render->SetSize( usew, m_iRowHeight - 1 );
 

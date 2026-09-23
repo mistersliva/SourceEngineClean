@@ -34,9 +34,6 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include <tier0/memdbgon.h>
 
-#ifndef max
-#define max(a,b)            (((a) > (b)) ? (a) : (b))
-#endif
 
 using namespace vgui;
 enum 
@@ -902,7 +899,7 @@ void TreeNode::CalculateVisibleMaxWidth()
 		int childMaxWidth = GetMaxChildrenWidth();
 		childMaxWidth += TREE_INDENT_AMOUNT;
 
-		width = max(childMaxWidth, m_iNodeWidth);
+		width = (((childMaxWidth) > (m_iNodeWidth)) ? (childMaxWidth) : (m_iNodeWidth));
 	}
 	else
 	{

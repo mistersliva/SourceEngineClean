@@ -9,7 +9,6 @@
 #include <io.h>
 #include <malloc.h>
 
-#define max(x,y) ( ((x) > (y)) ? (x) : (y) )
 
 void SetSearchWord( const char *searchWord );
 char *FindSearchWord( char *buffer, char *bufend );
@@ -306,7 +305,7 @@ void SetSearchWord( const char *Word )
 	// set the amount the searcher can jump forward, depending on the character
 	for ( int i = 0; i < SearchWordLen; i++ )
 	{
-		JumpTable[ (unsigned char)SearchWord[i] ] = max( SearchWordLen - i - 1, 1 );
+		JumpTable[ (unsigned char)SearchWord[i] ] = (((SearchWordLen - i - 1) > (1)) ? (SearchWordLen - i - 1) : (1));
 	}
 }
 

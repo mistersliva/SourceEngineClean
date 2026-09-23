@@ -32,7 +32,6 @@ IVoiceRecord* CreateVoiceRecord_DSound(int sampleRate) { return new VoiceRecord_
 
 #else
 
-#define min(a,b)  (((a) < (b)) ? (a) : (b))
 #ifdef OSX
 #include <Carbon/Carbon.h>
 #include <OpenAL/al.h>
@@ -177,7 +176,7 @@ int VoiceRecord_OpenAL::GetRecordedData(short *pOut, int nSamples )
 	alcGetIntegerv( m_Device,ALC_CAPTURE_SAMPLES,1,&frameCount );
 	if ( frameCount > 0 )
 	{
-		frameCount = min( nSamples, frameCount );
+		frameCount = (((nSamples) < (frameCount)) ? (nSamples) : (frameCount));
 		alcCaptureSamples( m_Device, pOut, frameCount );
 		if ( alcGetError(m_Device) != ALC_NO_ERROR )
 		{
