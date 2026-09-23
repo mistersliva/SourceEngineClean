@@ -648,7 +648,7 @@ LRESULT CGame::WindowProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			rcWindow.right = rcWindow.left + m_rcLastRestoredClientRect.right;
 			rcWindow.bottom = rcWindow.top + m_rcLastRestoredClientRect.bottom;
 
-			::AdjustWindowRect( &rcWindow, ::GetWindowLong( hWnd, GWL_STYLE ), FALSE );
+			::AdjustWindowRect( &rcWindow, ::GetWindowLongPtr( hWnd, GWL_STYLE ), FALSE );
 			::MoveWindow( hWnd, rcWindow.left, rcWindow.top,
 				rcWindow.right - rcWindow.left, rcWindow.bottom - rcWindow.top, FALSE );
 		}

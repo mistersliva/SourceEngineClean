@@ -2383,11 +2383,11 @@ void CWin32Surface::SetAsToolBar(VPANEL panel, bool state)
 	{
 		if (state)
 		{
-			::SetWindowLong(PLAT(panel)->hwnd, GWL_EXSTYLE, ::GetWindowLong(PLAT(panel)->hwnd, GWL_EXSTYLE) | WS_EX_TOOLWINDOW);
+			::SetWindowLongPtr(PLAT(panel)->hwnd, GWL_EXSTYLE, ::GetWindowLongPtr(PLAT(panel)->hwnd, GWL_EXSTYLE) | WS_EX_TOOLWINDOW);
 		}
 		else
 		{
-			::SetWindowLong(PLAT(panel)->hwnd, GWL_EXSTYLE, ::GetWindowLong(PLAT(panel)->hwnd, GWL_EXSTYLE) & ~WS_EX_TOOLWINDOW);
+			::SetWindowLongPtr(PLAT(panel)->hwnd, GWL_EXSTYLE, ::GetWindowLongPtr(PLAT(panel)->hwnd, GWL_EXSTYLE) & ~WS_EX_TOOLWINDOW);
 		}
 	}
 }
@@ -2755,7 +2755,7 @@ void CWin32Surface::ApplyChanges()
 		}
 
 		// check to see if the win32 window is visible
-		if (::GetWindowLong(Plat->hwnd, GWL_STYLE) & WS_VISIBLE)
+		if (::GetWindowLongPtr(Plat->hwnd, GWL_STYLE) & WS_VISIBLE)
 		{
 			//check to see if embedded VPanel is not visible, if so then hide the win32 window
 			if (!((VPanel *)panel)->IsVisible())

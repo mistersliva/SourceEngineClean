@@ -84,7 +84,7 @@ bool CShellIconMgr::Init(
 	}
 
 	m_uTaskbarRestart = RegisterWindowMessage( TEXT( "TaskbarCreated" ) );
-	SetWindowLong( m_hWnd, GWL_USERDATA, (LONG)this );
+	SetWindowLongPtr( m_hWnd, GWLP_USERDATA, (LONG_PTR)this );
 	UpdateWindow( m_hWnd );
 
 	// Don't handle errors here because the taskbar may not be created yet if we are a service.
@@ -174,7 +174,7 @@ LRESULT CShellIconMgr::StaticWindowProc(
 	LPARAM lParam   // second message parameter
 	)
 {
-	CShellIconMgr *pMgr = (CShellIconMgr*)GetWindowLong( hwnd, GWL_USERDATA );
+	CShellIconMgr *pMgr = (CShellIconMgr*)GetWindowLongPtr( hwnd, GWLP_USERDATA );
 	if ( pMgr )
 	{
 		return pMgr->WindowProc( hwnd, uMsg, wParam, lParam );

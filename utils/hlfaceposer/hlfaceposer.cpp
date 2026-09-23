@@ -315,47 +315,47 @@ void FPCopyFile( const char *source, const char *dest, bool bCheckOut )
 bool FacePoser_HasWindowStyle( mxWindow *w, int bits )
 {
 	HWND wnd = (HWND)w->getHandle();
-	DWORD style = GetWindowLong( wnd, GWL_STYLE );
+	DWORD style = GetWindowLongPtr( wnd, GWL_STYLE );
 	return ( style & bits ) ? true : false;
 }
 
 bool FacePoser_HasWindowExStyle( mxWindow *w, int bits )
 {
 	HWND wnd = (HWND)w->getHandle();
-	DWORD style = GetWindowLong( wnd, GWL_EXSTYLE );
+	DWORD style = GetWindowLongPtr( wnd, GWL_EXSTYLE );
 	return ( style & bits ) ? true : false;
 }
 
 void FacePoser_AddWindowStyle( mxWindow *w, int addbits )
 {
 	HWND wnd = (HWND)w->getHandle();
-	DWORD style = GetWindowLong( wnd, GWL_STYLE );
+	DWORD style = GetWindowLongPtr( wnd, GWL_STYLE );
 	style |= addbits;
-	SetWindowLong( wnd, GWL_STYLE, style );
+	SetWindowLongPtr( wnd, GWL_STYLE, style );
 }
 
 void FacePoser_AddWindowExStyle( mxWindow *w, int addbits )
 {
 	HWND wnd = (HWND)w->getHandle();
-	DWORD style = GetWindowLong( wnd, GWL_EXSTYLE );
+	DWORD style = GetWindowLongPtr( wnd, GWL_EXSTYLE );
 	style |= addbits;
-	SetWindowLong( wnd, GWL_EXSTYLE, style );
+	SetWindowLongPtr( wnd, GWL_EXSTYLE, style );
 }
 
 void FacePoser_RemoveWindowStyle( mxWindow *w, int removebits )
 {
 	HWND wnd = (HWND)w->getHandle();
-	DWORD style = GetWindowLong( wnd, GWL_STYLE );
+	DWORD style = GetWindowLongPtr( wnd, GWL_STYLE );
 	style &= ~removebits;
-	SetWindowLong( wnd, GWL_STYLE, style );
+	SetWindowLongPtr( wnd, GWL_STYLE, style );
 }
 
 void FacePoser_RemoveWindowExStyle( mxWindow *w, int removebits )
 {
 	HWND wnd = (HWND)w->getHandle();
-	DWORD style = GetWindowLong( wnd, GWL_EXSTYLE );
+	DWORD style = GetWindowLongPtr( wnd, GWL_EXSTYLE );
 	style &= ~removebits;
-	SetWindowLong( wnd, GWL_EXSTYLE, style );
+	SetWindowLongPtr( wnd, GWL_EXSTYLE, style );
 }
 
 //-----------------------------------------------------------------------------

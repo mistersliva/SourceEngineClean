@@ -115,9 +115,9 @@ static BOOL CALLBACK CloseCaptionLookupDialogProc( HWND hwndDlg, UINT uMsg, WPAR
 			g_Params.PositionSelf( hwndDlg );
 
 			HWND control = GetDlgItem( hwndDlg, IDC_CCTOKENLIST );
-			DWORD exStyle = GetWindowLong( control, GWL_EXSTYLE );
+			DWORD exStyle = GetWindowLongPtr( control, GWL_EXSTYLE );
 			exStyle |= LVS_EX_FULLROWSELECT;
-			SetWindowLong( control, GWL_EXSTYLE, exStyle );
+			SetWindowLongPtr( control, GWL_EXSTYLE, exStyle );
 
 			PopulateCloseCaptionTokenList( hwndDlg, &g_Params );
 

@@ -340,7 +340,7 @@ MDLViewer::MDLViewer ()
 
 	d_MatSysWindow = new MatSysWindow (this, 0, 0, 100, 100, "", mxWindow::Normal);
 #ifdef WIN32
-	// SetWindowLong ((HWND) d_MatSysWindow->getHandle (), GWL_EXSTYLE, WS_EX_CLIENTEDGE);
+	// SetWindowLongPtr ((HWND) d_MatSysWindow->getHandle (), GWL_EXSTYLE, WS_EX_CLIENTEDGE);
 #endif
 
 	d_cpl = new ControlPanel (this);

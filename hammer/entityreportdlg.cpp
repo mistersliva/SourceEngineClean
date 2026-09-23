@@ -204,7 +204,7 @@ void CEntityReportDlg::OnFilterbytype()
 			break;
 		iButton++;
 		hWndCtrl = ::GetWindow(hWndCtrl, GW_HWNDNEXT);
-	} while(hWndCtrl != NULL && !(GetWindowLong(hWndCtrl, GWL_STYLE) & WS_GROUP));
+	} while(hWndCtrl != NULL && !(GetWindowLongPtr(hWndCtrl, GWL_STYLE) & WS_GROUP));
 
 	m_iFilterByType = iButton;
 	UpdateEntityList();

@@ -1575,10 +1575,10 @@ BOOL COP_Entity::OnInitDialog(void)
 	//m_VarList.SetTabStops(65);
 	
 	// Put our varlist in the right mode.
-	DWORD dwStyle = GetWindowLong( m_VarList.GetSafeHwnd(), GWL_STYLE );
+	DWORD dwStyle = GetWindowLongPtr( m_VarList.GetSafeHwnd(), GWL_STYLE );
 	dwStyle &= ~(LVS_ICON | LVS_LIST | LVS_SMALLICON);
 	dwStyle |= LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_OWNERDRAWFIXED;
-	SetWindowLong( m_VarList.GetSafeHwnd(), GWL_STYLE, dwStyle );
+	SetWindowLongPtr( m_VarList.GetSafeHwnd(), GWL_STYLE, dwStyle );
 	
 	m_VarList.SetExtendedStyle( m_VarList.GetExtendedStyle() | LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES );
 	m_VarList.InsertColumn(0, "Property Name", LVCFMT_LEFT, 200);

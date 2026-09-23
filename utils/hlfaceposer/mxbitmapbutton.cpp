@@ -19,9 +19,9 @@ mxBitmapButton::mxBitmapButton( mxWindow *parent, int x, int y, int w, int h, in
 
 	HWND wnd = (HWND)getHandle();
 
-	DWORD style = GetWindowLong( wnd, GWL_STYLE );
+	DWORD style = GetWindowLongPtr( wnd, GWL_STYLE );
 	style |= WS_CLIPSIBLINGS;
-	SetWindowLong( wnd, GWL_STYLE, style );
+	SetWindowLongPtr( wnd, GWL_STYLE, style );
 }
 
 mxBitmapButton::~mxBitmapButton( void )

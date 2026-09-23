@@ -66,9 +66,9 @@ public:
 		// SendMessage ( (HWND)getHandle(), WM_SETFONT, (WPARAM) (HFONT) GetStockObject (ANSI_FIXED_FONT), MAKELPARAM (TRUE, 0));
 
 		//HWND wnd = (HWND)getHandle();
-		//DWORD style = GetWindowLong( wnd, GWL_STYLE );
+		//DWORD style = GetWindowLongPtr( wnd, GWL_STYLE );
 		//style |= LVS_SORTASCENDING;
-		//SetWindowLong( wnd, GWL_STYLE, style );
+		//SetWindowLongPtr( wnd, GWL_STYLE, style );
 
 		//SceneManager_AddWindowStyle( this, LVS_SORTASCENDING );
 

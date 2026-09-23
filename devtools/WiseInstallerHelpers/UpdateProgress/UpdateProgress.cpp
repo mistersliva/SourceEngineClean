@@ -158,7 +158,7 @@ void ShowProgressBar( bool visible )
 	if ( !g.m_hProgressBar )
 		return;
 
-	DWORD style = GetWindowLong( g.m_hProgressBar, GWL_STYLE );
+	DWORD style = GetWindowLongPtr( g.m_hProgressBar, GWL_STYLE );
 	if ( visible )
 	{
 		style |= WS_VISIBLE;
@@ -168,7 +168,7 @@ void ShowProgressBar( bool visible )
 		style &= ~WS_VISIBLE;
 	}
 
-	SetWindowLong( g.m_hProgressBar, GWL_STYLE, style );
+	SetWindowLongPtr( g.m_hProgressBar, GWL_STYLE, style );
 	InvalidateRect( g.m_hDialog, NULL, TRUE );
 }
 

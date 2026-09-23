@@ -72,8 +72,8 @@ void CPakViewFiles::OnInitialUpdate()
 	CListCtrl& lc = GetListCtrl();
 
 	// modify the list control's attributes
-	DWORD dwStyle = GetWindowLong(lc.m_hWnd, GWL_STYLE);
-	SetWindowLong(lc.m_hWnd, GWL_STYLE, (dwStyle & ~LVS_TYPEMASK) |
+	DWORD dwStyle = GetWindowLongPtr(lc.m_hWnd, GWL_STYLE);
+	SetWindowLongPtr(lc.m_hWnd, GWL_STYLE, (dwStyle & ~LVS_TYPEMASK) |
 		LVS_ALIGNLEFT | LVS_AUTOARRANGE | LVS_REPORT | // LVS_ICON |
   		// LVS_NOITEMDATA | 
 		 LVS_SORTASCENDING);

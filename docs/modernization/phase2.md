@@ -307,6 +307,85 @@ outside the lint scope entirely (vendored / pinned), same as before.
   new warnings anywhere**: the deleted code was never compiled on 64-bit,
   so removing it could not move the count either way.)
 
+## Stage 4 execution notes (`win32_long_no_ptr` → 0)
+
+**The detector was wrong, so it was fixed first.** The lint pattern was
+`(Get|Set)WindowLong([AW])?\(` — a call paren *immediately* after the
+name. `utils/mxtk` spells its calls `GetWindowLong (hwnd, GWL_USERDATA)`
+with a space, so **52 truncating calls were invisible to the gate**: the
+id read 63 while the real population was **115 across 38 files**. A
+formatting quirk was defeating the detector, so per maintainer decision
+the pattern is now `(Get|Set)WindowLong([AW])?[[:space:]]*\(`. The widened
+pattern still cannot match the *fixed* form — `GetWindowLongPtr(` fails
+at the `\(` because `P` is neither `[AW]` nor whitespace — so it counts
+only work still to do, and cannot be satisfied by renaming. The
+baseline was re-ratcheted 63 → 115 → 0, so the final committed value is 0
+and the intermediate 115 is the auditable record of what the id actually
+measures.
+
+**Classification drove the edit — not a blind rename.** Each of the 115
+sites was classified by its index argument:
+
+| class | n | transformation |
+|---|---|---|
+| `VALUE` — `GWL_STYLE` / `GWL_EXSTYLE` | 54 | rename the function only. The `Ptr` accessors accept value-sized indices and widen harmlessly; **the index name must not change.** |
+| `PTR` — `GWL_USERDATA` / `GWL_WNDPROC` / `GWL_HINSTANCE` / numeric | 59 | rename function **and** index to `GWLP_*`, plus `(LONG)` → `(LONG_PTR)`. |
+| `MIXED` — two calls on one line (`Surface.cpp` 2386/2390) | 2 | both calls are `GWL_EXSTYLE`, so both are renamed and the index is kept. |
+
+The cast widening is uniformly safe because on every `PTR` line the
+`LONG` is carrying a pointer — `this`, `exp`, `PhonemeBtnProc`, or a `0`
+stashed as user data — so `(LONG)` → `(LONG_PTR)` removes the truncation
+rather than papering over it. `VALUE` lines are left alone: their `LONG`
+value widens into the `LONG_PTR` parameter by itself.
+
+Sites needing individual care: `engine/ccs.cpp` uses a **bare numeric
+index `0`** to stash `this` (a window-extra-memory byte offset, valid for
+both accessors) — the index is preserved and only the cast widened;
+`phonemeproperties.cpp:210` stores a subclassed window proc, so
+`GWL_WNDPROC` → `GWLP_WNDPROC` with `(LONG)PhonemeBtnProc` →
+`(LONG_PTR)`; `mxwindow.cpp:72` stores `0` explicitly.
+
+**Verification split.** Only **11 of the 115 are compile-verifiable** —
+`engine` 8 (`sys_getmodes` 5, `ccs` 2, `sys_mainwind` 1) and
+`vgui2/src/Surface.cpp` 3. `mxtk`, `hlfaceposer`, `scenemanager`,
+`hammer`, `hlmv`, `vmpi` and `devtools/WiseInstallerHelpers` are **not in
+`wscript` at all**, so the other 104 are verified by lint + line-level
+review, the same treatment Phase 1a gave unbuilt trees (decision 4 still
+holds: lint counts the whole tree regardless of what waf compiles).
+
+Method: the two-phase apply returned `phase 1 OK: 115 sites across 38
+files`, where phase 1 re-reads each file, re-derives hits with the widened
+pattern, and asserts per-file that **no unfixed call remains after
+transform** — that post-condition is what makes "0" trustworthy rather
+than merely reported. Files are round-tripped through
+`surrogateescape` so a Windows-1252 `©` byte in one of them survives
+byte-for-byte.
+
+**Stage 4 verification.**
+
+* lint: `win32_long_no_ptr` = **0** (detector widened, baseline
+  63 → 115 → 0); `inline_asm` still 0; all other ids untouched.
+* full build green, **0 errors**. Exactly the 4 built files I touched
+  recompiled (`engine/ccs.cpp`, `engine/sys_getmodes.cpp`,
+  `engine/sys_mainwind.cpp`, `vgui2/src/Surface.cpp`); the 104 unbuilt
+  tool sites are verified by lint + line-level review per decision 4.
+* warning-neutral, measured not assumed: those 4 files emitted **0
+  warnings before and after**, all 53 warnings in this run come from
+  `public/tier1/utlmemory.h` (the known 99.4% source), and **no warning
+  mentions `WindowLong`/`Ptr`**. C4244 appears nowhere in this run *or*
+  in the full Stage 3 log, so the `LONG_PTR` → `DWORD` narrowing at
+  `sys_getmodes.cpp:1367/1368` and `sys_mainwind.cpp:651` is accepted
+  silently — and is value-preserving regardless, because Windows stores
+  styles as a 32-bit `DWORD`, so truncating a `LONG_PTR` that holds one
+  cannot change the value.
+* **the `C4311 = 0` visible in this particular log is an incremental-build
+  artifact, not an achievement** — the 24 first-party C4311 sites live in
+  files this run did not recompile (`InputWin32.cpp` 19, `Sys_Utils.cpp`
+  2, `voice_mixer_controls.cpp`, `baseentity.cpp`,
+  `vguimatsurface/Input.cpp`). Those remain Stage 5's worklist unchanged;
+  none of them is a `WindowLong` call, so Stage 4 neither fixed nor
+  regressed them.
+
 ## Gate 2 completion criteria
 
 - CI matrix is 64-bit-only (no i386, no armv7 Android) and green;

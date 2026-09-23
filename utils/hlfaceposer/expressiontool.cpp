@@ -116,9 +116,9 @@ CExpressionToolWorkspace::CExpressionToolWorkspace( mxWindow *parent ) :
 	mxWindow( parent, 0, 0, 0, 0 )
 {
 	HWND wnd = (HWND)getHandle();
-	DWORD style = GetWindowLong( wnd, GWL_STYLE );
+	DWORD style = GetWindowLongPtr( wnd, GWL_STYLE );
 	style |= WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
-	SetWindowLong( wnd, GWL_STYLE, style );
+	SetWindowLongPtr( wnd, GWL_STYLE, style );
 
 	for ( int i = 0; i < GLOBAL_STUDIO_FLEX_CONTROL_COUNT; i++ )
 	{

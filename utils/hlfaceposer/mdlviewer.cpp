@@ -474,13 +474,13 @@ public:
 		: mxButton( parent, 0, 0, 0, 0, "", id )
 	{
 		HWND wnd = (HWND)getHandle();
-		DWORD exstyle = GetWindowLong( wnd, GWL_EXSTYLE );
+		DWORD exstyle = GetWindowLongPtr( wnd, GWL_EXSTYLE );
 		exstyle |= WS_EX_CLIENTEDGE;
-		SetWindowLong( wnd, GWL_EXSTYLE, exstyle );
+		SetWindowLongPtr( wnd, GWL_EXSTYLE, exstyle );
 
-		DWORD style = GetWindowLong( wnd, GWL_STYLE );
+		DWORD style = GetWindowLongPtr( wnd, GWL_STYLE );
 		style &= ~WS_BORDER;
-		SetWindowLong( wnd, GWL_STYLE, style );
+		SetWindowLongPtr( wnd, GWL_STYLE, style );
 
 	}
 };

@@ -22,47 +22,47 @@
 bool SceneManager_HasWindowStyle( mxWindow *w, int bits )
 {
 	HWND wnd = (HWND)w->getHandle();
-	DWORD style = GetWindowLong( wnd, GWL_STYLE );
+	DWORD style = GetWindowLongPtr( wnd, GWL_STYLE );
 	return ( style & bits ) ? true : false;
 }
 
 bool SceneManager_HasWindowExStyle( mxWindow *w, int bits )
 {
 	HWND wnd = (HWND)w->getHandle();
-	DWORD style = GetWindowLong( wnd, GWL_EXSTYLE );
+	DWORD style = GetWindowLongPtr( wnd, GWL_EXSTYLE );
 	return ( style & bits ) ? true : false;
 }
 
 void SceneManager_AddWindowStyle( mxWindow *w, int addbits )
 {
 	HWND wnd = (HWND)w->getHandle();
-	DWORD style = GetWindowLong( wnd, GWL_STYLE );
+	DWORD style = GetWindowLongPtr( wnd, GWL_STYLE );
 	style |= addbits;
-	SetWindowLong( wnd, GWL_STYLE, style );
+	SetWindowLongPtr( wnd, GWL_STYLE, style );
 }
 
 void SceneManager_AddWindowExStyle( mxWindow *w, int addbits )
 {
 	HWND wnd = (HWND)w->getHandle();
-	DWORD style = GetWindowLong( wnd, GWL_EXSTYLE );
+	DWORD style = GetWindowLongPtr( wnd, GWL_EXSTYLE );
 	style |= addbits;
-	SetWindowLong( wnd, GWL_EXSTYLE, style );
+	SetWindowLongPtr( wnd, GWL_EXSTYLE, style );
 }
 
 void SceneManager_RemoveWindowStyle( mxWindow *w, int removebits )
 {
 	HWND wnd = (HWND)w->getHandle();
-	DWORD style = GetWindowLong( wnd, GWL_STYLE );
+	DWORD style = GetWindowLongPtr( wnd, GWL_STYLE );
 	style &= ~removebits;
-	SetWindowLong( wnd, GWL_STYLE, style );
+	SetWindowLongPtr( wnd, GWL_STYLE, style );
 }
 
 void SceneManager_RemoveWindowExStyle( mxWindow *w, int removebits )
 {
 	HWND wnd = (HWND)w->getHandle();
-	DWORD style = GetWindowLong( wnd, GWL_EXSTYLE );
+	DWORD style = GetWindowLongPtr( wnd, GWL_EXSTYLE );
 	style &= ~removebits;
-	SetWindowLong( wnd, GWL_EXSTYLE, style );
+	SetWindowLongPtr( wnd, GWL_EXSTYLE, style );
 }
 
 //-----------------------------------------------------------------------------

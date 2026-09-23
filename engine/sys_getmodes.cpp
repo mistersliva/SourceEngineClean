@@ -1364,8 +1364,8 @@ void CVideoMode_Common::AdjustWindow( int nWidth, int nHeight, int nBPP, bool bW
 
 #ifndef USE_SDL
 	// Get window style
-	DWORD style = GetWindowLong( (HWND)game->GetMainWindow(), GWL_STYLE );
-	DWORD exStyle = GetWindowLong( (HWND)game->GetMainWindow(), GWL_EXSTYLE );
+	DWORD style = GetWindowLongPtr( (HWND)game->GetMainWindow(), GWL_STYLE );
+	DWORD exStyle = GetWindowLongPtr( (HWND)game->GetMainWindow(), GWL_EXSTYLE );
 
 	if ( bWindowed )
 	{
@@ -1382,7 +1382,7 @@ void CVideoMode_Common::AdjustWindow( int nWidth, int nHeight, int nBPP, bool bW
 
 		// remove topmost flag
 		exStyle &= ~WS_EX_TOPMOST;
-		SetWindowLong( (HWND)game->GetMainWindow(), GWL_EXSTYLE, exStyle );
+		SetWindowLongPtr( (HWND)game->GetMainWindow(), GWL_EXSTYLE, exStyle );
 	}
 	else
 	{
@@ -1390,7 +1390,7 @@ void CVideoMode_Common::AdjustWindow( int nWidth, int nHeight, int nBPP, bool bW
 		style &= ~WS_OVERLAPPEDWINDOW;
 	}
 
-	SetWindowLong( (HWND)game->GetMainWindow(), GWL_STYLE, style );
+	SetWindowLongPtr( (HWND)game->GetMainWindow(), GWL_STYLE, style );
 
 	// Compute rect needed for that size client area based on window style
 	AdjustWindowRectEx( &WindowRect, style, FALSE, exStyle );
@@ -1576,7 +1576,7 @@ void CVideoMode_Common::CenterEngineWindow( void *hWndCenter, int width, int hei
 
         int cxScreen = 0, cyScreen = 0, refreshRate = 0;
 
-        if ( !( WS_EX_TOPMOST & ::GetWindowLong( (HWND)hWndCenter, GWL_EXSTYLE ) ) && m_bWindowed )
+        if ( !( WS_EX_TOPMOST & ::GetWindowLongPtr( (HWND)hWndCenter, GWL_EXSTYLE ) ) && m_bWindowed )
         {
             game->GetDesktopInfo( cxScreen, cyScreen, refreshRate );
         }

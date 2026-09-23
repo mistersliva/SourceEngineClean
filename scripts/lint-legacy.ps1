@@ -71,8 +71,8 @@ $checks = @(
     },
     [pscustomobject]@{
         id = 'win32_long_no_ptr'
-        pattern = '(Get|Set)WindowLong([AW])?\('
-        why = 'Get/SetWindowLong without Ptr (Phase 2a: truncates on x64)'
+        pattern = '(Get|Set)WindowLong([AW])?[[:space:]]*\('
+        why = 'Get/SetWindowLong without Ptr (Phase 2a: truncates on x64). Whitespace-tolerant so a `Long (` spelling cannot hide a hit - the pattern must not match the fixed ...LongPtr form, which it cannot, since Ptr is neither [AW] nor whitespace.'
     },
     [pscustomobject]@{
         id = 'inline_asm'

@@ -1241,7 +1241,7 @@ ControlPanel::ControlPanel( mxWindow *parent )
 	// create tabcontrol with subdialog windows
 	tab = new mxTab( this, 0, 20, 0, 0, IDC_TAB );
 #ifdef WIN32
-	SetWindowLong( ( HWND )tab->getHandle(), GWL_EXSTYLE, WS_EX_CLIENTEDGE );
+	SetWindowLongPtr( ( HWND )tab->getHandle(), GWL_EXSTYLE, WS_EX_CLIENTEDGE );
 #endif
 
 	SetupRenderWindow( tab );

@@ -72,8 +72,8 @@ void CPakViewDirec::OnInitialUpdate()
 	CTreeCtrl &tc = GetTreeCtrl();
 
 	// modify the tree control's attributes
-	DWORD dwStyle = GetWindowLong(tc.m_hWnd, GWL_STYLE);
-	SetWindowLong(tc.m_hWnd, GWL_STYLE, dwStyle | TVS_HASLINES);
+	DWORD dwStyle = GetWindowLongPtr(tc.m_hWnd, GWL_STYLE);
+	SetWindowLongPtr(tc.m_hWnd, GWL_STYLE, dwStyle | TVS_HASLINES);
 
 	// set the image list
 	

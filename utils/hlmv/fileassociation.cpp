@@ -211,7 +211,7 @@ FileAssociation::setAssociation (int index)
 	rbAction[1]->setEnabled (val != 31);
 /*
 	WORD dw = 0;
-	HICON hIcon = ExtractAssociatedIcon ((HINSTANCE) GetWindowLong ((HWND) getHandle (), GWL_HINSTANCE), path, &dw);
+	HICON hIcon = ExtractAssociatedIcon ((HINSTANCE) GetWindowLongPtr ((HWND) getHandle (), GWLP_HINSTANCE), path, &dw);
 	SendMessage ((HWND) getHandle (), WM_SETICON, (WPARAM) ICON_SMALL, (LPARAM) hIcon);
 	char str[32];
 	sprintf (str, "%d", (int) hIcon);
