@@ -247,7 +247,6 @@ def define_platform(conf):
 			'_ALLOW_RUNTIME_LIBRARY_MISMATCH',
 			'_ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH',
 			'_ALLOW_MSC_VER_MISMATCH',
-			'NO_X360_XDK'
 		])
 	elif conf.env.DEST_OS == 'darwin':
 		conf.env.append_unique('DEFINES', [

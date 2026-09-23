@@ -9,7 +9,7 @@
 #include "tier0/platform.h"
 
 
-#if defined( _WIN32 ) && !defined(_X360 ) && ( _MSC_VER >= 1300 )
+#if defined(_WIN32) && (_MSC_VER >= 1300)
 
 #include "tier0/valve_off.h"
 #define WIN_32_LEAN_AND_MEAN
@@ -24,7 +24,7 @@
 #include "tier0/memdbgon.h"
 
 
-#if defined( _WIN32 ) && !defined( _X360 )
+#if defined(_WIN32)
 
 #if _MSC_VER >= 1300
 
@@ -295,14 +295,6 @@ PLATFORM_INTERFACE void CatchAndWriteMiniDump( FnWMain pfn, int argc, tchar *arg
 }
 
 #endif
-#elif defined(_X360 )
-PLATFORM_INTERFACE void WriteMiniDump()
-{
-#if !defined( _CERT )
-	DmCrashDump(false);
-#endif
-}
-
 #else // !_WIN32
 
 PLATFORM_INTERFACE void WriteMiniDump()

@@ -649,20 +649,17 @@ void CVProfPanel::OnTick()
 		m_pVProfile = g_pVProfileForDisplay;
 
 		bool bVisible = false;
-#ifndef _XBOX
 		if ( VProfRecord_IsPlayingBack() )
 		{
 			bVisible = true;
 			m_iLastPlaybackTick = -1;
 		}
-#endif
 		m_pStepForward->SetVisible( bVisible );
 		m_pStepBack->SetVisible( bVisible );
 		m_pPlaybackLabel->SetVisible( bVisible );
 		m_pPlaybackScroll->SetVisible( bVisible );
 		m_pGotoButton->SetVisible( bVisible );
 	}
-#ifndef _XBOX
 	if ( VProfRecord_IsPlayingBack() )
 	{
 		// Update the playback tick.
@@ -674,7 +671,6 @@ void CVProfPanel::OnTick()
 			m_pPlaybackLabel->SetText( str );
 		}
 	}
-#endif
 	SetVisible( m_fShowVprofHeld != 0 );
 
 	m_pRedoSort->SetVisible( !m_bHierarchicalView );
@@ -1122,7 +1118,6 @@ void CVProfPanel::Paint()
 
 void CVProfPanel::OnCommand( const char *pCommand )
 {
-#ifndef _XBOX
 	if ( !Q_stricmp( pCommand, "StepForward" ) )
 	{
 		VProfPlayback_Step();
@@ -1149,7 +1144,6 @@ void CVProfPanel::OnCommand( const char *pCommand )
 		Assert( !m_bHierarchicalView );
 		Reset();
 	}
-#endif
 }
 
 #endif

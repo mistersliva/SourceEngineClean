@@ -11,9 +11,7 @@
 #include <ctype.h>
 #include "tier1/strtools.h"
 
-#ifndef _PS3
 #include <malloc.h>
-#endif
 
 // Should be last include
 #include "tier0/memdbgon.h"
@@ -34,12 +32,6 @@ void CUtlMemoryPool::SetErrorReportFunc( MemoryPoolReportFunc_t func )
 //-----------------------------------------------------------------------------
 CUtlMemoryPool::CUtlMemoryPool( int blockSize, int numElements, int growMode, const char *pszAllocOwner, int nAlignment )
 {
-#ifdef _X360
-	if( numElements > 0 && growMode != GROW_NONE )
-	{
-		numElements = 1;
-	}
-#endif
 
 	m_nAlignment = ( nAlignment != 0 ) ? nAlignment : 1;
 	Assert( IsPowerOfTwo( m_nAlignment ) );

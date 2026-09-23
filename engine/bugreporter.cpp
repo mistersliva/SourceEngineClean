@@ -9,7 +9,7 @@
 #ifndef _LINUX
 #undef fopen
 #endif
-#if defined( WIN32 ) && !defined( _X360 )
+#if defined(WIN32)
 #include "winlite.h"
 #include <winsock2.h> // INADDR_ANY defn
 #include <direct.h>
@@ -31,7 +31,6 @@
 #include <fcntl.h>
 #endif
 #define GetLastError() errno
-#elif defined( _X360 )
 #else
 #error
 #endif
@@ -95,8 +94,6 @@
 
 #include "zip/XZip.h"
 
-#if defined( _X360 )
-#endif
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -2952,13 +2949,11 @@ void CEngineBugReporter::InstallBugReportingUI( vgui::Panel *parent, IEngineBugR
 				{
 					bIsPublic = false;
 				}
-#if !defined( _X360 )
 				// otherwise, if Steam is running and connected to beta, autoselect the internal bug db
 				else if ( k_EUniverseBeta == GetSteamUniverse() )
 				{
 					bIsPublic = false;
 				}
-#endif
 			}
 		}
 		break;

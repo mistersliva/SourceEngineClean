@@ -6,7 +6,7 @@
 // $NoKeywords: $
 //=============================================================================//
 
-#if defined( _X360 ) || defined( WIN64 )
+#if defined(WIN64)
 
 bool CheckMMXTechnology(void) { return false; }
 bool CheckSSETechnology(void) { return false; }
@@ -18,7 +18,7 @@ bool CheckMMXTechnology(void) { return true; }
 bool CheckSSETechnology(void) { return true; }
 bool CheckSSE2Technology(void) { return true; }
 
-#elif defined( _WIN32 ) && !defined( _X360 )
+#elif defined(_WIN32)
 
 #pragma optimize( "", off )
 #pragma warning( disable: 4800 ) //'int' : forcing value to bool 'true' or 'false' (performance warning)

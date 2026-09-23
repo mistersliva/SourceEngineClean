@@ -20,7 +20,7 @@ enum { BufferSize = 256 };	///< BufferSize is used extensively within the downlo
 #ifdef POSIX
 typedef void *LPVOID;
 #endif
-#if defined( _X360 ) || defined( POSIX )
+#if defined(POSIX)
 typedef LPVOID HINTERNET;
 #endif
 

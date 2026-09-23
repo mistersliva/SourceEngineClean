@@ -8,7 +8,7 @@
 
 #include <stdio.h>
 #include <memory.h>
-#if defined( WIN32 ) && !defined( _X360 )
+#if defined(WIN32)
 #include <windows.h>
 #endif
 
@@ -29,8 +29,6 @@
 #include <vgui_controls/TextEntry.h>
 #include <tier0/vcrmode.h>
 
-#if defined( _X360 )
-#endif
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include <tier0/memdbgon.h>
@@ -99,7 +97,6 @@ void CContentControlDialog::ResetPassword()
 {
 	// Set initial value
 #ifdef WIN32
-#ifndef _XBOX
 	HKEY key;
 	if ( ERROR_SUCCESS == VCRHook_RegOpenKeyEx(HKEY_CURRENT_USER, "Software\\Valve\\Half-Life\\Settings", 0, KEY_READ, &key))
 	{
@@ -110,7 +107,6 @@ void CContentControlDialog::ResetPassword()
 		VCRHook_RegCloseKey( key );
 	}
     else
-#endif
     {
         m_szGorePW[ 0 ] = 0;
     }
@@ -212,7 +208,6 @@ void CContentControlDialog::WriteToken( const char *str )
 {
 	// Set initial value
 #ifdef WIN32
-#ifndef _XBOX
 	HKEY key;
 	if ( ERROR_SUCCESS == VCRHook_RegOpenKeyEx(HKEY_CURRENT_USER, "Software\\Valve\\Half-Life\\Settings", 0, KEY_WRITE, &key))
 	{
@@ -223,7 +218,6 @@ void CContentControlDialog::WriteToken( const char *str )
 
 		VCRHook_RegCloseKey( key );
 	}
-#endif
 #else
 	vgui::system()->SetRegistryString( "Software\\Valve\\Half-Life\\Settings\\User Token 2", m_szGorePW );
 #endif

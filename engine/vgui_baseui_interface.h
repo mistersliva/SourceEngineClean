@@ -15,9 +15,7 @@
 #include "ienginevgui.h"
 #include "inputsystem/ButtonCode.h"
 
-#if !defined( _X360 )
 #include "xboxstubs.h"
-#endif
 
 //-----------------------------------------------------------------------------
 // Foward declarations

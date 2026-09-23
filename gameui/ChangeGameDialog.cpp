@@ -6,12 +6,8 @@
 //=============================================================================//
 
 
-#ifdef _XBOX
-#endif
 
-#if !defined( _X360 )
 #include <windows.h>
-#endif
 #include <stdio.h>
 
 #include "ChangeGameDialog.h"

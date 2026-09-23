@@ -9,7 +9,7 @@
 
 #include "platform.h"
 
-#if !defined( _X360 ) && defined( WIN32 )
+#if defined(WIN32)
 #define WIN32_LEAN_AND_MEAN
 #pragma warning(push, 1)
 #pragma warning(disable: 4005)
@@ -58,8 +58,6 @@
 #include "snd_io.h"
 
 #include "snd_wave_mixer_xma.h"
-#if defined( _X360 )
-#include <xhv2.h>
-#elif POSIX
+#if POSIX
 #include "audio/posix_stubs.h"
 #endif

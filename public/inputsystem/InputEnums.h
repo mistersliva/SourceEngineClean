@@ -13,11 +13,7 @@
 // Standard maximum +/- value of a joystick axis
 #define MAX_BUTTONSAMPLE			32768
 
-#if !defined( _X360 )
 #define INVALID_USER_ID		-1
-#else
-#define INVALID_USER_ID		XBX_INVALID_USER_ID
-#endif
 
 //-----------------------------------------------------------------------------
 // Forward declarations: 
@@ -191,7 +187,7 @@ enum GameActionSetFlags_t
 enum JoystickType_t
 {
 	INPUT_TYPE_GENERIC_JOYSTICK = 0,
-	INPUT_TYPE_X360,
+	INPUT_TYPE_GAMEPAD,
 	INPUT_TYPE_STEAMCONTROLLER,
 };
 

@@ -98,7 +98,6 @@ void CBudgetPanelEngine::PostChildPaint()
 
 	g_pMatSystemSurface->DrawColoredText( m_hFont, 600, yPos, r, g, 0, 255, "%5.1f ms", g_fFrameTimeLessBudget*1000.0f );
 	yPos += 14;
-#ifndef _XBOX
 	if ( VProfRecord_IsPlayingBack() )
 	{
 		int iCur = VProfPlayback_GetCurrentTick();
@@ -107,7 +106,6 @@ void CBudgetPanelEngine::PostChildPaint()
 		g_pMatSystemSurface->DrawColoredText( m_hFont, 600, yPos, 255, 0, 0, 255, "%s", str );
 		yPos += 14;
 	}
-#endif	
 	BaseClass::PostChildPaint();
 }
 

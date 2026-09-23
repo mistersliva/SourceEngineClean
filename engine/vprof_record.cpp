@@ -16,18 +16,12 @@
 
 #ifdef VPROF_ENABLED
 
-#if defined( _XBOX )
-
-	extern CVProfile *g_pVProfileForDisplay;
-
-#else
 
 	CVProfile *g_pVProfileForDisplay = &g_VProfCurrentProfile;
 
 	// memdbgon must be the last include file in a .cpp file!!!
 	#include "tier0/memdbgon.h"
 
-#endif
 
 
 long GetFileSize( FILE *fp )

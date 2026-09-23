@@ -8,7 +8,7 @@
 #include "pch_tier0.h"
 #include <time.h>
 
-#if defined(_WIN32) && !defined(_X360)
+#if defined(_WIN32)
 #define WINDOWS_LEAN_AND_MEAN
 #define _WIN32_WINNT 0x0403
 #include <windows.h>
@@ -16,33 +16,10 @@
 #include <errno.h>
 #include <assert.h>
 #include "tier0/platform.h"
-#if defined( _X360 )
-#endif
 #include "tier0/threadtools.h"
 
 #include "tier0/memalloc.h"
 
-#if defined( _PS3 )
-#include <cell/fios/fios_common.h>
-#include <cell/fios/fios_memory.h>
-#include <cell/fios/fios_configuration.h>
-#include <sys/process.h>
-
-#if !defined(_CERT)
-#include "sn/LibSN.h"
-#endif
-
-/*
-#include <sys/types.h>
-#include <sys/process.h>
-#include <sys/prx.h>
-
-#include <sysutil/sysutil_syscache.h>
-
-#include <cell/sysmodule.h>
-*/
-#include <cell/fios/fios_time.h>
-#endif // _PS3
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -87,9 +64,6 @@ void Plat_SetBenchmarkMode( bool bBenchmark )
 	g_bBenchmarkMode = bBenchmark;
 }
 
-#ifdef _PS3
-cell::fios::abstime_t g_fiosLaunchTime = 0;
-#endif
 
 
 double Plat_FloatTime()
@@ -132,8 +106,6 @@ uint32 Plat_MSTime()
 	QueryPerformanceCounter( &CurrentTime );
 
 	return (uint32) ( ( CurrentTime.QuadPart - g_ClockStart.QuadPart ) / g_MSPerformanceFrequency.QuadPart);
-#elif defined(_PS3)
-	return (uint32) cell::fios::FIOSAbstimeToMilliseconds( cell::fios::FIOSGetCurrentTime() - g_fiosLaunchTime );
 #else
 	#error
 #endif	
@@ -141,22 +113,16 @@ uint32 Plat_MSTime()
 
 uint64 Timer_GetTimeUS()
 {
-#ifdef _PS3
-	return cell::fios::FIOSAbstimeToMicroseconds( cell::fios::FIOSGetCurrentTime() - g_fiosLaunchTime );
-#else
 	return uint64( Plat_FloatTime() * 1000000 );
-#endif
 }
 
 uint64 Plat_GetClockStart()
 {
-#if defined( _WIN32 )
+#if defined(_WIN32)
 	if ( !s_bTimeInitted )
 		InitTime();
 
 	return g_ClockStart.QuadPart;
-#elif defined( _PS3 )
-	return g_fiosLaunchTime;
 #else
 	return 0;
 #endif
@@ -201,12 +167,7 @@ void Plat_GetTimeString( struct tm *pTime, char *pOut, int nMaxBytes )
 void Plat_gmtime( uint64 nTime, struct tm *pTime )
 {
 	time_t tmtTime = nTime;
-#ifdef _PS3
-	struct tm * tmp = gmtime( &tmtTime );
-	* pTime = * tmp;
-#else
 	gmtime_s( pTime, &tmtTime );
-#endif
 }
 
 time_t Plat_timegm( struct tm *timeptr )
@@ -226,8 +187,6 @@ void Plat_GetModuleFilename( char *pOut, int nMaxBytes )
 	GetModuleFileName( NULL, pOut, nMaxBytes );
 	if ( GetLastError() != ERROR_SUCCESS )
 		Error( "Plat_GetModuleFilename: The buffer given is too small (%d bytes).", nMaxBytes );
-#elif PLATFORM_X360
-	pOut[0] = 0x00;		// return null string on Xbox 360
 #else
 	// We shouldn't need this on POSIX.
 	Assert( false );
@@ -237,13 +196,10 @@ void Plat_GetModuleFilename( char *pOut, int nMaxBytes )
 
 void Plat_ExitProcess( int nCode )
 {
-#if defined( _WIN32 ) && !defined( _X360 )
+#if defined(_WIN32)
 	// We don't want global destructors in our process OR in any DLL to get executed.
 	// _exit() avoids calling global destructors in our module, but not in other DLLs.
 	TerminateProcess( GetCurrentProcess(), nCode );
-#elif defined(_PS3)
-	// We do not use this path to exit on PS3 (naturally), rather we want a clear crash:
-	int *x = NULL; *x = 1;
 #else	
 	_exit( nCode );
 #endif
@@ -262,60 +218,40 @@ void GetCurrentDate( int *pDay, int *pMonth, int *pYear )
 // Wraps the thread-safe versions of asctime. buf must be at least 26 bytes 
 char *Plat_asctime( const struct tm *tm, char *buf, size_t bufsize )
 {
-#ifdef _PS3
-	snprintf( buf, bufsize, "%s", asctime(tm) );
-	return buf;
-#else
 	if ( EINVAL == asctime_s( buf, bufsize, tm ) )
 		return NULL;
 	else
 		return buf;
-#endif
 }
 
 
 // Wraps the thread-safe versions of ctime. buf must be at least 26 bytes 
 char *Plat_ctime( const time_t *timep, char *buf, size_t bufsize )
 {
-#ifdef _PS3
-	snprintf( buf, bufsize, "%s", ctime( timep ) );
-	return buf;
-#else
 	if ( EINVAL == ctime_s( buf, bufsize, timep ) )
 		return NULL;
 	else
 		return buf;
-#endif
 }
 
 
 // Wraps the thread-safe versions of gmtime
 struct tm *Plat_gmtime( const time_t *timep, struct tm *result )
 {
-#ifdef _PS3
-	*result = *gmtime( timep );
-	return result;
-#else
 	if ( EINVAL == gmtime_s( result, timep ) )
 		return NULL;
 	else
 		return result;
-#endif
 }
 
 
 // Wraps the thread-safe versions of localtime
 struct tm *Plat_localtime( const time_t *timep, struct tm *result )
 {
-#ifdef _PS3
-	*result = *localtime( timep );
-	return result;
-#else
 	if ( EINVAL == localtime_s( result, timep ) )
 		return NULL;
 	else
 		return result;
-#endif
 }
 
 bool vtune( bool resume )
@@ -357,12 +293,8 @@ bool vtune( bool resume )
 
 bool Plat_IsInDebugSession()
 {
-#if defined( _X360 )
-	return (XBX_IsDebuggerPresent() != 0);
-#elif defined( _WIN32 )
+#if defined(_WIN32)
 	return (IsDebuggerPresent() != 0);
-#elif defined( _PS3 ) && !defined(_CERT)
-	return snIsDebuggerPresent();
 #else
 	return false;
 #endif
@@ -374,12 +306,8 @@ void Plat_DebugString( const char * psz )
 	return; // do nothing!
 #endif
 
-#if defined( _X360 )
-	XBX_OutputDebugString( psz );
-#elif defined( _WIN32 )
+#if defined(_WIN32)
 	::OutputDebugStringA( psz );
-#elif defined(_PS3)
-	printf("%s",psz);
 #else 
 	// do nothing?
 #endif
@@ -401,8 +329,6 @@ PlatOSVersion_t Plat_GetOSVersion()
 	if ( GetVersionEx( &info ) )
 		return (PlatOSVersion_t)info.dwMajorVersion;
 	return PLAT_OS_VERSION_UNKNOWN;
-#elif defined( PLATFORM_X360 )
-	return PLAT_OS_VERSION_XBOX360;
 #else
 	return PLAT_OS_VERSION_UNKNOWN;
 #endif
@@ -420,10 +346,7 @@ PLATFORM_INTERFACE void Plat_SetCommandLine( const char *cmdLine )
 
 PLATFORM_INTERFACE const tchar *Plat_GetCommandLine()
 {
-#if defined( _PS3 )
-#pragma message("Plat_GetCommandLine() not implemented on PS3")	// ****
-	return g_CmdLine;
-#elif defined( TCHAR_IS_WCHAR )
+#if defined(TCHAR_IS_WCHAR)
 	return GetCommandLineW();
 #else
 	return GetCommandLine();
@@ -432,12 +355,7 @@ PLATFORM_INTERFACE const tchar *Plat_GetCommandLine()
 
 PLATFORM_INTERFACE const char *Plat_GetCommandLineA()
 {
-#if defined( _PS3 )
-#pragma message("Plat_GetCommandLineA() not implemented on PS3")	// ****
-	return g_CmdLine;
-#else
 	return GetCommandLineA();
-#endif
 }
 
 
@@ -462,7 +380,6 @@ void *Plat_GetProcAddress( const char *pszModule, const char *pszName )
 // DEPRECATED. Still here to support binary back compatability of tier0.dll
 //
 // -------------------------------------------------------------------------------------------------- //
-#ifndef _X360
 #if !defined(STEAM) && !defined(NO_MALLOC_OVERRIDE)
 
 typedef void (*Plat_AllocErrorFn)( unsigned long size );
@@ -474,7 +391,6 @@ void Plat_DefaultAllocErrorFn( unsigned long size )
 Plat_AllocErrorFn g_AllocError = Plat_DefaultAllocErrorFn;
 #endif
 
-#if !defined( _X360 ) && !defined( _PS3 )
 
 
 CRITICAL_SECTION g_AllocCS;
@@ -552,7 +468,5 @@ PLATFORM_INTERFACE void Plat_SetAllocErrorFn( Plat_AllocErrorFn fn )
 }
 #endif
 
-#endif
 
 
-#endif

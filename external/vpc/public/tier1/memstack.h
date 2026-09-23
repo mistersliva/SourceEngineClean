@@ -13,7 +13,7 @@
 
 #include "tier1/utlvector.h"
 
-#if defined( _WIN32 ) || defined( _PS3 )
+#if defined(_WIN32)
 #define MEMSTACK_VIRTUAL_MEMORY_AVAILABLE
 #endif
 
@@ -73,9 +73,6 @@ private:
 #ifdef MEMSTACK_VIRTUAL_MEMORY_AVAILABLE
 	unsigned m_commitSize;
 	unsigned m_minCommit;
-#endif
-#if defined( MEMSTACK_VIRTUAL_MEMORY_AVAILABLE ) && defined( _PS3 )
-	IVirtualMemorySection *m_pVirtualMemorySection;
 #endif
 };
 
@@ -225,124 +222,5 @@ private:
 };
 
 
-#ifdef _X360
-//-----------------------------------------------------------------------------
-// A memory stack used for allocating physical memory on the 360
-// Usage pattern anticipates we usually never go over the initial allocation
-// When we do so, we're ok with slightly slower allocation
-//-----------------------------------------------------------------------------
-class CPhysicalMemoryStack
-{
-public:
-	CPhysicalMemoryStack();
-	~CPhysicalMemoryStack();
-
-	// The physical memory stack is allocated in chunks. We will initially
-	// allocate nInitChunkCount chunks, which will always be in memory.
-	// When FreeAll() is called, it will free down to the initial chunk count
-	// but not below it.
-	bool	Init( size_t nChunkSizeInBytes, size_t nAlignment, int nInitialChunkCount, uint32 nAdditionalFlags );
-	void	Term();
-
-	size_t	GetSize() const;
-	size_t	GetPeakUsed() const;
-	size_t	GetUsed() const;
-	size_t	GetFramePeakUsed() const;
-
-	MemoryStackMark_t GetCurrentAllocPoint() const;
-	void	FreeToAllocPoint( MemoryStackMark_t mark, bool bUnused = true ); // bUnused is for interface compat with CMemoryStack
-	void	*Alloc( size_t nSizeInBytes, bool bClear = false ) RESTRICT;
-	void	FreeAll( bool bUnused = true ); // bUnused is for interface compat with CMemoryStack
-
-	void	PrintContents();
-
-private:
-	void *AllocFromOverflow( size_t nSizeInBytes );
-
-	struct PhysicalChunk_t
-	{
-		uint8 *m_pBase;
-		uint8 *m_pNextAlloc;
-		uint8 *m_pAllocLimit;
-	};
-
-	PhysicalChunk_t m_InitialChunk;
-	CUtlVector< PhysicalChunk_t > m_ExtraChunks; 
-	size_t m_nUsage;
-	size_t m_nFramePeakUsage;
-	size_t m_nPeakUsage;
-	size_t m_nAlignment;
-	size_t m_nChunkSizeInBytes;
-	int m_nFirstAvailableChunk;
-	int m_nAdditionalFlags;
-	PhysicalChunk_t *m_pLastAllocedChunk;
-};
-
-//-------------------------------------
-
-FORCEINLINE void *CPhysicalMemoryStack::Alloc( size_t nSizeInBytes, bool bClear ) RESTRICT
-{
-	if ( nSizeInBytes )
-	{
-		nSizeInBytes = AlignValue( nSizeInBytes, m_nAlignment );
-	}
-	else
-	{
-		nSizeInBytes = m_nAlignment;
-	}
-
-	// Can't do an allocation bigger than the chunk size
-	Assert( nSizeInBytes <= m_nChunkSizeInBytes );
-
-	void *pResult = m_InitialChunk.m_pNextAlloc;
-	uint8 *pNextAlloc = m_InitialChunk.m_pNextAlloc + nSizeInBytes;
-	if ( pNextAlloc <= m_InitialChunk.m_pAllocLimit )
-	{
-		m_InitialChunk.m_pNextAlloc = pNextAlloc;
-		m_pLastAllocedChunk = &m_InitialChunk;
-	}
-	else
-	{
-		pResult = AllocFromOverflow( nSizeInBytes );
-	}
-
-	m_nUsage += nSizeInBytes;
-	m_nFramePeakUsage = MAX( m_nUsage, m_nFramePeakUsage ); 
-	m_nPeakUsage = MAX( m_nUsage, m_nPeakUsage );
-
-	if ( bClear )
-	{
-		memset( pResult, 0, nSizeInBytes );
-	}
-
-	return pResult;
-}
-
-//-------------------------------------
-
-inline size_t CPhysicalMemoryStack::GetPeakUsed() const
-{ 
-	return m_nPeakUsage;
-}
-
-//-------------------------------------
-
-inline size_t CPhysicalMemoryStack::GetUsed() const
-{ 
-	return m_nUsage; 
-}
-
-inline size_t CPhysicalMemoryStack::GetFramePeakUsed() const
-{ 
-	return m_nFramePeakUsage; 
-}
-
-inline MemoryStackMark_t CPhysicalMemoryStack::GetCurrentAllocPoint() const
-{
-	Assert( m_pLastAllocedChunk );
-	return ( m_pLastAllocedChunk->m_pNextAlloc - m_pLastAllocedChunk->m_pBase );
-}
-
-#endif // _X360
 
 #endif // MEMSTACK_H

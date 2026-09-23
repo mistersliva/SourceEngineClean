@@ -91,8 +91,6 @@
 #include "toolframework/itoolframework.h"
 #include "filesystem/IQueuedLoader.h"
 
-#if defined( _X360 )
-#endif
 
 #include "vgui_askconnectpanel.h"
 
@@ -833,9 +831,6 @@ void CEngineVGui::Init()
 void CEngineVGui::PostInit()
 {
 	staticGameUIFuncs->PostInit();
-#if defined( _X360 )
-	g_pMatSystemSurface->ClearTemporaryFontCache();
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -2352,23 +2347,3 @@ void DumpPanels_f()
 }
 ConCommand DumpPanels("dump_panels", DumpPanels_f, "Dump Panel Tree" );
 
-#if defined( _X360 )
-//-----------------------------------------------------------------------------
-// Purpose: For testing message dialogs 
-//-----------------------------------------------------------------------------
-#include "vgui_controls/MessageDialog.h"
-CON_COMMAND( dlg_normal, "Display a sample message dialog" )
-{
-	EngineVGui()->ShowMessageDialog( MD_STANDARD_SAMPLE );
-}
-
-CON_COMMAND( dlg_warning, "Display a sample warning message dialog" )
-{
-	EngineVGui()->ShowMessageDialog( MD_WARNING_SAMPLE );
-}
-
-CON_COMMAND( dlg_error, "Display a sample error message dialog" )
-{
-	EngineVGui()->ShowMessageDialog( MD_ERROR_SAMPLE );
-}
-#endif

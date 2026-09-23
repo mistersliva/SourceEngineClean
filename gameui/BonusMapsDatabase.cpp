@@ -333,11 +333,6 @@ bool CBonusMapsDatabase::ReadBonusMapSaveData( void )
 		return false;
 	}
 
-#ifdef _X360
-	// Nothing to read
-	if ( XBX_GetStorageDeviceId() == XBX_INVALID_STORAGE_ID || XBX_GetStorageDeviceId() == XBX_STORAGE_DECLINED )
-		return false;
-#endif
 
 	char	szFilename[_MAX_PATH];
 

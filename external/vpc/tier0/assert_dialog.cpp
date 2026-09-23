@@ -7,10 +7,7 @@
 #include "tier0/platform.h"
 
 #include "tier0/valve_off.h"
-#ifdef _X360
-#elif defined( _PS3 )
-#include "ps3/ps3_console.h"
-#elif defined( _WIN32 )
+#if defined(_WIN32)
 #include <windows.h>
 #elif POSIX
 char *GetCommandLine();
@@ -59,12 +56,9 @@ static bool g_bAssertsEnabled = true;
 
 static CAssertDisable *g_pAssertDisables = NULL;
 
-#if ( defined( _WIN32 ) && !defined( _X360 ) )
+#if (defined(_WIN32))
 static int g_iLastLineRange = 5;
 static int g_nLastIgnoreNumTimes = 1;
-#endif
-#if defined( _X360 ) || defined( _PS3 )
-	static int g_VXConsoleAssertReturnValue = -1;
 #endif
 
 // Set to true if they want to break in the debugger.
@@ -191,7 +185,7 @@ CAssertDisable* IgnoreAssertsNearby( int nRange )
 }
 
 
-#if ( defined( _WIN32 ) && !defined( _X360 ) )
+#if (defined(_WIN32))
 INT_PTR CALLBACK AssertDialogProc(
   HWND hDlg,  // handle to dialog box
   UINT uMsg,     // message
@@ -414,126 +408,7 @@ PLATFORM_INTERFACE bool DoNewAssertDialog( const tchar *pFilename, int line, con
 
 	g_bBreak = false;
 
-#if defined( _X360 )
-
-	char cmdString[XBX_MAX_RCMDLENGTH];
-
-	// Before calling VXConsole, init the global variable that receives the result
-	g_VXConsoleAssertReturnValue = -1;
-
-	// Message VXConsole to pop up a PC-side Assert dialog
-	_snprintf( cmdString, sizeof(cmdString), "Assert() 0x%.8x File: %s\tLine: %d\t%s",
-				&g_VXConsoleAssertReturnValue, pFilename, line, pExpression );
-	XBX_SendRemoteCommand( cmdString, false );
-
-	// We sent a synchronous message, so g_xbx_dbgVXConsoleAssertReturnValue should have been overwritten by now
-	if ( g_VXConsoleAssertReturnValue == -1 )
-	{
-		// VXConsole isn't connected/running - default to the old behaviour (break)
-		g_bBreak = true;
-	}
-	else
-	{
-		// Respond to what the user selected
-		switch( g_VXConsoleAssertReturnValue )
-		{
-		case ASSERT_ACTION_IGNORE_FILE:
-			IgnoreAssertsInCurrentFile();
-			break;
-		case ASSERT_ACTION_IGNORE_THIS:
-			// Ignore this Assert once
-			break;
-		case ASSERT_ACTION_BREAK:
-			// Break on this Assert
-			g_bBreak = true;
-			break;
-		case ASSERT_ACTION_IGNORE_ALL:
-			// Ignore all Asserts from now on
-			g_bAssertsEnabled = false;
-			break;
-		case ASSERT_ACTION_IGNORE_ALWAYS:
-			// Ignore this Assert from now on
-			IgnoreAssertsNearby( 0 );
-			break;
-		case ASSERT_ACTION_OTHER:
-		default:
-			// Error... just break
-			XBX_Error( "DoNewAssertDialog: invalid Assert response returned from VXConsole - breaking to debugger" );
-			g_bBreak = true;
-			break;
-		}
-	}
-#elif defined( _PS3 )
-	// There are a few ways to handle this sort of assert behavior with the PS3 / Target Manager API.
-	// One is to use a DebuggerBreak per usual, and then SNProcessContinue in the TMAPI to make 
-	// the game resume after a breakpoint. (You can use snIsDebuggerPresent() to determine if 
-	// the debugger is attached, although really it doesn't matter here.) 
-	// This doesn't work because the DebuggerBreak() is actually an interrupt op, and so Continue()
-	// won't continue past it -- you need to do that from inside the ProDG debugger itself.
-	// Another is to wait on a mutex here and then trip it from the TMAPI, but there isn't
-	// a clean way to trip sync primitives from TMAPI.
-	// Another way is to suspend the thread here and have TMAPI resume it.
-	// The simplest way is to spin-wait on a shared variable that you expect the 
-	// TMAPI to poke into memory. I'm trying that.
-
-	char cmdString[XBX_MAX_RCMDLENGTH];
-
-	// Before calling VXConsole, init the global variable that receives the result
-	g_VXConsoleAssertReturnValue = -1;
-
-	// Message VXConsole to pop up a PC-side Assert dialog
-	_snprintf( cmdString, sizeof(cmdString), "Assert() 0x%.8x File: %s\tLine: %d\t%s",
-		&g_VXConsoleAssertReturnValue, pFilename, line, pExpression );
-	XBX_SendRemoteCommand( cmdString, false );
-
-	if ( g_pValvePS3Console->IsConsoleConnected() )
-	{
-		// DebuggerBreak();
-
-		while ( g_VXConsoleAssertReturnValue == -1 )
-		{
-			ThreadSleep( 1000 );
-		}
-
-		// assume that the VX has poked the return value
-		// Respond to what the user selected
-		switch( g_VXConsoleAssertReturnValue )
-		{
-		case ASSERT_ACTION_IGNORE_FILE:
-			IgnoreAssertsInCurrentFile();
-			break;
-		case ASSERT_ACTION_IGNORE_THIS:
-			// Ignore this Assert once
-			break;
-		case ASSERT_ACTION_BREAK:
-			// Break on this Assert
-			g_bBreak = true;
-			break;
-		case ASSERT_ACTION_IGNORE_ALL:
-			// Ignore all Asserts from now on
-			g_bAssertsEnabled = false;
-			break;
-		case ASSERT_ACTION_IGNORE_ALWAYS:
-			// Ignore this Assert from now on
-			IgnoreAssertsNearby( 0 );
-			break;
-		case ASSERT_ACTION_OTHER:
-		default:
-			// nothing.
-			break;
-		}
-	}
-	else if ( g_pValvePS3Console->IsDebuggerPresent() )
-	{
-		g_bBreak = true;
-	}
-	else
-	{
-		// ignore the assert
-	}
-
-
-#elif defined( POSIX )
+#if defined(POSIX)
 
 	fprintf(stderr, "%s %i %s\n", pFilename, line, pExpression);
 	if ( getenv( "RAISE_ON_ASSERT" ) )

@@ -10,8 +10,6 @@
 #include "EngineInterface.h"
 #include "tier0/vcrmode.h"
 
-#if defined( _X360 )
-#endif
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -66,30 +64,24 @@ void Sys_EnumWindows(void *callbackFunction, int lparam)
 	::EnumWindows((WNDENUMPROC)callbackFunction, lparam);
 }
 
-#ifndef _XBOX
 void Sys_GetWindowText(WHANDLE wnd, char *buffer, int bufferSize)
 {
 	::GetWindowText((HWND)wnd, buffer, bufferSize - 1);
 }
-#endif
 
 void Sys_PostMessage(WHANDLE wnd, unsigned int msg, unsigned int wParam, unsigned int lParam)
 {
 	::PostMessageA((HWND)wnd, msg, wParam, lParam);
 }
 
-#ifndef _XBOX
 void Sys_SetCursorPos(int x, int y)
 {
 	::SetCursorPos(x, y);
 //	engine->SetCursorPos(x,y); // SRC version
 }
-#endif
 
-#ifndef _XBOX
 static ATOM staticWndclassAtom = 0;
 static WNDCLASS staticWndclass = { NULL };
-#endif
 
 static LRESULT CALLBACK staticProc(HWND hwnd,UINT msg,WPARAM wparam,LPARAM lparam)
 {

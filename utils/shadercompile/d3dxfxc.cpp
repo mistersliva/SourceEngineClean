@@ -83,21 +83,6 @@ namespace InterceptFxc
 			// DxProxyModule
 			static DxProxyModule s_dxModule;
 
-			// X360TEMP: This needs to be moved to an external semantic (or fixed)
-			bool bIsX360 = false;
-			for ( int i=0; ;i++ )
-			{
-				if ( !pMacros[i].Name )
-				{
-					break;
-				}
-				if ( V_stristr( pMacros[i].Name, "_X360" ) && atoi( pMacros[i].Definition ) )
-				{
-					bIsX360 = true;
-					break;
-				}
-			}
-			
 			HRESULT hr = s_dxModule.D3DXCompileShaderFromFile( pszFilename, pMacros, NULL /* LPD3DXINCLUDE */,
 				"main",	pszModel, 0, &pShader, &pErrorMessages,
 				NULL /* LPD3DXCONSTANTTABLE *ppConstantTable */ );
@@ -127,7 +112,7 @@ namespace InterceptFxc
 	// to shader compilations.
 	//
 	// @param pCommand       the command in form
-	//		"fxc.exe /DSHADERCOMBO=1 /DTOTALSHADERCOMBOS=4 /DCENTROIDMASK=0 /DNUMDYNAMICCOMBOS=4 /DFLAGS=0x0 /DNUM_BONES=1 /Dmain=main /Emain /Tvs_2_0 /DSHADER_MODEL_VS_2_0=1 /D_X360=1 /nologo /Foshader.o debugdrawenvmapmask_vs20.fxc>output.txt 2>&1"
+	//		"fxc.exe /DSHADERCOMBO=1 /DTOTALSHADERCOMBOS=4 /DCENTROIDMASK=0 /DNUMDYNAMICCOMBOS=4 /DFLAGS=0x0 /DNUM_BONES=1 /Dmain=main /Emain /Tvs_2_0 /DSHADER_MODEL_VS_2_0=1 /nologo /Foshader.o debugdrawenvmapmask_vs20.fxc>output.txt 2>&1"
 	//
 	void ExecuteCommand( const char *pCommand, CmdSink::IResponse **ppResponse )
 	{

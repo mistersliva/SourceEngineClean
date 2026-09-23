@@ -11,12 +11,10 @@
 #include <ctype.h>
 #include "tier1/strtools.h"
 
-#ifndef _PS3
 #ifdef _OSX
 #include <malloc/malloc.h>
 #else
 #include <malloc.h>
-#endif
 #endif
 
 // Should be last include
@@ -38,12 +36,6 @@ void CUtlMemoryPool::SetErrorReportFunc( MemoryPoolReportFunc_t func )
 //-----------------------------------------------------------------------------
 CUtlMemoryPool::CUtlMemoryPool( int blockSize, int numElements, int growMode, const char *pszAllocOwner, int nAlignment )
 {
-#ifdef _X360
-	if( numElements > 0 && growMode != GROW_NONE )
-	{
-		numElements = 1;
-	}
-#endif
 
 #ifdef PLATFORM_64BITS
 	m_nAlignment = ( nAlignment != 0 ) ? nAlignment : 8;

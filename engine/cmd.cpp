@@ -8,7 +8,7 @@
 //===========================================================================//
 
 // support QueryPerformanceCounter
-#if defined(_WIN32) && !defined(_X360)
+#if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
@@ -114,7 +114,7 @@ static int CreateExecutionMarker()
 		}
 		else
 		{
-#if defined(_WIN32) && !defined(_X360)
+#if defined(_WIN32)
 			LARGE_INTEGER CurrentTime;
 
 			QueryPerformanceCounter( &CurrentTime );
@@ -374,7 +374,7 @@ static void Cbuf_ExecuteCommand( const CCommand &args, cmd_source_t source )
 	// execute the command line
 	const ConCommandBase *pCmd = Cmd_ExecuteCommand( args, source );
 
-#if !defined(SWDS) && !defined(_XBOX)
+#if !(defined(SWDS))
 	if ( pCmd && !pCmd->IsFlagSet( FCVAR_DONTRECORD ) )
 	{
 		demorecorder->RecordCommand( args.GetCommandString() );
@@ -1083,10 +1083,8 @@ void Cmd_ForwardToServer( const CCommand &args, bool bReliable )
 #ifndef SWDS
 	char str[1024];
 
-#ifndef _XBOX
 	if ( demoplayer->IsPlayingBack() )
 		return;		// not really connected
-#endif
 
 	str[0] = 0;
 	if ( Q_strcasecmp( args[0], "cmd") != 0 )

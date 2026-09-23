@@ -16,11 +16,7 @@
 #define WIN32_LEAN_AND_MEAN
 #endif
 
-#if !defined( _X360 )
 #include <windows.h>
-#endif
-#if defined( _X360 )
-#endif
 
 class IUnicodeWindows : public IBaseInterface
 {

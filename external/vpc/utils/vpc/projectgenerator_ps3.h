@@ -44,4 +44,4 @@ private:
 	CVCProjGenerator	*m_pVCProjGenerator;
 };
 
-#endif // PROJECTGENERATOR_PS3_H
+#endif

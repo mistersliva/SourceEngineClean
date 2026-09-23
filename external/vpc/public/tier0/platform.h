@@ -26,61 +26,22 @@
 #error "Unrecognized PS3 compiler; either __SNC__ or __GCC__ must be defined"
 #endif
 
-#endif // SN_TARGET_PS3 
+#endif
 
 #ifdef __GCC__
 #define COMPILER_GCC 1
 #endif
 
-#if defined( _X360 ) || defined( _PS3 )
-#define PLATFORM_PPC 1
-#endif
 
 
 #ifdef COMPILER_MSVC
 #pragma once
 #endif
 
-#if defined (_PS3)
-	#include <ppu_intrinsics.h>
-
-	// We want to force the assert to be redefined, because the STD assert might have been 
-	// included and redefined. ps3_assert.h will do a check for assert being redefined.
-	// #include "ps3/ps3_assert.h"
-	#ifndef COMPILER_PS3
-	#error "for PS3, VPC must define COMPILER_PS3 macro just like it does for COMPILER_MSVCX360 macro"
-	#endif
-	#if !defined( COMPILER_SNC ) && !defined( COMPILER_GCC )
-	#error "for PS3, VPC must define COMPILER_SNC or COMPILER_GCC macro, depending on the target compiler, just like it does for COMPILER_MSVCX360 macro"
-	#endif
-
-#elif defined( _X360 )
-	#define NO_STEAM
-	#define NO_VOICE
-	// for the 360, the ppc platform and the rtos are tightly coupled
-	// setup the 360 environment here !once! for much less leaf module include wackiness
-	// these are critical order and purposely appear *before* anything else
-	#define _XBOX
-	#include <xaudio2.h>
-	#include <xbdm.h>
-	#include <xgraphics.h>
-	#include <xui.h>
-	#include <pmcpbsetup.h>
-	#include <xmahardwareabstraction.h>
-	#undef _XBOX
-
-#endif
 
 #include "wchartypes.h"
 #include "tier0/valve_off.h"
 
-#ifdef _PS3
-
-	#include "ps3/ps3_platform.h"
-
-	#define NO_STEAM_GAMECOORDINATOR
-
-#else
 
 	#include <malloc.h>
 	#include <memory.h>
@@ -92,49 +53,12 @@
 	#include <signal.h>
 #endif
 
-#endif
 
 // This macro 
-#if defined( _PS3 ) && defined ( COMPILER_SNC )
-
-// There are known bugs in the PS3 optimizer.  The following macros allow us to lower optimization for a subset of a file
-// If you run into build problems with optimization on, try turning off optimization for the selected file.  If that
-// fixes the problem, use process of elimination and the below macros to find the bare minimum that needs to be
-// unoptimized and report the compiler issue to Sony as well.
-//
-// The correlation between optimization levels and numbers passed to the _Pragma xopt and postopt calls is as follows:
-// See: Control-group reference tables / -Xshow
-// .... xopt
-// -O1 0
-// -O2 5
-// -O3 5
-//
-// These macros MUST be used in pairs - Otherwise, the compiler will barf 'At end of source: error 67: expected a "}"'
-
-// xopt disables some of the miscellaneous optimizations
-#if __option(xopt)
-#define SN_OPT_DISABLE	extern "C++" { _Pragma("control %push xopt=0")
-#define SN_OPT_ENABLE	_Pragma("control %pop xopt") }
-#else // !__option(xopt)
-#define SN_OPT_DISABLE
-#define SN_OPT_ENABLE
-#endif // !__option(xopt)
-
-// postopt disables the main optimizer
-#if __option(postopt) > 0
-#define SN_MAIN_OPT_DISABLE extern "C++" { _Pragma("control %push postopt=0")
-#define SN_MAIN_OPT_ENABLE _Pragma("control %pop postopt") }
-#else // !__option(postopt) > 0
-#define SN_MAIN_OPT_DISABLE
-#define SN_MAIN_OPT_ENABLE
-#endif // !__option(postopt) > 0
-
-#else // ! ( _PS3 && COMPILER_SNC )
 #define SN_OPT_DISABLE
 #define SN_OPT_ENABLE
 #define SN_MAIN_OPT_DISABLE
 #define SN_MAIN_OPT_ENABLE
-#endif // ! ( _PS3 && COMPILER_SNC )
 
 #ifdef __cplusplus
 #if defined( COMPILER_GCC ) || defined( COMPILER_PS3 )
@@ -151,13 +75,8 @@
 
 // feature enables
 #define NEW_SOFTWARE_LIGHTING
-#if !defined( _X360 )
 #define SUPPORT_PACKED_STORE
-#endif
 
-#if defined( BINK_VIDEO ) && ( defined( _X360 ) || defined( _PS3 ) )
-#define BINK_ENABLED_FOR_CONSOLE
-#endif
 
 #if !defined( PORTAL2 )
 //#define PORTAL2
@@ -202,7 +121,6 @@
 	#define PLATFORM_WINDOWS	1
     #define PLATFORM_OPENGL 0
 
-	#ifndef _X360
 		#define IsPlatformX360() 0
 		#define IsPlatformWindowsPC() 1
 		#define PLATFORM_WINDOWS_PC 1
@@ -217,39 +135,6 @@
 			#define PLATFORM_WINDOWS_PC32 1
 		#endif
 
-	#else // _X360
-
-		#define IsPlatformWindowsPC()	0
-		#define IsPlatformWindowsPC64() 0
-		#define IsPlatformWindowsPC32() 0
-		#define IsPlatformX360()		1
-		#define PLATFORM_X360 1
-
-	#endif // _X360
-#elif defined(_PS3)
-
-	
-#define IsPlatformX360()		0
-#define IsPlatformPS3()			1
-#ifdef SPU
-#define IsPlatformPS3_PPU()		0
-#define IsPlatformPS3_SPU()		1
-#else
-#define IsPlatformPS3_PPU()		1
-#define IsPlatformPS3_SPU()		0
-#endif
-#define IsPlatformWindowsPC()	0
-#define IsPlatformWindowsPC64()	0
-#define IsPlatformWindowsPC32()	0
-#define IsPlatformPosix()		1
-#define PLATFORM_POSIX 1
-#define PLATFORM_OPENGL 0
-
-#define IsPlatformLinux() 0
-#define IsPlatformOSX() 0
-#define IsOSXOpenGL() 0
-
-	
 #elif defined(POSIX)
 	#define IsPlatformX360()		0
 	#define IsPlatformPS3()			0
@@ -299,17 +184,8 @@
 
 
 
-#ifndef _PS3
 //#include <malloc.h>
 //#include <new.h>
-#else
-#include <stdlib.h>     // For malloc()
-#include <alloca.h>     // for alloca()
-#define _alloca alloca
-	#ifdef __cplusplus
-		#include <new>
-	#endif
-#endif
 
 
 //-----------------------------------------------------------------------------
@@ -343,26 +219,13 @@
 #endif // CROSS_PLATFORM_VERSION < 2
 
 // VXConsole is enabled for...
-#if defined(_X360) || defined(_PS3)
-#define USE_VXCONSOLE 1
-#define HasVxConsole() 1
-#else
 #define HasVxConsole() 0
-#endif
 
 //-----------------------------------------------------------------------------
 // Set up platform type defines.
 //-----------------------------------------------------------------------------
-#if defined( PLATFORM_X360 ) || defined( _PS3 )
-	#ifndef _GAMECONSOLE
-		#define _GAMECONSOLE
-	#endif
-	#define IsPC()		0
-	#define IsGameConsole() 1
-#else
 	#define IsPC()		1
 	#define IsGameConsole() 0
-#endif
 
 
 
@@ -435,112 +298,6 @@ typedef signed char					int8;
 	typedef void *HWND;
 #endif // else COMPILER_MSVC
 
-#if defined(_PS3) && !defined(NO_SIMD)
-typedef union __attribute__ ((aligned (16)))
-{
-	float m128_f32[4];
-} l_m128;
-
-typedef __vector float __vector4;
-typedef __vector4 __m128;
-
-const __m128 VMX_ZERO=(vector float)(0.0f);
-const __m128 VMX_ONE_HALF=(vector float)(0.5f);
-const __m128 VMX_ONE=(vector float)(1.0f);
-
-// Syntaxic sugar for multiply
-inline __attribute__ ((always_inline)) __m128 __vec_mul(const __m128 a, const __m128 b) 
-{
-	return vec_madd(a,b,VMX_ZERO);
-}
-
-// Refined reciprocal function
-inline __attribute__ ((always_inline)) __m128 __vec_rec(const __m128 a) 
-{
-	//Get the reciprocal estimate
-	vector float estimate = vec_re( a );
-
-	//One round of Newton-Raphson refinement
-	return vec_madd( vec_nmsub( estimate, a, VMX_ONE ), estimate, estimate );
-}
-
-// refined reciprocal square root
-inline __attribute__ ((always_inline)) __m128 __vec_rsqrt(const __m128 a) 
-{
-	//Get the square root reciprocal estimate
-	__m128 estimate = vec_rsqrte( a );
-
-	//One round of Newton-Raphson refinement
-	__m128 estimateSquared = __vec_mul( estimate, estimate);
-	__m128 halfEstimate = __vec_mul( estimate, VMX_ONE_HALF);
-	return vec_madd( vec_nmsub( a, estimateSquared, VMX_ONE ), halfEstimate, estimate );
-}
-
-// refined square root
-inline __attribute__ ((always_inline)) __m128 __vec_sqrt(const __m128 a) 
-{
-	return __vec_mul( a, __vec_rsqrt( a ));
-}
-
-// estimate square root
-inline __attribute__ ((always_inline)) __m128 __vec_sqrtest(const __m128 a) 
-{	
-	return __vec_mul( a, vec_rsqrte( a ));
-}
-
-// Syntaxic sugar for multiply
-inline __attribute__ ((always_inline)) __m128 __vec_div(const __m128 a, const __m128 b) 
-{
-	return __vec_mul( a, __vec_rec( b ));
-}
-
-// load an unaligned array of float in a vector of floats
-inline __attribute__ ((always_inline)) __m128 __vec_ld_unaligned(const float* in) 
-{
-	return vec_perm(vec_ld(0,in), 
-					vec_ld(sizeof(__m128),in),
-					vec_lvsl( 0, in ));
-}
-
-// load an unaligned array of 3 floats in a vector of floats, last member being 0.
-inline __attribute__ ((always_inline)) __m128 __vec_ld_unaligned3(const float* in) 
-{
-	return vec_and(__vec_ld_unaligned(in),(__m128)(vector unsigned int)(0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF ,0));
-}
-
-// stores a vector of floats in an unaligned array of float
-inline __attribute__ ((always_inline)) void __vec_st_unaligned(__m128 in, float* out) 
-{
-	__m128 temp0 = vec_ld(0,out);
-	__m128 temp1 = vec_ld(16,out);
-	vector unsigned char align = vec_lvsr(0,out);
-	vector unsigned char mask  = vec_perm ((vector unsigned char)(0), (vector unsigned char)(0xFF), align);
-
-	in  = vec_perm ( in, in, align); 
-	temp0 = vec_sel  ( temp0,  in, (vector bool)mask);
-	temp1 = vec_sel  (  in, temp1, (vector bool)mask);
-	vec_st ( temp0,  0, out);
-	vec_st ( temp1, 16, out);
-}
-
-// stores x,y,z from a vector of floats in an unaligned array of 3 floats
-inline __attribute__ ((always_inline)) void __vec_st_unaligned3(__m128 in, float* out) 
-{
-	__m128 temp0 = vec_ld(0,out);
-	__m128 temp1 = vec_ld(16,out);
-	vector unsigned char align = vec_lvsr(0,out);
-	vector unsigned char mask  = vec_perm ((vector unsigned char)(0), 
-										   (vector unsigned char)(0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0,0,0,0), 
-										   align);
-
-	in  = vec_perm ( in, in, align); 
-	temp0 = vec_sel  ( temp0,  in, (vector bool)mask);
-	temp1 = vec_sel  (  in, temp1, (vector bool)mask);
-	vec_st ( temp0,  0, out);
-	vec_st ( temp1, 16, out);
-}
-
-#endif // defined(NO_SIMD)
 
 
 typedef float				float32;
@@ -550,10 +307,8 @@ typedef double				float64;
 typedef unsigned int		uint;
 
 #ifdef PLATFORM_POSIX
-#ifndef _PS3
 typedef unsigned int DWORD;
 typedef unsigned int *LPDWORD;
-#endif
 typedef unsigned short WORD;
 typedef void * HINSTANCE;
 #define _MAX_PATH PATH_MAX
@@ -709,13 +464,7 @@ typedef void * HINSTANCE;
 	#ifdef _LINUX_DEBUGGABLE
 		#define  FORCEINLINE
 	#else
-		#ifdef _PS3
-			// [IESTYN 7/29/2010] As of SDK 3.4.0, this causes bad code generation in NET_Tick::ReadFromBuffer in netmessages.cpp,
-			//                    which caused (seeming) random network packet corruption. It probably causes other bugs too.
-			#define  FORCEINLINE inline /* __attribute__ ((always_inline)) */
-		#else
 			#define  FORCEINLINE inline __attribute__ ((always_inline))
-		#endif
 	#endif
 
 	// GCC 3.4.1 has a bug in supporting forced inline of templated functions
@@ -744,9 +493,7 @@ typedef void * HINSTANCE;
 	#define DLL_IMPORT				extern "C" 
 
 	// Can't use extern "C" when DLL exporting a class
-#ifndef _PS3
 	#define  __stdcall			__attribute__ ((__stdcall__))
-#endif
 	#define DLL_CLASS_EXPORT		DLL_DECLARATION_DEFAULT_VISIBILITY 
 	#define DLL_CLASS_IMPORT
 
@@ -935,9 +682,7 @@ typedef void * HINSTANCE;
 #elif COMPILER_MSVCX360
 	#define DebuggerBreak()		DebugBreak()
 #elif COMPILER_GCC
-	#if defined( _PS3 )
-		#define DebuggerBreak() {  __asm volatile ("tw 31,1,1"); } 
-	#elif defined( OSX )
+#if defined(OSX)
 		#define DebuggerBreak()  if ( Plat_IsInDebugSession() ) { __asm__ __volatile__ ( "int $3" ); } else { raise(SIGTRAP); }
 	#elif defined( PLATFORM_CYGWIN ) || defined( PLATFORM_POSIX )
 		#define DebuggerBreak()		__asm__( "int $0x3;")
@@ -951,11 +696,6 @@ static bool sPS3_SuppressAssertsInThisFile = false; // you can throw this in the
 #error DebuggerBreak() is not defined for this platform!
 #endif
 
-#if defined( _X360 ) || defined( _PS3 )
-	#if defined( fsel )
-	#error
-	#endif
-#else 
 
 FORCEINLINE float fsel(float fComparand, float fValGE, float fLT)
 {
@@ -966,7 +706,6 @@ FORCEINLINE double fsel(double fComparand, double fValGE, double fLT)
 	return fComparand >= 0 ? fValGE : fLT;
 }
 
-#endif
 
 //-----------------------------------------------------------------------------
 // DLL export for platform utilities
@@ -995,7 +734,7 @@ FORCEINLINE double fsel(double fComparand, double fValGE, double fLT)
 //-----------------------------------------------------------------------------
 // Returns true if debugger attached, false otherwise
 //-----------------------------------------------------------------------------
-#if defined( PLATFORM_WINDOWS ) || defined( _PS3 )
+#if defined(PLATFORM_WINDOWS)
 PLATFORM_INTERFACE void Plat_DebugString( const tchar * );
 #else
 #define Plat_DebugString(s) ((void)0)
@@ -1043,9 +782,7 @@ PLATFORM_INTERFACE void Plat_MessageBox( const char *pTitle, const tchar *pMessa
 #define _alloca alloca
 #define GetProcAddress dlsym
 #define _chdir chdir
-#ifndef _PS3
 #define _strnicmp strnicmp
-#endif
 #define strnicmp strncasecmp
 #define _snwprintf swprintf
 #define swprintf_s swprintf
@@ -1057,9 +794,7 @@ PLATFORM_INTERFACE void Plat_MessageBox( const char *pTitle, const tchar *pMessa
 #define _wtoi(arg) wcstol(arg, NULL, 10)
 #define _wtoi64(arg) wcstoll(arg, NULL, 10)
 
-#ifndef _PS3
 typedef uint32 HMODULE;
-#endif
 typedef void *HANDLE;
 #define __cdecl
 
@@ -1161,18 +896,11 @@ typedef int socklen_t;
 // Works for PS3 
 	inline void SetupFPUControlWord()
 	{
-#ifdef _PS3
-// TODO: PS3 compiler spits out the following errors:
-// C:/tmp/ccIN0aaa.s: Assembler messages:
-// C:/tmp/ccIN0aaa.s(80): Error: Unrecognized opcode: `fnstcw'
-// C:/tmp/ccIN0aaa.s(93): Error: Unrecognized opcode: `fldcw'
-#else
 		__volatile unsigned short int __cw;
 		__asm __volatile ("fnstcw %0" : "=m" (__cw));
 		__cw = __cw & 0x0FCC0;	// keep infinity control, keep rounding mode
 		__cw = __cw | 0x023F;	// set 53-bit, no exceptions
 		__asm __volatile ("fldcw %0" : : "m" (__cw));
-#endif
 	}
 
 #elif defined ( COMPILER_SNC )
@@ -1180,18 +908,11 @@ typedef int socklen_t;
 // Works for PS3 
 	inline void SetupFPUControlWord()
 	{
-#ifdef _PS3
-// TODO: PS3 compiler spits out the following errors:
-// C:/tmp/ccIN0aaa.s: Assembler messages:
-// C:/tmp/ccIN0aaa.s(80): Error: Unrecognized opcode: `fnstcw'
-// C:/tmp/ccIN0aaa.s(93): Error: Unrecognized opcode: `fldcw'
-#else
 		__volatile unsigned short int __cw;
 		__asm __volatile ("fnstcw %0" : "=m" (__cw));
 		__cw = __cw & 0x0FCC0;	// keep infinity control, keep rounding mode
 		__cw = __cw | 0x023F;	// set 53-bit, no exceptions
 		__asm __volatile ("fldcw %0" : : "m" (__cw));
-#endif
 	}
 
 #elif defined( COMPILER_MSVCX360 )
@@ -1331,7 +1052,7 @@ inline T DWordSwapC( T dw )
 // The typically used methods.
 //-------------------------------------
 
-#if defined( _SGI_SOURCE ) || defined( PLATFORM_X360 ) || defined( _PS3 )
+#if defined(_SGI_SOURCE)
 #define	PLAT_BIG_ENDIAN 1
 #else
 #define PLAT_LITTLE_ENDIAN 1
@@ -1407,26 +1128,6 @@ inline void SwapFloat( float *pOut, const float *pIn )		{ SafeSwapFloat( pOut, p
 #endif
 
 #if PLAT_BIG_ENDIAN
-	#if defined( _PS3 )
-		inline uint32 LoadLittleDWord( uint32 *base, unsigned int dwordIndex )
-		{
-			return __lwbrx( base + dwordIndex );
-		}
-
-		inline void StoreLittleDWord( uint32 *base, unsigned int dwordIndex, uint32 dword )
-		{
-			__stwbrx( base + dwordIndex, dword );
-		}
-		inline uint64 LoadLittleInt64( uint64 *base, unsigned int nWordIndex )
-		{
-			return __ldbrx( base + nWordIndex );
-		}
-
-		inline void StoreLittleInt64( uint64 *base, unsigned int nWordIndex, uint64 nWord )
-		{
-			__stdbrx( base + nWordIndex, nWord );
-		}
-	#else
 		inline uint32 LoadLittleDWord( uint32 *base, unsigned int dwordIndex )
 		{
 			return __loadwordbytereverse( dwordIndex<<2, base );
@@ -1445,7 +1146,6 @@ inline void SwapFloat( float *pOut, const float *pIn )		{ SafeSwapFloat( pOut, p
 		{
 			__storedoublewordbytereverse( nWord, nWordIndex<<2, base );
 		}
-	#endif
 #else
 	inline uint32 LoadLittleDWord( uint32 *base, unsigned int dwordIndex )
 	{
@@ -1578,13 +1278,8 @@ PLATFORM_INTERFACE bool Plat_FastVerifyHardwareKey();
 PLATFORM_INTERFACE void* Plat_SimpleLog( const tchar* file, int line );
 
 
-#if defined( _X360 )
-#define Plat_FastMemset XMemSet
-#define Plat_FastMemcpy XMemCpy
-#else
 #define Plat_FastMemset memset
 #define Plat_FastMemcpy memcpy
-#endif
 
 //-----------------------------------------------------------------------------
 // XBOX Components valid in PC compilation space
@@ -1621,13 +1316,7 @@ PLATFORM_INTERFACE void* Plat_SimpleLog( const tchar* file, int line );
 #define WM_XMP_PLAYBACKCONTROLLERCHANGED	(WM_USER + 123)
 #define WM_SYS_SHUTDOWNREQUEST				(WM_USER + 124)
 
-#if defined( _PS3 )
-#define PLATFORM_EXT ".ps3"
-#elif defined( PLATFORM_X360 )
-#define PLATFORM_EXT ".360"
-#else
 #define PLATFORM_EXT ""
-#endif
 
 inline const char *GetPlatformExt( void )
 {
@@ -1653,8 +1342,7 @@ inline const char *GetPlatformExt( void )
 //-----------------------------------------------------------------------------
 // Include additional dependant header components.
 //-----------------------------------------------------------------------------
-#if defined( PLATFORM_X360 )
-#elif defined( PLATFORM_PS3 )
+#if defined(PLATFORM_PS3)
 #include "ps3/ps3_core.h"
 #endif
 
@@ -1905,7 +1593,7 @@ PLATFORM_INTERFACE PlatOSVersion_t Plat_GetOSVersion();
 // under linux right now. It should be possible to implement this functionality in windows via a
 // thread, if desired.
 
-#if defined( POSIX ) && !defined( _PS3 )
+#if defined(POSIX)
 
 PLATFORM_INTERFACE void BeginWatchdogTimer( int nSecs );
 PLATFORM_INTERFACE void EndWatchdogTimer( void );

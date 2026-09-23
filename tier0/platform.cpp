@@ -8,16 +8,13 @@
 #include "pch_tier0.h"
 #include <time.h>
 
-#if defined(_WIN32) && !defined(_X360)
+#if defined(_WIN32)
 #include <errno.h>
 #endif
 #include <assert.h>
 #include "tier0/platform.h"
 #include "tier0/minidump.h"
-#ifdef _X360
-#else
 #include "tier0/vcrmode.h"
-#endif
 #if !defined(STEAM) && !defined(NO_MALLOC_OVERRIDE)
 #include "tier0/memalloc.h"
 
@@ -30,9 +27,7 @@
 //CPP sets this value while initializing its static space
 static ExitProcessWithErrorCBFn g_pfnExitProcessWithErrorCB; //= NULL
 
-#ifndef _X360
 extern VCRMode_t g_VCRMode;
-#endif
 static LARGE_INTEGER g_PerformanceFrequency;
 static double g_PerformanceCounterToS;
 static double g_PerformanceCounterToMS;
@@ -151,8 +146,6 @@ void Plat_GetModuleFilename( char *pOut, int nMaxBytes )
 	GetModuleFileName( NULL, pOut, nMaxBytes );
 	if ( GetLastError() != ERROR_SUCCESS )
 		Error( "Plat_GetModuleFilename: The buffer given is too small (%d bytes).", nMaxBytes );
-#elif PLATFORM_X360
-	pOut[0] = 0x00;		// return null string on Xbox 360
 #else
 	// We shouldn't need this on POSIX.
 	Assert( false );
@@ -162,7 +155,7 @@ void Plat_GetModuleFilename( char *pOut, int nMaxBytes )
 
 void Plat_ExitProcess( int nCode )
 {
-#if defined( _WIN32 ) && !defined( _X360 )
+#if defined(_WIN32)
 	// We don't want global destructors in our process OR in any DLL to get executed.
 	// _exit() avoids calling global destructors in our module, but not in other DLLs.
 	const char *pchCmdLineA = Plat_GetCommandLineA();
@@ -171,9 +164,6 @@ void Plat_ExitProcess( int nCode )
 		int *x = NULL; *x = 1; // cause a hard crash, GC is not allowed to exit voluntarily from gc.dll
 	}
 	TerminateProcess( GetCurrentProcess(), nCode );
-#elif defined(_PS3)
-	// We do not use this path to exit on PS3 (naturally), rather we want a clear crash:
-	int *x = NULL; *x = 1;
 #else	
 	_exit( nCode );
 #endif
@@ -235,7 +225,6 @@ struct tm *Plat_localtime( const time_t *timep, struct tm *result )
 
 bool vtune( bool resume )
 {
-#ifndef _X360
 	static bool bInitialized = false;
 	static void (__cdecl *VTResume)(void) = NULL;
 	static void (__cdecl *VTPause) (void) = NULL;
@@ -266,16 +255,13 @@ bool vtune( bool resume )
 		VTPause();
 		return true;
 	}
-#endif
 	return false;
 }
 
 bool Plat_IsInDebugSession()
 {
-#if defined( _WIN32 ) && !defined( _X360 )
+#if defined(_WIN32)
 	return (IsDebuggerPresent() != 0);
-#elif defined( _WIN32 ) && defined( _X360 )
-	return (XBX_IsDebuggerPresent() != 0);
 #elif defined( LINUX )
 	#error This code is implemented in platform_posix.cpp
 #else
@@ -285,10 +271,8 @@ bool Plat_IsInDebugSession()
 
 void Plat_DebugString( const char * psz )
 {
-#if defined( _WIN32 ) && !defined( _X360 )
+#if defined(_WIN32)
 	::OutputDebugStringA( psz );
-#elif defined( _WIN32 ) && defined( _X360 )
-	XBX_OutputDebugString( psz );
 #endif
 }
 
@@ -379,7 +363,6 @@ bool Is64BitOS()
 // DEPRECATED. Still here to support binary back compatability of tier0.dll
 //
 // -------------------------------------------------------------------------------------------------- //
-#ifndef _X360
 #if !defined(STEAM) && !defined(NO_MALLOC_OVERRIDE)
 
 typedef void (*Plat_AllocErrorFn)( unsigned long size );
@@ -391,7 +374,6 @@ void Plat_DefaultAllocErrorFn( unsigned long size )
 Plat_AllocErrorFn g_AllocError = Plat_DefaultAllocErrorFn;
 #endif
 
-#ifndef _X360
 CRITICAL_SECTION g_AllocCS;
 class CAllocCSInit
 {
@@ -401,9 +383,7 @@ public:
 		InitializeCriticalSection( &g_AllocCS );
 	}
 } g_AllocCSInit;
-#endif
 
-#ifndef _X360
 PLATFORM_INTERFACE void* Plat_Alloc( unsigned long size )
 {
 	EnterCriticalSection( &g_AllocCS );
@@ -425,9 +405,7 @@ PLATFORM_INTERFACE void* Plat_Alloc( unsigned long size )
 		return 0;
 	}
 }
-#endif
 
-#ifndef _X360
 PLATFORM_INTERFACE void* Plat_Realloc( void *ptr, unsigned long size )
 {
 	EnterCriticalSection( &g_AllocCS );
@@ -449,9 +427,7 @@ PLATFORM_INTERFACE void* Plat_Realloc( void *ptr, unsigned long size )
 		return 0;
 	}
 }
-#endif
 
-#ifndef _X360
 PLATFORM_INTERFACE void Plat_Free( void *ptr )
 {
 	EnterCriticalSection( &g_AllocCS );
@@ -462,15 +438,11 @@ PLATFORM_INTERFACE void Plat_Free( void *ptr )
 #endif
 	LeaveCriticalSection( &g_AllocCS );
 }
-#endif
 
-#ifndef _X360
 #if !defined(STEAM) && !defined(NO_MALLOC_OVERRIDE)
 PLATFORM_INTERFACE void Plat_SetAllocErrorFn( Plat_AllocErrorFn fn )
 {
 	g_AllocError = fn;
 }
 #endif
-#endif
 
-#endif

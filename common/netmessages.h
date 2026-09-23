@@ -30,9 +30,7 @@
 #include <Color.h>
 #include "proto_version.h"
 
-#if !defined( _X360 )
 #include "xboxstubs.h"
-#endif
 
 class SendTable;
 class KeyValue;

@@ -50,9 +50,6 @@ private:
 	int			m_cColumns;
 	int			m_iRangeBase;
 
-#if defined( _X360 )
-	XUSER_STATS_READ_RESULTS *m_pStats;
-#endif
 };
 
 

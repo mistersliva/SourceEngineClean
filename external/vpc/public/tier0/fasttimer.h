@@ -13,15 +13,11 @@
 
 #include <assert.h>
 #include "tier0/platform.h"
-#ifdef _PS3
-#include "sys/sys_time.h"
-#else
 inline uint64 sys_time_get_timebase_frequency()
 {
 	DebuggerBreak(); // Error("sys_time_get_timebase_frequency called on non-PS3 platform.");
 	return 1; // this function should never ever be called.
 }
-#endif
 
 PLATFORM_INTERFACE uint64 g_ClockSpeed;
 PLATFORM_INTERFACE unsigned long g_dwClockSpeed;
@@ -317,14 +313,6 @@ inline void CCycleCount::Sample()
 	unsigned __int64* pSample = (unsigned __int64*)&m_Int64;
 	*pSample = __rdtsc(); 
 	//		Msg( "Sample = %I64x", pSample ); 
-#elif defined( _X360 ) 
-	// only need lower 32 bits, avoids doc'd read bug and 32 bit rollover is in 85 seconds
-	m_Int64 = (uint64)__mftb32();
-	// scale back up, needs to be viewed as 1 cycle/clock
-#elif defined( _PS3 )
-	// only need lower 32 bits, avoids doc'd read bug and 32 bit rollover is in 85 seconds
-	m_Int64 = (uint64)__mftb();
-	// scale back up, needs to be viewed as 1 cycle/clock
 #elif defined( __GNUC__ )
 	union 
 	{

@@ -41,7 +41,7 @@ BEGIN_VS_SHADER_FLAGS( screenspace_general_dx9, "Help for screenspace_general", 
 		SHADER_PARAM( LINEARREAD_TEXTURE2, SHADER_PARAM_TYPE_INTEGER, "0", "" )
 		SHADER_PARAM( LINEARREAD_TEXTURE3, SHADER_PARAM_TYPE_INTEGER, "0", "" )
 		SHADER_PARAM( LINEARWRITE,SHADER_PARAM_TYPE_INTEGER,"0","")
-		SHADER_PARAM( X360APPCHOOSER, SHADER_PARAM_TYPE_INTEGER, "0", "Needed for movies in 360 launcher" )
+		SHADER_PARAM( MOVIEAPPCHOOSER, SHADER_PARAM_TYPE_INTEGER, "0", "Needed for movies in 360 launcher" )
 		SHADER_PARAM( COPYALPHA, SHADER_PARAM_TYPE_INTEGER, "0", "")
 	END_SHADER_PARAMS
 
@@ -163,7 +163,7 @@ BEGIN_VS_SHADER_FLAGS( screenspace_general_dx9, "Help for screenspace_general", 
 			}				
 			int fmt = VERTEX_POSITION;
 
-			if ( IS_PARAM_DEFINED( X360APPCHOOSER ) && ( params[X360APPCHOOSER]->GetIntValue() ) )
+			if ( IS_PARAM_DEFINED( MOVIEAPPCHOOSER ) && ( params[MOVIEAPPCHOOSER]->GetIntValue() ) )
 			{
 				fmt |= VERTEX_COLOR;
 				EnableAlphaBlending( SHADER_BLEND_SRC_ALPHA, SHADER_BLEND_ONE_MINUS_SRC_ALPHA );
@@ -178,8 +178,8 @@ BEGIN_VS_SHADER_FLAGS( screenspace_general_dx9, "Help for screenspace_general", 
 
 			// Pre-cache shaders
 			DECLARE_STATIC_VERTEX_SHADER( screenspaceeffect_vs20 );
-			SET_STATIC_VERTEX_SHADER_COMBO( X360APPCHOOSER, IS_PARAM_DEFINED( X360APPCHOOSER ) ? params[X360APPCHOOSER]->GetIntValue() : 0 );
-			vsh_forgot_to_set_static_X360APPCHOOSER = 0; // This is a dirty workaround to the shortcut [= 0] in the fxc
+			SET_STATIC_VERTEX_SHADER_COMBO( MOVIEAPPCHOOSER, IS_PARAM_DEFINED( MOVIEAPPCHOOSER ) ? params[MOVIEAPPCHOOSER]->GetIntValue() : 0 );
+			vsh_forgot_to_set_static_MOVIEAPPCHOOSER = 0; // This is a dirty workaround to the shortcut [= 0] in the fxc
 			SET_STATIC_VERTEX_SHADER( screenspaceeffect_vs20 );
 
 			if (params[DISABLE_COLOR_WRITES]->GetIntValue())

@@ -532,7 +532,7 @@ bool CCvarUtilities::IsValidToggleCommand( const char *cmd )
 	if ( v->IsFlagSet( FCVAR_CHEAT ) )
 	{
 		if ( !Host_IsSinglePlayerGame() && !CanCheat() 
-#if !defined(SWDS) && !defined(_XBOX)
+#if !(defined(SWDS))
 			&& !demoplayer->IsPlayingBack() 
 #endif
 			)
@@ -545,7 +545,7 @@ bool CCvarUtilities::IsValidToggleCommand( const char *cmd )
 	// Text invoking the command was typed into the console, decide what to do with it
 	//  if this is a replicated ConVar, except don't worry about restrictions if playing a .dem file
 	if ( v->IsFlagSet( FCVAR_REPLICATED ) 
-#if !defined(SWDS) && !defined(_XBOX)
+#if !(defined(SWDS))
 		&& !demoplayer->IsPlayingBack()
 #endif
 		)
@@ -1128,10 +1128,4 @@ CON_COMMAND( toggle, "Toggles a convar on or off, or cycles through a set of val
 //-----------------------------------------------------------------------------
 // Purpose: Send the cvars to VXConsole
 //-----------------------------------------------------------------------------
-#if defined( _X360 )
-CON_COMMAND( getcvars, "" )
-{
-	g_pCVar->PublishToVXConsole();
-}
-#endif
 

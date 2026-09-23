@@ -55,9 +55,7 @@
 
 #ifdef POSIX
 
-#ifndef _PS3
 #include <iconv.h>
-#endif // _PS3
 
 #include <ctype.h>
 #include <unistd.h>
@@ -65,10 +63,8 @@
 #define stricmp strcasecmp
 #elif _WIN32
 #include <direct.h>
-#if !defined( _X360 )
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#endif
 #endif
 
 #ifdef _WIN32
@@ -81,11 +77,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include "tier1/utldict.h"
-#if defined( _X360 )
-#elif defined( _PS3 )
-#include "ps3_pathinfo.h"
-#include <cell/l10n.h> // for UCS-2 to UTF-8 conversion
-#endif
 #include "tier0/vprof.h"
 #include "tier0/memdbgon.h"
 
@@ -322,11 +313,7 @@ char *_V_strstr( const char *s1, const char *search )
 	AssertValidStringPtr( s1 );
 	AssertValidStringPtr( search );
 
-#if defined( _X360 )
-	return (char *)strstr( (char *)s1, search );
-#else
 	return (char *)strstr( s1, search );
-#endif
 }
 
 char *_V_strupr (char *start)
@@ -1879,16 +1866,10 @@ void V_MakeAbsolutePath( char *pOut, int outLen, const char *pPath, const char *
 		}
 		else
 		{
-#ifdef _PS3 
-			{
-				V_strncpy( pOut, g_pPS3PathInfo->GameImagePath(), outLen );
-			}
-#else
 			{
 				if ( !_getcwd( pOut, outLen ) )
 					Error( "V_MakeAbsolutePath: _getcwd failed." );
 			}
-#endif
 
 			if ( pStartingDir )
 			{
@@ -2165,23 +2146,13 @@ void V_SplitString( const char *pString, const char *pSeparator, CUtlVector<char
 
 bool V_GetCurrentDirectory( char *pOut, int maxLen )
 {
-#if defined( _PS3 )
-	Assert( 0 );
-	return false; // not supported
-#else // !_PS3
     return _getcwd( pOut, maxLen ) == pOut;
-#endif // _PS3
 }
 
 
 bool V_SetCurrentDirectory( const char *pDirName )
 {
-#if defined( _PS3 )
-	Assert( 0 );
-	return false; // not supported
-#else // !_PS3
     return _chdir( pDirName ) == 0;
-#endif // _PS3
 }
 
 
@@ -2578,7 +2549,7 @@ bool AsianWordWrap::CanBreakRepeated( wchar_t wcCandidate )
 	return true;
 }
 
-#if defined( _PS3 ) || defined( LINUX )
+#if defined(LINUX)
 inline int __cdecl iswascii(wchar_t c) { return ((unsigned)(c) < 0x80); } // not defined in wctype.h on the PS3
 #endif
 

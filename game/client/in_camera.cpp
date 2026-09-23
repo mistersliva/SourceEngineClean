@@ -285,7 +285,6 @@ void CInput::CAM_Think( void )
 		memset( &cam_out, 0, sizeof( cam_out ) );
 
 		// Unless left or right mouse button is down, don't do anything
-#ifndef _XBOX
 		if ( /* Left+Middle Button Down */ vgui::input()->IsMouseDown( MOUSE_LEFT ) && vgui::input()->IsMouseDown( MOUSE_MIDDLE ) )
 		{
 			// Do only zoom in/out camera adjustment
@@ -307,7 +306,6 @@ void CInput::CAM_Think( void )
 			ResetMouse();
 			return;
 		}
-#endif
 	}
 	
 	idealAngles[ PITCH ] = cam_idealpitch.GetFloat();
@@ -320,13 +318,8 @@ void CInput::CAM_Think( void )
 	if ( m_fCameraMovingWithMouse )
 	{
 		int cpx, cpy;
-#ifndef _XBOX		
 		//get windows cursor position
 		GetMousePos (cpx, cpy);
-#else
-		//xboxfixme
-		cpx = cpy = 0;
-#endif
 		
 		m_nCameraX = cpx;
 		m_nCameraY = cpy;
@@ -407,9 +400,7 @@ void CInput::CAM_Think( void )
 				m_nCameraOldX=m_nCameraX;
 				m_nCameraOldY=m_nCameraY;
 			}
-#ifndef _XBOX
 			ResetMouse();
-#endif
 		}
 	}
 	
@@ -470,9 +461,7 @@ void CInput::CAM_Think( void )
 		//since we are done with the mouse
 		m_nCameraOldX=m_nCameraX*gHUD.GetSensitivity();
 		m_nCameraOldY=m_nCameraY*gHUD.GetSensitivity();
-#ifndef _XBOX
 		ResetMouse();
-#endif
 	}
 
 	// Obtain engine view angles and if they popped while the camera was static,
@@ -767,12 +756,7 @@ void CInput::CAM_StartMouseMove(void)
 
 			m_fCameraMovingWithMouse=true;
 			m_fCameraInterceptingMouse=true;
-#ifndef _XBOX			
 			GetMousePos(cpx, cpy);
-#else
-			// xboxfixme
-			cpx = cpy = 0;
-#endif
 			m_nCameraX = cpx;
 			m_nCameraY = cpy;
 
@@ -832,12 +816,7 @@ void CInput::CAM_StartDistance(void)
 		  m_fCameraDistanceMove=true;
 		  m_fCameraMovingWithMouse=true;
 		  m_fCameraInterceptingMouse=true;
-#ifndef _XBOX
 		  GetMousePos(cpx, cpy);
-#else
-		  // xboxfixme
-		  cpx = cpy = 0;
-#endif
 
 		  m_nCameraX = cpx;
 		  m_nCameraY = cpy;

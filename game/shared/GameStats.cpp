@@ -23,8 +23,6 @@
 #include "vehicle_base.h"
 #endif 
 
-#if defined( _X360 )
-#endif
 
 #ifdef CLIENT_DLL
 #include "materialsystem/materialsystem_config.h"

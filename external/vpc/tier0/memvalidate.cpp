@@ -135,15 +135,9 @@ private:
 //-----------------------------------------------------------------------------
 static CValidateAlloc s_ValidateAlloc;
 
-#ifdef _PS3
-
-IMemAlloc *g_pMemAllocInternalPS3 = &s_ValidateAlloc;
-
-#else // !_PS3
 
 IMemAlloc *g_pMemAlloc = &s_ValidateAlloc;
 
-#endif // _PS3
 
 
 //-----------------------------------------------------------------------------

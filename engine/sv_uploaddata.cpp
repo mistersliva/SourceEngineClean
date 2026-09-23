@@ -7,12 +7,12 @@
 //=============================================================================//
 
 
-#if defined(_WIN32) && !defined(_X360)
+#if defined(_WIN32)
 #include <winsock.h>
 #elif POSIX
 #include <sys/socket.h>
 #include <netinet/in.h>
-#elif !defined(_X360)
+#elif 1
 #error "define socket.h"
 #endif
 #include "host.h"
@@ -129,7 +129,6 @@ static void BuildUploadDataMessage( bf_write& buf, char const *tablename, KeyVal
 //-----------------------------------------------------------------------------
 bool UploadData( char const *cserIP, char const *tablename, KeyValues *fields )
 {
-#ifndef _XBOX
 	bf_write	buf;
 	ALIGN4 byte		data[ 2048 ] ALIGN4_POST;
 		
@@ -156,9 +155,6 @@ bool UploadData( char const *cserIP, char const *tablename, KeyValues *fields )
 	}
 
 	return false;
-#else
-	return true;
-#endif
 }
 
 /*

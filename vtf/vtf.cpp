@@ -100,7 +100,7 @@ BEGIN_BYTESWAP_DATADESC_( VTFFileHeaderX360_t, VTFFileBaseHeader_t )
 	DEFINE_FIELD( compressedSize, FIELD_INTEGER ),
 END_DATADESC()
 
-#if defined( POSIX ) || defined( _X360 )
+#if defined(POSIX)
 // stub functions
 const char* S3TC_GetBlock(
         const void *pCompressed,
@@ -265,8 +265,8 @@ int VTFFileHeaderSize( int nMajorVersion, int nMinorVersion )
 		}
 		break;
 	
-	case VTF_X360_MAJOR_VERSION:
-		return sizeof( VTFFileHeaderX360_t ) + sizeof( ResourceEntryInfo ) * MAX_X360_RSRC_DICTIONARY_ENTRIES;
+	case VTF_360_MAJOR_VERSION:
+		return sizeof( VTFFileHeaderX360_t ) + sizeof( ResourceEntryInfo ) * MAX_360_RSRC_DICTIONARY_ENTRIES;
 	}
 
 	return 0;
@@ -310,10 +310,6 @@ CVTFTexture::CVTFTexture()
 	m_pLowResImageData = NULL;
 	m_nLowResImageAllocSize = 0;
 
-#if defined( _X360 )
-	m_nMipSkipCount = 0;
-	*(unsigned int *)m_LowResImageSample = 0;
-#endif
 
 	Assert( m_arrResourcesInfo.Count() == 0 );
 	Assert( m_arrResourcesData.Count() == 0 );
@@ -336,7 +332,7 @@ CVTFTexture::~CVTFTexture()
 //-----------------------------------------------------------------------------
 int CVTFTexture::ComputeMipCount() const
 {
-	if ( IsX360() && ( m_nVersion[0] == VTF_X360_MAJOR_VERSION ) && ( m_nFlags & TEXTUREFLAGS_NOMIP ) )
+	if ( IsX360() && ( m_nVersion[0] == VTF_360_MAJOR_VERSION ) && ( m_nFlags & TEXTUREFLAGS_NOMIP ) )
 	{
 		// 360 vtf format culled unused mips at conversion time
 		return 1;
@@ -465,9 +461,6 @@ bool CVTFTexture::Init( int nWidth, int nHeight, int nDepth, ImageFormat fmt, in
 
 	m_nFaceCount = (iFlags & TEXTUREFLAGS_ENVMAP) ? CUBEMAP_FACE_COUNT : 1;
 
-#if defined( _X360 )
-	m_nMipSkipCount = 0;
-#endif
 
 	// Need to do this because Shutdown deallocates the low-res image
 	m_nLowResImageWidth = m_nLowResImageHeight = 0;
@@ -557,10 +550,6 @@ void CVTFTexture::ReleaseResources()
 //-----------------------------------------------------------------------------
 void CVTFTexture::Shutdown()
 {
-#if defined( _X360 )
-	// must be first to ensure X360 aliased pointers are unhooked, otherwise memory corruption
-	ReleaseImageMemory();
-#endif
 
 	delete[] m_pImageData;
 	m_pImageData = NULL;
@@ -1768,7 +1757,7 @@ int CVTFTexture::GetImageOffset( int iFrame, int iFace, int iMipLevel, ImageForm
 	int i;
 	int iOffset = 0;
 
-	if ( IsX360() && ( m_nVersion[0] == VTF_X360_MAJOR_VERSION ) )
+	if ( IsX360() && ( m_nVersion[0] == VTF_360_MAJOR_VERSION ) )
 	{
 		// 360 data is stored same as disk, 1x1 up to NxN
 		// get to the right miplevel
@@ -1883,7 +1872,7 @@ void CVTFTexture::ConvertImageFormat( ImageFormat fmt, bool bNormalToDUDV )
 		return;
 	}
 
-	if ( IsX360() && ( m_nVersion[0] == VTF_X360_MAJOR_VERSION ) )
+	if ( IsX360() && ( m_nVersion[0] == VTF_360_MAJOR_VERSION ) )
 	{
 		// 360 textures should be baked in final format
 		Assert( 0 );

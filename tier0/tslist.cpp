@@ -8,8 +8,6 @@
 #include "tier0/tslist.h"
 #include <list>
 #include <stdlib.h>
-#if defined( _X360 )
-#endif
 #include "unitlib/unitlib.h"
 
 namespace TSListTests

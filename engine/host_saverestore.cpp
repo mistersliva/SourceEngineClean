@@ -62,10 +62,7 @@
 #include "tier1/memstack.h"
 #include "vstdlib/jobthread.h"
 
-#if !defined( _X360 )
 #include "xboxstubs.h"
-#else
-#endif
 
 #include "ixboxsystem.h"
 extern IXboxSystem *g_pXboxSystem;
@@ -3062,9 +3059,6 @@ CON_COMMAND( _autosave, "Autosave" )
 {
 	AutoSave_Silent( false );
 	bool bConsole = save_console.GetBool();
-#if defined ( _X360 )
-	bConsole = true;
-#endif
 	if ( bConsole )
 	{
 #if !defined (SWDS)
@@ -3081,9 +3075,6 @@ CON_COMMAND( _autosavedangerous, "AutoSaveDangerous" )
 
 	AutoSave_Silent( true );
 	bool bConsole = save_console.GetBool();
-#if defined ( _X360 )
-	bConsole = true;
-#endif
 	if ( bConsole )
 	{
 #if !defined (SWDS)
@@ -3104,9 +3095,6 @@ CON_COMMAND( autosave, "Autosave" )
 
 	bool bConsole = save_console.GetBool();
 	char const *pchSaving = IsX360() ? "GAMESAVING_360" : "GAMESAVING";
-#if defined ( _X360 )
-	bConsole = true;
-#endif
 
 	if ( bConsole )
 	{
@@ -3138,9 +3126,6 @@ CON_COMMAND( autosavedangerous, "AutoSaveDangerous" )
 	//Don't print out "SAVED" unless we're running on an Xbox (in which case it prints "CHECKPOINT").
 	bool bConsole = save_console.GetBool();
 	char const *pchSaving = IsX360() ? "GAMESAVING_360" : "GAMESAVING";
-#if defined ( _X360 )
-	bConsole = true;
-#endif
 
 	if ( bConsole )
 	{
@@ -3357,11 +3342,6 @@ bool CSaveRestore::StorageDeviceValid( void )
 	if ( !IsXSave() )
 		return true;
 
-#ifdef _X360
-	// Otherwise, we must have a real storage device
-	int nStorageDeviceID = XBX_GetStorageDeviceId();
-	return ( nStorageDeviceID != XBX_INVALID_STORAGE_ID && nStorageDeviceID != XBX_STORAGE_DECLINED );
-#endif
 
 	return true;
 }

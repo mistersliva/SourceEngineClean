@@ -47,10 +47,6 @@ class CIndexBuffer
 public:
 	CIndexBuffer( IDirect3DDevice9 *pD3D, int count, bool bSoftwareVertexProcessing, bool dynamic = false );
 
-#ifdef _X360
-	CIndexBuffer();
-	void Init( IDirect3DDevice9 *pD3D, uint16 *pIndexMemory, int count );
-#endif
 	
 	int AddRef() { return ++m_nReferenceCount; }
 	int Release() 
@@ -85,15 +81,6 @@ public:
 	// Index count
 	int IndexCount() const { return m_IndexCount; }
 
-#if _X360
-	// For some IBs, memory allocation is managed by CGPUBufferAllocator, via ShaderAPI
-	const GPUBufferHandle_t *GetBufferAllocationHandle( void );
-	void  SetBufferAllocationHandle( const GPUBufferHandle_t &bufferAllocationHandle );
-	bool  IsPooled( void ) { return m_GPUBufferHandle.IsValid(); }
-	// Expose the data pointer for read-only CPU access to the data
-	// (double-indirection supports relocation of the data by CGPUBufferAllocator)
-	const byte **GetBufferDataPointerAddress( void );
-#endif // _X360
 	// Do we have enough room without discarding?
 	bool HasEnoughRoom( int numIndices ) const;
 
@@ -155,13 +142,6 @@ public:
 	// Marks a fence indicating when this buffer was used
 	void MarkUsedInRendering()
 	{
-#ifdef _X360
-		if ( m_bDynamic && m_pIB )
-		{
-			Assert( m_AllocationRing.Count() > 0 );
-			m_AllocationRing[m_AllocationRing.Tail()].m_Fence = Dx9Device()->GetCurrentFence();
-		}
-#endif
 	}
 
 private :
@@ -180,34 +160,10 @@ private :
 	enum LOCK_FLAGS
 	{
 		LOCKFLAGS_FLUSH  = D3DLOCK_NOSYSLOCK | D3DLOCK_DISCARD,
-#if !defined( _X360 )
 		LOCKFLAGS_APPEND = D3DLOCK_NOSYSLOCK | D3DLOCK_NOOVERWRITE
-#else
-		// X360BUG: forcing all locks to gpu flush, otherwise bizarre mesh corruption on decals
-		// Currently iterating with microsoft 360 support to track source of gpu corruption
-		LOCKFLAGS_APPEND = D3DLOCK_NOSYSLOCK
-#endif
 	};
 
 	LPDIRECT3DINDEXBUFFER m_pIB;
-#ifdef _X360
-	
-	struct DynamicBufferAllocation_t
-	{
-		DWORD	m_Fence; //track whether this memory is safe to use again.
-		int	m_iStartOffset;
-		int	m_iEndOffset;
-		unsigned int m_iZPassIdx;	// The zpass during which this allocation was made
-	};
-
-	int						m_iNextBlockingPosition; // m_iNextBlockingPosition >= m_Position where another allocation is still in use.
-	unsigned char			*m_pAllocatedMemory;
-	int						m_iAllocationCount; //The total number of indices the buffer we allocated can hold. Usually greater than the number of indices asked for
-	IDirect3DIndexBuffer9	m_D3DIndexBuffer; //Only need one shared D3D header for our usage patterns.
-	CUtlLinkedList<DynamicBufferAllocation_t> m_AllocationRing; //tracks what chunks of our memory are potentially still in use by D3D
-
-	GPUBufferHandle_t		m_GPUBufferHandle;	// Handle to a memory allocation within a shared physical memory pool (see CGPUBufferAllocator)
-#endif
 
 	int			m_IndexCount;
 	int			m_Position;
@@ -234,9 +190,7 @@ private :
 	unsigned int	m_UID;
 #endif
 
-#if !defined( _X360 )
 	//LockedBufferContext m_LockData;
-#endif
 
 protected:
 #ifdef CHECK_INDICES
@@ -252,10 +206,6 @@ private:
 	~CIndexBuffer();
 };
 
-#if defined( _X360 )
-#include "utlmap.h"
-MEMALLOC_DECLARE_EXTERNAL_TRACKING( XMem_CIndexBuffer );
-#endif
 
 
 //-----------------------------------------------------------------------------
@@ -272,11 +222,6 @@ inline CIndexBuffer::CIndexBuffer( IDirect3DDevice9 *pD3D, int count,
 		m_bDynamic(dynamic),
 		m_bSoftwareVertexProcessing( bSoftwareVertexProcessing ),
 		m_bLateCreateShouldDiscard( false )
-#ifdef _X360
-		,m_pAllocatedMemory(NULL)
-		,m_iNextBlockingPosition(0)
-		,m_iAllocationCount(0)
-#endif
 #ifdef VPROF_ENABLED
 		,m_Frame( -1 )
 #endif
@@ -319,7 +264,7 @@ inline CIndexBuffer::CIndexBuffer( IDirect3DDevice9 *pD3D, int count,
 		Create( pD3D );
 	}
 
-#else // _X360
+#else
 	int nBufferSize = (count * IndexSize());
 	if ( m_bDynamic )
 	{
@@ -354,7 +299,7 @@ inline CIndexBuffer::CIndexBuffer( IDirect3DDevice9 *pD3D, int count,
 	}
 
 	m_iNextBlockingPosition = m_iAllocationCount;
-#endif // _X360
+#endif
 
 
 #ifdef VPROF_ENABLED
@@ -398,7 +343,6 @@ void CIndexBuffer::Create( IDirect3DDevice9 *pD3D )
 	RECORD_INT( desc.Pool );
 	RECORD_INT( m_bDynamic );
 
-#if !defined( _X360 )
 	HRESULT hr = pD3D->CreateIndexBuffer( 
 		m_IndexCount * IndexSize(),
 		desc.Usage,
@@ -442,51 +386,6 @@ void CIndexBuffer::Create( IDirect3DDevice9 *pD3D )
 }
 
 
-#ifdef _X360
-void *AllocateTempBuffer( size_t nSizeInBytes );
-
-inline CIndexBuffer::CIndexBuffer() :
-	m_pIB(0), 
-	m_Position(0), 
-	m_bFlush(false), 
-	m_bLocked(false),
-	m_bExternalMemory( true ),
-	m_bDynamic( false )
-#ifdef VPROF_ENABLED
-	,m_Frame( -1 )
-#endif
-{
-	m_IndexCount = 0; 
-
-#ifdef CHECK_INDICES
-	m_pShadowIndices = NULL;
-#endif
-
-	m_iAllocationCount = 0;
-	m_pAllocatedMemory = NULL;
-	m_iNextBlockingPosition = 0;
-}
-
-#include "tier0/memdbgoff.h"
-
-inline void CIndexBuffer::Init( IDirect3DDevice9 *pD3D, uint16 *pIndexMemory, int count )
-{
-	m_IndexCount = count; 
-	m_Position = count;
-
-	m_iAllocationCount = count;
-	m_pAllocatedMemory = (uint8*)pIndexMemory;
-	m_iNextBlockingPosition = m_iAllocationCount;
-
-	int nBufferSize = count * sizeof(uint16);
-	m_pIB = new( AllocateTempBuffer( sizeof( IDirect3DIndexBuffer9 ) ) ) IDirect3DIndexBuffer9;
-	XGSetIndexBufferHeader( nBufferSize, 0, D3DFMT_INDEX16, 0, 0, m_pIB );
-	XGOffsetResourceAddress( m_pIB, pIndexMemory );
-}
-
-#include "tier0/memdbgon.h"
-
-#endif // _X360
 
 inline CIndexBuffer::~CIndexBuffer()
 {
@@ -523,7 +422,6 @@ inline CIndexBuffer::~CIndexBuffer()
 	}
 #endif
 
-#if !defined( _X360 )
 	if ( m_pIB )
 	{
 		RECORD_COMMAND( DX8_DESTROY_INDEX_BUFFER, 1 );
@@ -531,34 +429,6 @@ inline CIndexBuffer::~CIndexBuffer()
 
 		m_pIB->Release();
 	}
-#else
-	if ( m_pIB && m_pIB->IsSet( Dx9Device() ) )
-	{
-		Unbind( m_pIB );
-	}
-
-	if ( m_pAllocatedMemory && !m_bExternalMemory )
-	{
-		if ( IsPooled() )
-		{
-			MeshMgr()->DeallocatePooledIB( this );
-		}
-		else
-		{
-			MemAlloc_RegisterExternalDeallocation( XMem_CIndexBuffer, m_pAllocatedMemory, XPhysicalSize( m_pAllocatedMemory ) );
-			if ( !m_bDynamic )
-			{
-				// Track non-pooled physallocs, to help tune CGPUBufferAllocator usage
-				g_SizeIndividualIBPhysAllocs -= XPhysicalSize( m_pAllocatedMemory );
-				g_NumIndividualIBPhysAllocs--;
-			}
-			XPhysicalFree( m_pAllocatedMemory );
-		}
-	}
-
-	m_pAllocatedMemory = NULL;
-	m_pIB = NULL;
-#endif
 
 #ifdef VPROF_ENABLED
 	if ( !m_bExternalMemory )
@@ -577,58 +447,13 @@ inline CIndexBuffer::~CIndexBuffer()
 #endif
 }
 
-#ifdef _X360
-//-----------------------------------------------------------------------------
-// Get memory allocation data
-//-----------------------------------------------------------------------------
-inline const GPUBufferHandle_t *CIndexBuffer::GetBufferAllocationHandle( void )
-{
-	Assert( IsPooled() );
-	return ( IsPooled() ? &m_GPUBufferHandle : NULL );
-}
-
-//-----------------------------------------------------------------------------
-// Update memory allocation data
-//-----------------------------------------------------------------------------
-inline void CIndexBuffer::SetBufferAllocationHandle( const GPUBufferHandle_t &bufferAllocationHandle )
-{
-	// This IB's memory has been reallocated or freed, update our cached pointer and the D3D header
-	// NOTE: this should never be called while any rendering is in flight!
-	Assert( ( m_pAllocatedMemory == NULL ) || IsPooled() );
-	if ( ( m_pAllocatedMemory == NULL ) || IsPooled() )
-	{
-		m_GPUBufferHandle  = bufferAllocationHandle;
-		m_pAllocatedMemory = m_GPUBufferHandle.pMemory;
-		if ( m_pIB )
-		{
-			int nBufferSize = m_IndexCount * IndexSize();
-			XGSetIndexBufferHeader( nBufferSize, 0, D3DFMT_INDEX16, 0, 0, m_pIB );
-			XGOffsetResourceAddress( m_pIB, m_pAllocatedMemory );
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
-// Expose the data pointer for read-only CPU access to the data
-//-----------------------------------------------------------------------------
-inline const byte **CIndexBuffer::GetBufferDataPointerAddress( void )
-{
-	if ( m_bDynamic /* FIXME: || m_bExternalMemory */ )
-		return NULL;
-	return (const byte **)&m_pAllocatedMemory;
-}
-#endif // _X360
 
 //-----------------------------------------------------------------------------
 // Do we have enough room without discarding?
 //-----------------------------------------------------------------------------
 inline bool CIndexBuffer::HasEnoughRoom( int numIndices ) const
 {
-#if !defined( _X360 )
 	return ( numIndices + m_Position ) <= m_IndexCount;
-#else
-	return numIndices <= m_IndexCount; //the ring buffer will free room as needed
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -638,82 +463,6 @@ inline void CIndexBuffer::BlockUntilUnused( int nAllocationSize )
 {
 	Assert( nAllocationSize <= m_IndexCount );
 
-#ifdef _X360
-	Assert( (m_AllocationRing.Count() != 0) || ((m_Position == 0) && (m_iNextBlockingPosition == m_iAllocationCount)) );
-
-	if ( (m_iNextBlockingPosition - m_Position) >= nAllocationSize )
-		return;
-
-	Assert( (m_AllocationRing[m_AllocationRing.Head()].m_iStartOffset == 0) || ((m_iNextBlockingPosition == m_AllocationRing[m_AllocationRing.Head()].m_iStartOffset) && (m_Position <= m_iNextBlockingPosition)) );
-
-	int iMinBlockPosition = m_Position + nAllocationSize;
-	if( iMinBlockPosition > m_iAllocationCount )
-	{
-		//Allocation requires us to wrap
-		iMinBlockPosition = nAllocationSize;
-		m_Position = 0;
-
-		//modify the last allocation so that it uses up the whole tail end of the buffer. Makes other code simpler
-		Assert( m_AllocationRing.Count() != 0 );
-		m_AllocationRing[m_AllocationRing.Tail()].m_iEndOffset = m_iAllocationCount;
-
-		//treat all allocations between the current position and the tail end of the ring as freed since they will be before we unblock
-		while( m_AllocationRing.Count() ) 
-		{
-			unsigned int head = m_AllocationRing.Head();
-			if( m_AllocationRing[head].m_iStartOffset == 0 )
-				break;
-
-			m_AllocationRing.Remove( head );
-		}
-	}
-
-	//now we go through the allocations until we find the last fence we care about. Treat everything up until that fence as freed.
-	DWORD FinalFence = 0;
-	unsigned int iFinalAllocationZPassIdx = 0;
-	while( m_AllocationRing.Count() )
-	{
-		unsigned int head = m_AllocationRing.Head();		
-		
-		if( m_AllocationRing[head].m_iEndOffset >= iMinBlockPosition )
-		{
-			//When this frees, we'll finally have enough space for the allocation
-			FinalFence = m_AllocationRing[head].m_Fence;
-			iFinalAllocationZPassIdx = m_AllocationRing[head].m_iZPassIdx;
-			m_iNextBlockingPosition = m_AllocationRing[head].m_iEndOffset;
-			m_AllocationRing.Remove( head );
-			break;
-		}
-		m_AllocationRing.Remove( head );
-	}
-	Assert( FinalFence != 0 );
-
-	if( Dx9Device()->IsFencePending( FinalFence ) )
-	{
-#ifdef SPEW_INDEX_BUFFER_STALLS
-		float st = Plat_FloatTime();
-#endif
-
-		if ( ( Dx9Device()->GetDeviceState() & D3DDEVICESTATE_ZPASS_BRACKET ) &&
-			( iFinalAllocationZPassIdx == ShaderAPI()->Get360ZPassCounter() ) )	
-		{
-			// We're about to overrun our IB ringbuffer in a single Z prepass. To avoid rendering corruption, close out the
-			// Z prepass and continue. This will reduce early-Z rejection efficiency and could cause a momentary framerate drop,
-			// but it's better than rendering corruption.
-			Warning( "Dynamic IB ring buffer overrun in Z Prepass. Tell Thorsten.\n" );
-
-			ShaderAPI()->End360ZPass();
-		}
-
-		Dx9Device()->BlockOnFence( FinalFence );
-
-#ifdef SPEW_INDEX_BUFFER_STALLS	
-		float dt = Plat_FloatTime() - st;
-		Warning( "Blocked locking dynamic index buffer for %f ms!\n", 1000.0 * dt );
-#endif
-	}
-
-#endif
 }
 
 
@@ -724,12 +473,6 @@ inline unsigned short* CIndexBuffer::Lock( bool bReadOnly, int numIndices, int& 
 {
 	Assert( !m_bLocked );
 
-#if defined( _X360 )
-	if ( m_pIB && m_pIB->IsSet( Dx9Device() ) )
-	{
-		Unbind( m_pIB );
-	}
-#endif
 
 	unsigned short* pLockedData = NULL;
 
@@ -753,7 +496,6 @@ inline unsigned short* CIndexBuffer::Lock( bool bReadOnly, int numIndices, int& 
 	if ( m_bDynamic )
 	{
 		// startPosition now can be != -1, when calling in here with a static (staging) buffer.
-#if !defined( _X360 )
 		dwFlags = LOCKFLAGS_APPEND;
 	
 		// If either user forced us to flush,
@@ -771,36 +513,6 @@ inline unsigned short* CIndexBuffer::Lock( bool bReadOnly, int numIndices, int& 
 
 			dwFlags = LOCKFLAGS_FLUSH;
 		}
-#else
-		if ( m_bFlush )
-		{
-#			if ( defined( X360_BLOCK_ON_IB_FLUSH ) )
-			{
-				if( m_AllocationRing.Count() )
-				{
-					DWORD FinalFence = m_AllocationRing[m_AllocationRing.Tail()].m_Fence;
-
-					m_AllocationRing.RemoveAll();
-					m_Position = 0;
-					m_iNextBlockingPosition = m_iAllocationCount;
-
-#				if ( defined( SPEW_VERTEX_BUFFER_STALLS ) )
-					if( Dx9Device()->IsFencePending( FinalFence ) )
-					{
-						float st = Plat_FloatTime();
-#				endif
-						Dx9Device()->BlockOnFence( FinalFence );
-#				if ( defined ( SPEW_VERTEX_BUFFER_STALLS ) )
-						float dt = Plat_FloatTime() - st;
-						Warning( "Blocked FLUSHING dynamic index buffer for %f ms!\n", 1000.0 * dt );
-					}
-#				endif
-				}
-			}
-#			endif
-			m_bFlush = false;
-		}
-#endif
 	}
 	else
 	{
@@ -829,7 +541,6 @@ inline unsigned short* CIndexBuffer::Lock( bool bReadOnly, int numIndices, int& 
 
 	HRESULT hr = D3D_OK;
 
-#if !defined( _X360 )
 	// If the caller isn't in the thread that owns the render lock, need to return a system memory pointer--cannot talk to GL from 
 	// the non-current thread. 
 	if ( !m_pSysmemBuffer && !g_pShaderUtil->IsRenderThreadSafe() )
@@ -851,23 +562,6 @@ inline unsigned short* CIndexBuffer::Lock( bool bReadOnly, int numIndices, int& 
 		hr = m_pIB->Lock( position * IndexSize(), numIndices * IndexSize(), 
 						   reinterpret_cast< void** >( &pLockedData ), dwFlags );
 	}
-#else
-	if ( m_bDynamic )
-	{
-		// Block until earlier parts of the buffer are free
-		BlockUntilUnused( numIndices );
-		position = m_Position;
-		m_pIB = NULL;
-		Assert( (m_Position + numIndices) <= m_iAllocationCount );
-	}
-	else
-	{
-		//static, block until last lock finished?
-		m_Position = position;
-	}
-	pLockedData = (unsigned short *)(m_pAllocatedMemory + (position * IndexSize()));
-	
-#endif
 
 	switch ( hr )
 	{
@@ -900,11 +594,7 @@ inline unsigned short* CIndexBuffer::Lock( bool bReadOnly, int numIndices, int& 
 
 inline void CIndexBuffer::Unlock( int numIndices )
 {
-#if defined( _X360 )
-	Assert( (m_Position + numIndices) <= m_iAllocationCount );
-#else
 	Assert( (m_Position + numIndices) <= m_IndexCount );
-#endif
 
 	if ( !m_bLocked )
 		return;
@@ -919,7 +609,6 @@ inline void CIndexBuffer::Unlock( int numIndices )
 	RECORD_COMMAND( DX8_UNLOCK_INDEX_BUFFER, 1 );
 	RECORD_INT( m_UID );
 
-#if !defined( _X360 )
 	if ( m_pSysmemBuffer )
 	{
 	}
@@ -937,44 +626,6 @@ inline void CIndexBuffer::Unlock( int numIndices )
 #endif
 		ReallyUnlock( unlockBytes );
 	}
-#else
-	if ( m_bDynamic )
-	{
-		Assert( (m_Position == 0) || (m_AllocationRing[m_AllocationRing.Tail()].m_iEndOffset == m_Position) );
-
-		DynamicBufferAllocation_t LockData;
-		LockData.m_Fence = Dx9Device()->GetCurrentFence(); //This isn't the correct fence, but it's all we have access to for now and it'll provide marginal safety if something goes really wrong.
-		LockData.m_iStartOffset	= m_Position;
-		LockData.m_iEndOffset = LockData.m_iStartOffset + numIndices;
-		LockData.m_iZPassIdx = ( Dx9Device()->GetDeviceState() & D3DDEVICESTATE_ZPASS_BRACKET ) ? ShaderAPI()->Get360ZPassCounter() : 0;
-		Assert( (LockData.m_iStartOffset == 0) || (LockData.m_iStartOffset == m_AllocationRing[m_AllocationRing.Tail()].m_iEndOffset) );
-		m_AllocationRing.AddToTail( LockData );
-		
-		void* pLockedData = m_pAllocatedMemory + (LockData.m_iStartOffset * IndexSize());
-		
-		//Always re-use the same index buffer header based on the assumption that D3D copies it off in the draw calls.
-		m_pIB = &m_D3DIndexBuffer;
-		XGSetIndexBufferHeader( numIndices * IndexSize(), 0, D3DFMT_INDEX16, 0, 0, m_pIB );
-		XGOffsetResourceAddress( m_pIB, pLockedData );
-
-		// Invalidate the GPU caches for this memory.
-		// FIXME: Should dynamic allocations be 4k aligned?
-		Dx9Device()->InvalidateGpuCache( pLockedData, numIndices * IndexSize(), 0 );
-	}
-	else
-	{
-		if ( !m_pIB )
-		{
-			int nBufferSize = m_IndexCount * IndexSize();
-			XGSetIndexBufferHeader( nBufferSize, 0, D3DFMT_INDEX16, 0, 0, &m_D3DIndexBuffer );
-			XGOffsetResourceAddress( &m_D3DIndexBuffer, m_pAllocatedMemory );
-			m_pIB = &m_D3DIndexBuffer;
-		}
-
-		// Invalidate the GPU caches for this memory.
-		Dx9Device()->InvalidateGpuCache( m_pAllocatedMemory, m_IndexCount * IndexSize(), 0 );
-	}
-#endif
 
 	m_Position += numIndices;
 	m_bLocked = false;
@@ -1030,20 +681,12 @@ inline void CIndexBuffer::HandleLateCreation( )
 // Returns the allocated size
 inline int CIndexBuffer::AllocationSize() const
 {
-#ifdef _X360
-	return m_iAllocationCount * IndexSize();
-#else
 	return m_IndexCount * IndexSize();
-#endif
 }
 
 inline int CIndexBuffer::AllocationCount() const
 {
-#ifdef _X360
-	return m_iAllocationCount;
-#else
 	return m_IndexCount;
-#endif
 }
 
 #ifdef _WIN32
@@ -1052,5 +695,4 @@ inline int CIndexBuffer::AllocationCount() const
 
 #include "tier0/memdbgoff.h"
 
-#endif  // DYNAMICIB_H
 

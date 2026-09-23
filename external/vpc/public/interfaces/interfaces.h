@@ -184,10 +184,6 @@ DECLARE_TIER2_INTERFACE( IResourceAccessControl, g_pResourceAccessControl );
 #define PRECACHE_SYSTEM_INTERFACE_VERSION		"VPrecacheSystem001"
 DECLARE_TIER2_INTERFACE( IPrecacheSystem, g_pPrecacheSystem );
 
-#if defined( _X360 )
-#define XBOXINSTALLER_INTERFACE_VERSION			"XboxInstallerVersion001"
-DECLARE_TIER2_INTERFACE( IXboxInstaller, g_pXboxInstaller );
-#endif
 
 #define MATCHFRAMEWORK_INTERFACE_VERSION		"MATCHFRAMEWORK_001"
 DECLARE_TIER2_INTERFACE( IMatchFramework, g_pMatchFramework );

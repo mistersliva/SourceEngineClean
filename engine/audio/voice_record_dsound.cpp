@@ -9,16 +9,12 @@
 // This module implements the voice record and compression functions 
 
 #include "audio_pch.h"
-#if !defined( _X360 )
 #include "dsound.h"
-#endif
 #include <assert.h>
 #include "voice.h"
 #include "tier0/vcrmode.h"
 #include "ivoicerecord.h"
 
-#if defined( _X360 )
-#endif
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"

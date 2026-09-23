@@ -1818,7 +1818,6 @@ Cell *snocString ( Cell *root, Char *name )
 static 
 void addFlagsFromEnvVar ( Cell** argList, Char* varName ) 
 {
-#ifndef _X360
    Int32 i, j, k;
    Char *envbase, *p;
 
@@ -1840,7 +1839,6 @@ void addFlagsFromEnvVar ( Cell** argList, Char* varName )
          }
       }
    }
-#endif
 }
 
 

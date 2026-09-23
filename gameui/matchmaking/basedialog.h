@@ -16,9 +16,7 @@
 #include "KeyValues.h"
 #include "BasePanel.h"
 
-#if !defined( _X360 )
 #include "xboxstubs.h"
-#endif
 
 class CFooterPanel;
 

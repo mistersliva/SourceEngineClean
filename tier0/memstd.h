@@ -6,15 +6,8 @@
 #include "pch_tier0.h"
 
 #if defined(_WIN32)
-#if !defined(_X360)
 #define WIN_32_LEAN_AND_MEAN
 #include <windows.h>
-#else
-#undef Verify
-#define _XBOX
-#include <xtl.h>
-#undef _XBOX
-#endif
 #endif
 
 #ifdef OSX
@@ -31,9 +24,6 @@
 
 #pragma pack(4)
 
-#ifdef _X360
-#define USE_PHYSICAL_SMALL_BLOCK_HEAP 1
-#endif
 
 
 // #define NO_SBH	1
@@ -43,13 +33,8 @@
 #define MIN_SBH_ALIGN	8
 #define MAX_SBH_BLOCK	2048
 #define MAX_POOL_REGION (4*1024*1024)
-#if !defined(_X360)
 #define SBH_PAGE_SIZE		(4*1024)
 #define COMMIT_SIZE		(16*SBH_PAGE_SIZE)
-#else
-#define SBH_PAGE_SIZE		(64*1024)
-#define COMMIT_SIZE		(SBH_PAGE_SIZE)
-#endif
 #if _M_X64
 #define NUM_POOLS		34
 #else
@@ -68,7 +53,7 @@
 // Once those perf issues are worked out, it might make sense to do perf tests with SBH, libc, and tcmalloc.
 //
 //$ #if defined( _WIN32 ) || defined( _PS3 ) || defined( LINUX )
-#if defined( _WIN32 ) || defined( _PS3 )
+#if defined(_WIN32)
 #define MEM_SBH_ENABLED 1
 #endif
 
@@ -132,8 +117,8 @@ private:
 } ALIGN16_POST;
 
 #ifdef USE_PHYSICAL_SMALL_BLOCK_HEAP
-#define BYTES_X360_SBH (32*1024*1024)
-#define PAGESIZE_X360_SBH (64*1024)
+#define BYTES_PHYS_SBH (32*1024*1024)
+#define PAGESIZE_PHYS_SBH (64*1024)
 class CX360SmallBlockPool
 {
 public:
@@ -149,7 +134,7 @@ public:
 
 	static CX360SmallBlockPool *FindPool( void *p )
 	{
-		int index = (size_t)((byte *)p - gm_pPhysicalBase) / PAGESIZE_X360_SBH;
+		int index = (size_t)((byte *)p - gm_pPhysicalBase) / PAGESIZE_PHYS_SBH;
 		if ( index < 0 || index >= ARRAYSIZE(gm_AddressToPool) )
 			return NULL;
 		return gm_AddressToPool[ index ];
@@ -175,7 +160,7 @@ private:
 
 	CThreadFastMutex m_CommitMutex;
 
-	static CX360SmallBlockPool *gm_AddressToPool[BYTES_X360_SBH/PAGESIZE_X360_SBH];
+	static CX360SmallBlockPool *gm_AddressToPool[BYTES_PHYS_SBH/PAGESIZE_PHYS_SBH];
 
 	static byte *gm_pPhysicalBlock;
 	static byte *gm_pPhysicalBase;

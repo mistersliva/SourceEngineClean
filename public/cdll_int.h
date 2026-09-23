@@ -20,9 +20,7 @@
 #include "inputsystem/ButtonCode.h"
 #include "modes.h"
 
-#if !defined( _X360 )
 #include "xboxstubs.h"
-#endif
 
 //-----------------------------------------------------------------------------
 // forward declarations

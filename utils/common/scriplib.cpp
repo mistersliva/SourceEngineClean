@@ -12,8 +12,6 @@
 #include "tier2/tier2.h"
 #include "cmdlib.h"
 #include "scriplib.h"
-#if defined( _X360 )
-#endif
 #if defined(POSIX)
 #include "../../filesystem/linux_support.h"
 #include <sys/stat.h>
@@ -1107,7 +1105,6 @@ char *CScriptLib::MakeTemporaryFilename( char const *pchModPath, char *pPath, in
 //-----------------------------------------------------------------------------
 void CScriptLib::DeleteTemporaryFiles( const char *pFileMask )
 {
-#if !defined( _X360 )
 	const char *pEnv = getenv( "temp" );
 	if ( !pEnv )
 	{
@@ -1128,9 +1125,6 @@ void CScriptLib::DeleteTemporaryFiles( const char *pFileMask )
 			_unlink( fileList[i].fileName.String() );
 		}
 	}
-#else
-	AssertOnce( !"CScriptLib::DeleteTemporaryFiles:  Not avail on 360\n" );
-#endif
 }
 
 //-----------------------------------------------------------------------------

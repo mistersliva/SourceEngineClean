@@ -54,9 +54,6 @@ IResourceAccessControl *g_pResourceAccessControl = 0;
 IPrecacheSystem *g_pPrecacheSystem = 0;
 ISceneSystem *g_pSceneSystem = 0;
 
-#if defined( PLATFORM_X360 )
-IXboxInstaller *g_pXboxInstaller = 0;
-#endif
 
 IMatchFramework *g_pMatchFramework = 0;
 IGameUISystemMgr *g_pGameUISystemMgr = 0;
@@ -159,9 +156,6 @@ static InterfaceGlobals_t g_pInterfaceGlobals[] =
 	{ WORLD_RENDERER_MGR_INTERFACE_VERSION, &g_pWorldRendererMgr },
 	{ RENDER_SYSTEM_SURFACE_INTERFACE_VERSION, &g_pVGuiRenderSurface },
 
-#if defined( _X360 )
-	{ XBOXINSTALLER_INTERFACE_VERSION, &g_pXboxInstaller },
-#endif
 
 	{ MATCHFRAMEWORK_INTERFACE_VERSION, &g_pMatchFramework },
 	{ GAMEUISYSTEMMGR_INTERFACE_VERSION, &g_pGameUISystemMgr },

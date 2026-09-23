@@ -7,13 +7,10 @@
 //===========================================================================//
 
 
-#if defined( PLATFORM_WINDOWS_PC )
+#if defined(PLATFORM_WINDOWS_PC)
 #define WIN32_LEAN_AND_MEAN
 #define _WIN32_WINNT 0x0403
 #include <windows.h>
-#elif defined( _PS3 )
-#include <cellstatus.h>
-#include <sys/prx.h>
 #endif
 
 

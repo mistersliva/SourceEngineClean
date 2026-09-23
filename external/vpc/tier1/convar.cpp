@@ -18,8 +18,6 @@
 #include "tier1/convar_serverbounded.h"
 #include "icvar.h"
 #include "tier0/dbg.h"
-#if defined( _X360 )
-#endif
 #include "tier0/memdbgon.h"
 
 

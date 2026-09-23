@@ -342,7 +342,7 @@ struct datamap_t
 	template <typename T> friend void DataMapAccess(T *, datamap_t **p); \
 	template <typename T> friend datamap_t *DataMapInit(T *);
 
-#if defined(POSIX) && !defined(_PS3)
+#if defined(POSIX)
 
 #define DECLARE_SIMPLE_DATADESC_INSIDE_NAMESPACE() \
 	static datamap_t m_DataMap; \

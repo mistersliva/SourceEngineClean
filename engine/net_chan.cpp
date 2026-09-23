@@ -588,10 +588,6 @@ bool CNetChan::StartStreaming( unsigned int challengeNr )
 		return true;	// streaming is done via loopback buffers in SP mode
 	}
 
-#ifdef _XBOX
-	// We don't want to go into here because it'll eat up 192k extra memory in the client and server's m_StreamData.
-	Error( "StartStreaming not allowed on XBOX." );
-#endif
 
 	MEM_ALLOC_CREDIT();
 
@@ -762,7 +758,7 @@ bool CNetChan::CanPacket () const
 
 bool CNetChan::IsPlayback( void ) const
 {
-#if !defined(SWDS) && !defined(_XBOX)
+#if !(defined(SWDS))
 	return demoplayer->IsPlayingBack();
 #else
 	return false;
@@ -1992,7 +1988,7 @@ bool CNetChan::ProcessMessages( bf_read &buf  )
 		}
 	}
 
-#if !defined(SWDS) && !defined(_XBOX)
+#if !(defined(SWDS))
 	// all messages could be parsed, write packet to demo file
 	if ( m_DemoRecorder && !demoplayer->IsPlayingBack() )
 	{
@@ -2006,7 +2002,7 @@ bool CNetChan::ProcessMessages( bf_read &buf  )
 
 void CNetChan::ProcessPlayback( void )
 {
-#if !defined(SWDS) && !defined(_XBOX)
+#if !(defined(SWDS))
 	netpacket_t * packet;
 
 	while ( ( packet = demoplayer->ReadPacket() ) != NULL )
@@ -2499,7 +2495,7 @@ void CNetChan::ProcessPacket( netpacket_t * packet, bool bHasHeader )
 // tell message handler that packet is completely parsed
 	m_MessageHandler->PacketEnd();
 
-#if !defined(SWDS) && !defined(_XBOX)
+#if !(defined(SWDS))
 // tell demo system that packet is completely parsed
 	if ( m_DemoRecorder && !demoplayer->IsPlayingBack() )
 	{

@@ -9,15 +9,11 @@
 
 #if !defined(STEAM) && !defined(NO_MALLOC_OVERRIDE)
 
-#if defined( _WIN32 ) && !defined( _X360 )
+#if defined(_WIN32)
 #define WIN_32_LEAN_AND_MEAN
 #include <windows.h>
 #define VA_COMMIT_FLAGS MEM_COMMIT
 #define VA_RESERVE_FLAGS MEM_RESERVE
-#elif defined( _X360 )
-#undef Verify
-#define VA_COMMIT_FLAGS (MEM_COMMIT|MEM_NOZERO|MEM_LARGE_PAGES)
-#define VA_RESERVE_FLAGS (MEM_RESERVE|MEM_LARGE_PAGES)
 #endif
 
 #ifdef OSX
@@ -35,8 +31,6 @@
 #include "tier0/threadtools.h"
 #include "mem_helpers.h"
 #include "memstd.h"
-#ifdef _X360
-#endif
 
 
 // Force on redirecting all allocations to the process heap on Win64,
@@ -1074,7 +1068,7 @@ CSmallBlockPool *CSmallBlockHeap::FindPool( void *p )
 
 #if USE_PHYSICAL_SMALL_BLOCK_HEAP
 
-CX360SmallBlockPool *CX360SmallBlockPool::gm_AddressToPool[BYTES_X360_SBH/PAGESIZE_X360_SBH];
+CX360SmallBlockPool *CX360SmallBlockPool::gm_AddressToPool[BYTES_PHYS_SBH/PAGESIZE_PHYS_SBH];
 byte *CX360SmallBlockPool::gm_pPhysicalBlock;
 byte *CX360SmallBlockPool::gm_pPhysicalBase;
 byte *CX360SmallBlockPool::gm_pPhysicalLimit;
@@ -1083,8 +1077,8 @@ void CX360SmallBlockPool::Init( unsigned nBlockSize )
 {
 	if ( !gm_pPhysicalBlock )
 	{
-		gm_pPhysicalBase = (byte *)XPhysicalAlloc( BYTES_X360_SBH, MAXULONG_PTR, 4096, PAGE_READWRITE | MEM_16MB_PAGES );
-		gm_pPhysicalLimit = gm_pPhysicalBase + BYTES_X360_SBH;
+		gm_pPhysicalBase = (byte *)XPhysicalAlloc( BYTES_PHYS_SBH, MAXULONG_PTR, 4096, PAGE_READWRITE | MEM_16MB_PAGES );
+		gm_pPhysicalLimit = gm_pPhysicalBase + BYTES_PHYS_SBH;
 		gm_pPhysicalBlock = gm_pPhysicalBase;
 	}
 
@@ -1145,14 +1139,14 @@ void *CX360SmallBlockPool::Alloc()
 							return NULL;
 						}
 						byte *pPhysicalBlock = gm_pPhysicalBlock;
-						if ( ThreadInterlockedAssignPointerIf( (void **)&gm_pPhysicalBlock, (void *)(pPhysicalBlock + PAGESIZE_X360_SBH), (void *)pPhysicalBlock ) )
+						if ( ThreadInterlockedAssignPointerIf( (void **)&gm_pPhysicalBlock, (void *)(pPhysicalBlock + PAGESIZE_PHYS_SBH), (void *)pPhysicalBlock ) )
 		{
-							int index = (size_t)((byte *)pPhysicalBlock - gm_pPhysicalBase) / PAGESIZE_X360_SBH;
+							int index = (size_t)((byte *)pPhysicalBlock - gm_pPhysicalBase) / PAGESIZE_PHYS_SBH;
 							gm_AddressToPool[index] = this;
 							m_pNextAlloc = pPhysicalBlock;
-							m_CommittedSize += PAGESIZE_X360_SBH;
+							m_CommittedSize += PAGESIZE_PHYS_SBH;
 							__sync();
-							m_pCurBlockEnd = pPhysicalBlock + PAGESIZE_X360_SBH;
+							m_pCurBlockEnd = pPhysicalBlock + PAGESIZE_PHYS_SBH;
 							break;
 						}
 					}
@@ -1327,7 +1321,7 @@ bool CX360SmallBlockHeap::ShouldUse( size_t nBytes )
 
 bool CX360SmallBlockHeap::IsOwner( void * p )
 {
-	int index = (size_t)((byte *)p - CX360SmallBlockPool::gm_pPhysicalBase) / PAGESIZE_X360_SBH;
+	int index = (size_t)((byte *)p - CX360SmallBlockPool::gm_pPhysicalBase) / PAGESIZE_PHYS_SBH;
 	return ( UsingSBH() && ( index >= 0 && index < ARRAYSIZE(CX360SmallBlockPool::gm_AddressToPool) ) );
 	}
 
@@ -1714,9 +1708,6 @@ void CStdMemAlloc::DumpStatsFileBase( char const *pchFileBase )
 	fprintf( pFile, "\nSBH:\n" );
 	m_SmallBlockHeap.DumpStats(pFile);	// Dump statistics to small block heap
 
-#if defined( _X360 ) && !defined( _RETAIL )
-	XBX_rMemDump( filename );
-#endif
 
 		fclose( pFile );
 #endif
@@ -1727,35 +1718,11 @@ void CStdMemAlloc::GlobalMemoryStatus( size_t *pUsedMemory, size_t *pFreeMemory 
 	if ( !pUsedMemory || !pFreeMemory )
 		return;
 
-#if defined ( _X360 )
-
-	// GlobalMemoryStatus tells us how much physical memory is free
-	MEMORYSTATUS stat;
-	::GlobalMemoryStatus( &stat );
-	*pFreeMemory = stat.dwAvailPhys;
-
-	// NOTE: we do not count free memory inside our small block heaps, as this could be misleading
-	//       (even with lots of SBH memory free, a single allocation over 2kb can still fail)
-
-#if defined( USE_DLMALLOC )
-	// Account for free memory contained within DLMalloc
-	for ( int i = 0; i < ARRAYSIZE( g_AllocRegions ); i++ )
-	{
-		mallinfo info = mspace_mallinfo( g_AllocRegions[ i ] );
-		*pFreeMemory += info.fordblks;
-	}
-#endif
-
-	// Used is total minus free (discount the 32MB system reservation)
-	*pUsedMemory = ( stat.dwTotalPhys - 32*1024*1024 ) - *pFreeMemory;
-
-#else
 
 	// no data
 	*pFreeMemory = 0;
 	*pUsedMemory = 0;
 
-#endif
 }
 
 void CStdMemAlloc::CompactHeap()
@@ -1777,15 +1744,6 @@ size_t CStdMemAlloc::DefaultFailHandler( size_t nBytes )
 {
 	if ( IsX360() && !IsRetail() )
 	{
-#ifdef _X360 
-		ExecuteOnce(
-		{
-			char buffer[256];
-			_snprintf( buffer, sizeof( buffer ), "***** Memory pool overflow, attempted allocation size: %u ****\n", nBytes );
-			XBX_OutputDebugString( buffer ); 
-		}
-		);
-#endif
 	}
 
 	return 0;

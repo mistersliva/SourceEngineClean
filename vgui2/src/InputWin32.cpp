@@ -5,7 +5,7 @@
 // $NoKeywords: $
 //===========================================================================//
 
-#if defined( WIN32 ) && !defined( _X360 )
+#if defined(WIN32)
 #include <windows.h>
 #include <imm.h>
 #define DO_IME
@@ -34,8 +34,6 @@
 #include "utllinkedlist.h"
 #include "tier0/icommandline.h"
 
-#if defined( _X360 )
-#endif
 
 /* 
 > Subject: RE: l4d2 & motd 
@@ -58,11 +56,7 @@
 >>>> like those haven't ever been implemented on OSX either. Alfred, what 
 >>>> is the story there?
 */
-#if 0 // !defined( DO_IME ) && !defined( _X360 )
-#define ASSERT_IF_IME_NYI()	Assert( !"IME Support NYI" )
-#else
 #define ASSERT_IF_IME_NYI()
-#endif
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -1380,7 +1374,6 @@ void CInputSystem::SurfaceSetCursorPos(int x, int y)
 
 void CInputSystem::SurfaceGetCursorPos( int &x, int &y )
 {
-#ifndef _X360 // X360TBD
 	if ( g_pSurface->HasCursorPosFunctions() ) // does the surface export cursor functions for us to use?
 	{
 		g_pSurface->SurfaceGetCursorPos( x,y );
@@ -1408,10 +1401,6 @@ void CInputSystem::SurfaceGetCursorPos( int &x, int &y )
 		y = 0;
 #endif
 	}
-#else
-	x = 0;
-	y = 0;
-#endif
 }
 
 void CInputSystem::SetCursorOveride(HCursor cursor)
@@ -1796,12 +1785,8 @@ bool CInputSystem::PostKeyMessage(KeyValues *message)
 	InputContext_t *pContext = GetInputContext( m_hContext );
 	if( (pContext->_keyFocus!= NULL) && IsChildOfModalPanel((VPANEL)pContext->_keyFocus))
 	{
-#ifdef _X360
-		g_pIVgui->PostMessage((VPANEL) MESSAGE_CURRENT_KEYFOCUS, message, NULL );
-#else
 		//tell the current focused panel that a key was released
 		g_pIVgui->PostMessage((VPANEL)pContext->_keyFocus, message, NULL );
-#endif
 		return true;
 	}
 
@@ -2618,7 +2603,7 @@ static IMESettingsTransform g_SentenceMode_JP_BiasSpeech(
 	IME_SMODE_CONVERSATION
 	);
 
-#endif // _X360
+#endif
 
 int CInputSystem::GetIMESentenceModes( SentenceModeItem *dest, int destcount )
 {

@@ -498,7 +498,6 @@ static inline void SV_DetermineUpdateType( CEntityWriteInfo &u )
 		return;
 	}
 
-#ifndef _X360
 		int nBits;
 #if defined( REPLAY_ENABLED )
 	if ( !u.m_bCullProps && (hltv || replay) )
@@ -531,7 +530,6 @@ static inline void SV_DetermineUpdateType( CEntityWriteInfo &u )
 			return; // we used the cache, great
 		}
 	}
-#endif
 
 	int checkProps[MAX_DATATABLE_PROPS];
 	int nCheckProps = u.m_pNewPack->GetPropsChangedAfterTick( u.m_pFromSnapshot->m_nTickCount, checkProps, ARRAYSIZE( checkProps ) );
@@ -601,7 +599,6 @@ static inline void SV_DetermineUpdateType( CEntityWriteInfo &u )
 	}
 	else
 	{
-#ifndef _X360
 		if ( !u.m_bCullProps )
 		{
 			if ( hltv )
@@ -618,7 +615,6 @@ static inline void SV_DetermineUpdateType( CEntityWriteInfo &u )
 			}
 #endif
 		}
-#endif
 		u.m_UpdateType = PreserveEnt;
 	}
 }
@@ -879,14 +875,12 @@ void CBaseServer::WriteDeltaEntities( CBaseClient *client, CClientFrame *to, CCl
 	u.m_nFullProps = 0;
 	u.m_pServer = this;
 	u.m_nClientEntity = client->m_nEntityIndex;
-#ifndef _XBOX
 	if ( IsHLTV() || IsReplay() )
 	{
 		// cull props only on master proxy
 		u.m_bCullProps = sv.IsActive();
 	}
 	else
-#endif
 	{
 		u.m_bCullProps = true;	// always cull props for players
 	}

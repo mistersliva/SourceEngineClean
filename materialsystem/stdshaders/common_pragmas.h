@@ -26,7 +26,6 @@
 // Platforms:
 //
 //  PC
-// _X360
 //
 
 // Special pragmas silencing common warnings

@@ -509,10 +509,8 @@ void CBaseClient::ActivatePlayer()
 
 	m_nSignonState = SIGNONSTATE_FULL;
 	MapReslistGenerator().OnPlayerSpawn();
-#ifndef _XBOX
 	// update the UI
 	NotifyDedicatedServerUI("UpdatePlayers");
-#endif
 }
 
 void CBaseClient::SpawnPlayer( void )
@@ -613,9 +611,7 @@ void CBaseClient::Disconnect( const char *fmt, ... )
 	SV_NotifyRPTOfDisconnect( m_nClientSlot );
 #endif
 
-#ifndef _XBOX
 	Steam3Server().NotifyClientDisconnect( this );
-#endif
 	m_nSignonState = SIGNONSTATE_NONE;
 
 	// clear user info 
@@ -638,9 +634,7 @@ void CBaseClient::Disconnect( const char *fmt, ... )
 	}
 
 	Clear(); // clear state
-#ifndef _XBOX
 	NotifyDedicatedServerUI("UpdatePlayers");
-#endif
 	Steam3Server().SendUpdatedServerDetails(); // Update the master server.
 }
 
@@ -706,13 +700,6 @@ bool CBaseClient::SendServerInfo( void )
 	
 	serverinfo.WriteToBuffer( msg );
 
-#ifdef _X360
-	if ( serverinfo.m_nMaxClients > 1 )
-	{
-		Msg( "Telling clients to connect" );
-		g_pMatchmaking->TellClientsToConnect();
-	}
-#endif
 
 	// send first tick
 	m_nSignonTick = m_Server->m_nTickCount;

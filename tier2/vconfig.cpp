@@ -5,14 +5,10 @@
 //===========================================================================//
 
 #ifdef _WIN32
-#if !defined( _X360 )
 #include <windows.h>
-#endif
 #include <direct.h>
 #include <io.h> // _chmod
 #include <process.h>
-#endif
-#if defined( _X360 )
 #endif
 #include "vconfig.h"
 

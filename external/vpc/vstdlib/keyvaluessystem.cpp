@@ -14,9 +14,6 @@
 #include "tier1/memstack.h"
 #include "tier1/convar.h"
 
-#ifdef _PS3
-#include "ps3/ps3_core.h"
-#endif
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include <tier0/memdbgon.h>

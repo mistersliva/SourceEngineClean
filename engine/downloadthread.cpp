@@ -17,7 +17,7 @@
 //--------------------------------------------------------------------------------------------------------------
 
 
-#if defined( WIN32 ) && !defined( _X360 )
+#if defined(WIN32)
 #include "winlite.h"
 #include <WinInet.h>
 #endif
@@ -31,8 +31,6 @@
 #include "tier1/strtools.h"
 #include "tier0/threadtools.h"
 
-#if defined( _X360 )
-#endif
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"

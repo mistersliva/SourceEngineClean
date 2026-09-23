@@ -1557,17 +1557,6 @@ void CCSClientScoreBoardDialog::OnThink()
 {
     BaseClass::OnThink();
 
-#ifdef _XBOX
-    C_CSPlayer *pLocalPlayer = C_CSPlayer::GetLocalCSPlayer();
-    if ( pLocalPlayer )
-    {
-        bool mouseEnabled = IsMouseInputEnabled();
-        if (pLocalPlayer->IsAlive() == mouseEnabled)
-        {
-            SetMouseInputEnabled( !mouseEnabled );
-        }
-    }
-#endif
 }
 
 bool CCSClientScoreBoardDialog::ForceLocalPlayerVisible( TeamDisplayInfo& teamDisplay )

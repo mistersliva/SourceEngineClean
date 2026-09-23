@@ -93,7 +93,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#if defined( WIN32 ) && !defined( _X360 )
+#if defined(WIN32)
 #define STRICT
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -146,8 +146,6 @@ bool WriteFile( void *handle, void *buf, unsigned int towrite, unsigned int *wri
 typedef unsigned char BYTE;
 #endif // POSIX
 
-#if defined( _X360 )
-#endif
 
 
 // THIS FILE is almost entirely based upon code by Jean-loup Gailly

@@ -7,8 +7,6 @@
 
 #include "pch_serverbrowser.h"
 
-#if defined( _X360 )
-#endif
 
 using namespace vgui;
 

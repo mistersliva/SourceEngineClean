@@ -21,8 +21,6 @@
 #include "shaderapi_global.h"
 #include "winutils.h"
 
-#ifdef _X360
-#endif
 
 //-----------------------------------------------------------------------------
 // Globals
@@ -1019,7 +1017,6 @@ static BOOL CALLBACK EnumWindowsProcNotThis( VD3DHWND hWnd, LPARAM lParam )
 #ifdef USE_ACTUAL_DX
 static LRESULT CALLBACK ShaderDX8WndProc(VD3DHWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
 {
-#if !defined( _X360 )
 	// FIXME: Should these IPC messages tell when an app has focus or not?
 	// If so, we'd want to totally disable the shader api layer when an app
 	// doesn't have focus.
@@ -1053,7 +1050,6 @@ static LRESULT CALLBACK ShaderDX8WndProc(VD3DHWND hWnd, UINT msg, WPARAM wParam,
 	}
 
 	return DefWindowProc( hWnd, msg, wParam, lParam );
-#endif
 }
 #endif
 
@@ -1065,7 +1061,6 @@ void CShaderDeviceBase::InstallWindowHook( void* hWnd )
 {
 	Assert( m_hWndCookie == NULL );
 #ifdef USE_ACTUAL_DX
-#if !defined( _X360 )
 	VD3DHWND hParent = GetTopmostParentWindow( (VD3DHWND)hWnd );
 
 	// Attach a child window to the parent; we're gonna store special info there
@@ -1090,13 +1085,11 @@ void CShaderDeviceBase::InstallWindowHook( void* hWnd )
 	// Marks it as a material system window
 	SetWindowLongPtr( (VD3DHWND)m_hWndCookie, GWLP_USERDATA, MATERIAL_SYSTEM_WINDOW_ID );
 #endif
-#endif
 }
 
 void CShaderDeviceBase::RemoveWindowHook( void* hWnd )
 {
 #ifdef USE_ACTUAL_DX
-#if !defined( _X360 )
 	if ( m_hWndCookie )
 	{
 		DestroyWindow( (VD3DHWND)m_hWndCookie ); 
@@ -1107,7 +1100,6 @@ void CShaderDeviceBase::RemoveWindowHook( void* hWnd )
 	HINSTANCE hInst = (HINSTANCE)GetWindowLongPtr( hParent, GWLP_HINSTANCE );
 	UnregisterClass( "shaderdx8", hInst );
 #endif
-#endif
 }
 
 
@@ -1117,7 +1109,6 @@ void CShaderDeviceBase::RemoveWindowHook( void* hWnd )
 void CShaderDeviceBase::SendIPCMessage( IPCMessage_t msg )
 {
 #ifdef USE_ACTUAL_DX
-#if !defined( _X360 )
 	// Gotta send this to all windows, since we don't know which ones
 	// are material system apps...
 	if ( msg != EVICT_MESSAGE )
@@ -1128,7 +1119,6 @@ void CShaderDeviceBase::SendIPCMessage( IPCMessage_t msg )
 	{
 		EnumWindows( EnumWindowsProcNotThis, (DWORD)msg );
 	}
-#endif
 #endif
 }
 

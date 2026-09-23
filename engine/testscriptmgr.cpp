@@ -16,8 +16,6 @@
 #include "convar.h"
 #include "vstdlib/random.h"
 #include <stdlib.h>
-#if defined( _X360 )
-#endif
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"

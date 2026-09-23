@@ -3861,10 +3861,8 @@ void CModelLoader::ReloadFilesInList( IFileList *pFilesToReload )
 			// Get the studiohdr into the cache
 			g_pMDLCache->GetStudioHdr( pModel->studio );
 
-#ifndef _XBOX
 			// force the collision to load
 			g_pMDLCache->GetVCollide( pModel->studio );
-#endif
 		}
 		else
 		{
@@ -5340,49 +5338,13 @@ void CModelLoader::Print( void )
 //-----------------------------------------------------------------------------
 // Callback for UpdateOrCreate utility function - swaps a bsp.
 //-----------------------------------------------------------------------------
-#if defined( _X360 )
-static bool BSPCreateCallback( const char *pSourceName, const char *pTargetName, const char *pPathID, void *pExtraData )
-{
-	// load the bsppack dll
-	IBSPPack *iBSPPack = NULL;
-	CSysModule *pmodule = g_pFullFileSystem->LoadModule( "bsppack" );
-	if ( pmodule )
-	{
-		CreateInterfaceFn factory = Sys_GetFactory( pmodule );
-		if ( factory )
-		{
-			iBSPPack = ( IBSPPack * )factory( IBSPPACK_VERSION_STRING, NULL );
-		}
-	}
-	if( !iBSPPack )
-	{
-		Warning( "Can't load bsppack.dll - unable to swap bsp.\n" );
-		return false;
-	}
-
-	bool bOk = true;
-	if ( !iBSPPack->SwapBSPFile( g_pFileSystem, pSourceName, pTargetName, IsX360(), NULL, NULL, NULL ) )
-	{
-		bOk = false;
-		Warning( "Failed to create %s\n", pTargetName );
-	}
-
-	Sys_UnloadModule( pmodule );
-
-	return bOk;
-}
-#endif
 
 //-----------------------------------------------------------------------------
 // Calls utility function to create .360 version of a file.
 //-----------------------------------------------------------------------------
 int CModelLoader::UpdateOrCreate( const char *pSourceName, char *pTargetName, int targetLen, bool bForce )
 {
-#if defined( _X360 )
-	return ::UpdateOrCreate( pSourceName, pTargetName, targetLen, NULL, BSPCreateCallback, bForce );
-#else
 	return UOC_NOT_CREATED;
-#endif
 }
 
 //-----------------------------------------------------------------------------

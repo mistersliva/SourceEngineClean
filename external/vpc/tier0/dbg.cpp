@@ -28,8 +28,6 @@
 #include "tier0/icommandline.h"
 #include <math.h>
 
-#if defined( _X360 )
-#endif
 
 #include "tier0/etwprof.h"
 
@@ -124,7 +122,7 @@ void _ExitOnFatalAssert( const tchar* pFile, int line )
 //-----------------------------------------------------------------------------
 PLATFORM_INTERFACE void _AssertValidReadPtr( void* ptr, int count/* = 1*/ )
 {
-#if defined( _WIN32 ) && !defined( _X360 )
+#if defined(_WIN32)
 	Assert( !IsBadReadPtr( ptr, count ) );
 #else
 	Assert( !count || ptr );
@@ -133,7 +131,7 @@ PLATFORM_INTERFACE void _AssertValidReadPtr( void* ptr, int count/* = 1*/ )
 
 PLATFORM_INTERFACE void _AssertValidWritePtr( void* ptr, int count/* = 1*/ )
 {
-#if defined( _WIN32 ) && !defined( _X360 )
+#if defined(_WIN32)
 	Assert( !IsBadWritePtr( ptr, count ) );
 #else
 	Assert( !count || ptr );
@@ -142,7 +140,7 @@ PLATFORM_INTERFACE void _AssertValidWritePtr( void* ptr, int count/* = 1*/ )
 
 PLATFORM_INTERFACE void _AssertValidReadWritePtr( void* ptr, int count/* = 1*/ )
 {
-#if defined( _WIN32 ) && !defined( _X360 )
+#if defined(_WIN32)
 	Assert(!( IsBadWritePtr(ptr, count) || IsBadReadPtr(ptr,count)));
 #else
 	Assert( !count || ptr );
@@ -151,7 +149,7 @@ PLATFORM_INTERFACE void _AssertValidReadWritePtr( void* ptr, int count/* = 1*/ )
 
 PLATFORM_INTERFACE void _AssertValidStringPtr( const tchar* ptr, int maxchar/* = 0xFFFFFF */ )
 {
-#if defined( _WIN32 ) && !defined( _X360 )
+#if defined(_WIN32)
 	#ifdef TCHAR_IS_CHAR
 		Assert( !IsBadStringPtr( ptr, maxchar ) );
 	#else
@@ -361,11 +359,6 @@ void COM_TimestampedLog( char const *fmt, ... )
 
 	float curStamp = Plat_FloatTime();
 
-#if defined( _X360 )
-	XBX_rTimeStampLog( curStamp, string );
-#elif defined( _PS3 )
-	Log_Warning( LOG_LOADING, "%8.4f / %8.4f:  %s\n", curStamp, curStamp - s_LastStamp, string );
-#endif
 
 	if ( IsPC() )
 	{

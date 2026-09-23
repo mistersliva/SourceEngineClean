@@ -14,8 +14,6 @@
 
 #include <vgui_controls/AnalogBar.h>
 
-#ifdef _X360
-#endif
 #include "IGameUIFuncs.h"
 #include "GameUI_Interface.h"
 #include "inputsystem/iinputsystem.h"
@@ -175,15 +173,6 @@ bool ActionsAreTheSame( const char *pchAction1, const char *pchAction2 )
 
 COptionsDialogXbox::COptionsDialogXbox( vgui::Panel *parent, bool bControllerOptions ) : BaseClass( parent, "OptionsDialog" )
 {
-#ifdef _X360
-	// Get out current resolution and stuff it into convars for later reference
-	XVIDEO_MODE videoMode;
-	XGetVideoMode( &videoMode );
-	x360_resolution_widescreen_mode.SetValue( videoMode.fIsWideScreen );
-	x360_resolution_width.SetValue( static_cast<int>( videoMode.dwDisplayWidth ) );
-	x360_resolution_height.SetValue( static_cast<int>( videoMode.dwDisplayHeight ) );
-	x360_resolution_interlaced.SetValue( videoMode.fIsInterlaced );
-#endif
 
 	//Figure out which way duck is bound, and set the option_duck_method convar the correct way.
 	const char *pDuckKey = engine->Key_LookupBinding( "+duck" );
@@ -299,9 +288,6 @@ COptionsDialogXbox::~COptionsDialogXbox()
 {
 	if ( m_bOldForceEnglishAudio != x360_audio_english.GetBool() )
 	{
-#ifdef _X360
-		XboxLaunch()->SetForceEnglish( x360_audio_english.GetBool() );
-#endif
 		PostMessage( BasePanel()->GetVPanel(), new KeyValues( "command", "command", "QuitRestartNoConfirm" ), 0.0f );
 	}
 
@@ -599,7 +585,7 @@ void COptionsDialogXbox::HandleInactiveKeyCodePressed( vgui::KeyCode code )
 			}
 			else if ( !(*m_pOptions)[ m_iSelection ]->bVocalsLanguage )
 			{
-				BasePanel()->ShowMessageDialog( MD_OPTION_CHANGE_FROM_X360_DASHBOARD, this );
+				BasePanel()->ShowMessageDialog( MD_OPTION_CHANGE_FROM_CONSOLE_DASHBOARD, this );
 			}
 			break;
 
@@ -646,7 +632,7 @@ void COptionsDialogXbox::HandleInactiveKeyCodePressed( vgui::KeyCode code )
 			}
 			else if ( !(*m_pOptions)[ m_iSelection ]->bVocalsLanguage )
 			{
-				BasePanel()->ShowMessageDialog( MD_OPTION_CHANGE_FROM_X360_DASHBOARD, this );
+				BasePanel()->ShowMessageDialog( MD_OPTION_CHANGE_FROM_CONSOLE_DASHBOARD, this );
 			}
 			break;
 
@@ -665,7 +651,7 @@ void COptionsDialogXbox::HandleInactiveKeyCodePressed( vgui::KeyCode code )
 			}
 			else if ( !(*m_pOptions)[ m_iSelection ]->bVocalsLanguage )
 			{
-				BasePanel()->ShowMessageDialog( MD_OPTION_CHANGE_FROM_X360_DASHBOARD, this );
+				BasePanel()->ShowMessageDialog( MD_OPTION_CHANGE_FROM_CONSOLE_DASHBOARD, this );
 			}
 			break;
 
@@ -991,11 +977,9 @@ void COptionsDialogXbox::GetChoiceFromConvar( OptionData_t *pOption )
 	}
 }
 
-#if !defined(_X360)
 // BUGBUG: This won't compile because it includes windows.h and this interface function is #defined to something else
 // see below system()->GetCurrentTime
 #undef GetCurrentTime
-#endif
 
 void COptionsDialogXbox::ChangeValue( float fChange )
 {

@@ -196,6 +196,63 @@ a new ratchet id **`fn3dnow`** (baseline **0**), wired into the Gate 1 criteria.
   symbol name, not a 3DNow path), `cardstats.cpp` `"3DNOW"` card string,
   `linux/make_check/**` stale `.dsp.check` caches — none match `fn3dnow`.
 
+## Stage 3 execution notes (`_X360`/`_PS3`/`_XBOX` conditionals)
+
+Tooling: comment-aware `#if`-tree unwrapper (`stage3_unwrap.py`) + residue
+sweep (`stage3_sweep.py`), both external to the repo. Two intermediate runs
+were discarded after self-testing exposed real bugs; the committed run is
+gated by a 10-case synthetic self-test that runs before any tree edit:
+
+- **Scanner bug:** multi-line comment state bailed on the first line lacking
+  `*/`, so commented `#endif*/` markers counted as real (3 stack aborts).
+- **Kind-clobber bug:** `build_groups` overwrote arm0's kind to `"if"`, so
+  every `#ifndef TARGET` evaluated as bare-ident `#if TARGET` (FALSE) —
+  inverted arm selection: dead else-arms kept, live PC bodies deleted
+  (`platform.h` lost `IsPC() true`/`PLATFORM_WINDOWS_PC`). `#ifdef` groups had
+  been correct only by accident (bare-ident FALSE ≡ `defined()` FALSE).
+- **Elif-promotion bug (caught by the self-test before touching the tree):**
+  REDUCE with a promoted `#elif` head deleted arm0's directive (which *is*
+  `g.if_line`) and also rewrote it; `del_set` wins in materialize → the `#if`
+  line vanished, leaving bare code + dangling `#else`. Fixed by skipping
+  `g.if_line` in that loop.
+
+Truth model: `_X360`/`_PS3`/`_XBOX` never defined; `NO_X360_XDK` TRUE at
+resolution time (its `wscript` + `bitmap/bitmap.vpc` defines removed by the
+tool). Never-defined also grep-verified (no code/VPC/waf defines anywhere):
+`PLATFORM_X360` (both `#define`s sit only inside the dead `_X360` else-arms
+of the `platform.h` copies), `REVERSE_DEPTH_ON_X360`, `X360_USE_SIMD_LIGHTMAP`.
+
+Result (tool): **591 files changed; 2,318 groups resolved** — 491 reduced
+(UNKNOWN folded), 1,064 unwrapped (TRUE arm kept bare), 763 deleted
+(all-FALSE); 0 aborts, 0 kept-unparseable, 0 targeted directive lines;
+idempotent re-run changes 0 files (exit 0). Sweep: 25 stale directive comments
+trimmed, 8 commented-out platform directives deleted, 66 exact replacements —
+renames (`MAIN_MENU_INDENT_CONSOLE`, `MD_OPTION_CHANGE_FROM_CONSOLE_DASHBOARD`,
+`INPUT_TYPE_GAMEPAD`, `VTF_360_MAJOR/MINOR_VERSION`,
+`MAX_360_RSRC_DICTIONARY_ENTRIES`, `BYTES/PAGESIZE_PHYS_SBH`,
+`X360APPCHOOSER` → `MOVIEAPPCHOOSER` across `.cpp`/`.fxc`/checked-in `.inc`),
+block deletions (`vertexshaderdx8.cpp` `"_X360"` shader macro +
+`x360DefineString` block, `d3dxfxc.cpp` dead `bIsX360` macro scan,
+`captioncompiler.cpp` commented `UpdateOrCreateCaptionFile_X360` block,
+`"RenderTargetBlit_X360"` string), and always-true conjunct drops
+(`BUILD_CURL`, both `stacktools.cpp` macro bodies).
+
+Also settled from Stage-1/2 whitelists: `vprof.h` `pmc360.h` guard,
+`ImageByteSwap.cpp` `NO_X360_XDK` arm, `mathlib_base.cpp`
+`#if !defined(_X360)` → `sse.h` unwrap, `snd_dev_xaudio.h` dead content.
+
+Lint baseline: `x360_refs` **1870 → 0**; every other id only moved down
+(`isx360_fn` 901→886, `inline_asm` 136→127, `d3d9_com_types` 936→924,
+`suspicious_ptr_cast` 54→45, `dx_to_gl_abstraction` 216→215) — those lines
+lived in deleted arms.
+
+Known residue (not lint-gated): `_PS3` 160 lines / `_XBOX` 40 lines of
+comments & identifiers (e.g. `INLINE_ON_PS3`); `REVERSE_DEPTH_ON_X360` in
+`.fxc` shader sources only (never defined → false path, same behavior as the
+unwrapped C++ side); `CX360SmallBlockPool` / `USE_PHYSICAL_SMALL_BLOCK_HEAP`
+(no `_X360` substring; the whole block is dead — later deletion candidate);
+`.pl`/`.bat` x360 modes and docs mentions (Stage-1 deferrals).
+
 ## Gate 1 completion criteria (updated)
 
 `x360_refs = 0`, `isx360_fn = 0`, `xbox_include = 0`, `fn3dnow = 0` in lint;

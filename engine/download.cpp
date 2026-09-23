@@ -19,7 +19,7 @@
 // fopen is needed for the bzip code
 #undef fopen
 
-#if defined( WIN32 ) && !defined( _X360 )
+#if defined(WIN32)
 #include "winlite.h"
 #include <WinInet.h>
 #endif
@@ -43,8 +43,6 @@
 
 #include "../utils/bzip2/bzlib.h"
 
-#if defined( _X360 )
-#endif
 
 #include "engine/idownloadsystem.h"
 

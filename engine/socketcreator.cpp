@@ -6,9 +6,7 @@
 
 
 #if defined(_WIN32)
-#if !defined(_X360)
 #include <winsock.h>
-#endif
 #undef SetPort // winsock screws with the SetPort string... *sigh*
 #define socklen_t int
 #define MSG_NOSIGNAL 0
@@ -30,8 +28,6 @@
 #include "socketcreator.h"
 #include "server.h"
 
-#if defined( _X360 )
-#endif
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"

@@ -11,7 +11,7 @@
 
 
 
-#if defined(_WIN32) && !defined(_X360)
+#if defined(_WIN32)
 #include "winlite.h"		// FILETIME
 #elif defined(POSIX)
 #include <time.h>
@@ -21,7 +21,6 @@
 */
 #include <sys/resource.h>
 #include <netinet/in.h>
-#elif defined(_X360)
 #else
 #error "Includes for CPU usage calcs here"
 #endif
@@ -58,8 +57,6 @@
 #include "sv_filter.h"
 #include "master.h"
 
-#if defined( _X360 )
-#endif
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -993,7 +990,7 @@ void CBaseServer::ReplyChallenge(netadr_t &adr, int clientChallenge )
 	msg.WriteLong( clientChallenge ); // Client to server challenge to ensure our reply is what they asked
 	msg.WriteLong( authprotocol );
 
-#if !defined( NO_STEAM ) //#ifndef _XBOX
+#if !(defined(NO_STEAM))
 	if ( authprotocol == PROTOCOL_STEAM )
 	{
 		msg.WriteShort( 0 ); //  steam2 encryption key not there anymore

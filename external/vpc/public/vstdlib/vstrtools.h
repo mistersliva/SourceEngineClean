@@ -81,7 +81,7 @@ public:
 		m_bCreatedUTF16 = true;
 	}
 
-#if !defined(WIN32) && !defined(_WINDOWS) && !defined(_WIN32) && !defined(_PS3)
+#if !(defined(WIN32)) && !(defined(_WINDOWS)) && !(defined(_WIN32))
 	explicit CStrAutoEncode( const ucs2 *pwch )
 	{
 		m_pch = NULL;

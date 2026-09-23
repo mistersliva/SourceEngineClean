@@ -795,11 +795,11 @@ inline uint32 StringToNumber( char *pString, char **ppEnd, int nRadix )
 template <>
 inline int64 StringToNumber( char *pString, char **ppEnd, int nRadix )
 {
-#if defined(_PS3) || defined(POSIX)
+#if defined(POSIX)
 	return ( int64 )strtoll( pString, ppEnd, nRadix );
-#else // !_PS3
+#else
 	return ( int64 )_strtoi64( pString, ppEnd, nRadix );
-#endif // _PS3
+#endif
 }
 
 template <>

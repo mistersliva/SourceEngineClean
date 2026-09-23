@@ -19,12 +19,6 @@
 // For vec_t, put this somewhere else?
 #include "tier0/basetypes.h"
 
-#if defined( _PS3 )
-//#include <ssemath.h>
-#include <vectormath/c/vectormath_aos.h>
-#include "platform.h"
-#include "mathlib/math_pfns.h"
-#endif
 
 #ifndef PLATFORM_PPC // we want our linux with xmm support
 // For MMX intrinsics
@@ -434,9 +428,7 @@ public:
 	{
 		// we know we're aligned, so use simd
 		// we can't use the convenient abstract interface coz it gets declared later
-#ifdef _X360
-		XMStoreVector4A(Base(), XMLoadVector4A(vOther.Base()));
-#elif _WIN32
+#if _WIN32
 		_mm_store_ps(Base(), _mm_load_ps( vOther.Base() ));
 #else
 		Init(vOther.x, vOther.y, vOther.z);
@@ -1821,9 +1813,7 @@ public:
 	{
 		// we know we're aligned, so use simd
 		// we can't use the convenient abstract interface coz it gets declared later
-#ifdef _X360
-		XMStoreVector4A(Base(), XMLoadVector4A(vOther.Base()));
-#elif _WIN32
+#if _WIN32
 		_mm_store_ps(Base(), _mm_load_ps( vOther.Base() ));
 #else
 		Init(vOther.x, vOther.y, vOther.z, vOther.w);
@@ -2013,9 +2003,7 @@ public:
 	// Construction/destruction
 	QAngle(void);
 	QAngle(vec_t X, vec_t Y, vec_t Z);
-#ifndef _PS3
 //	QAngle(RadianEuler const &angles);	// evil auto type promotion!!!
-#endif
 
 	// Allow pass-by-value
 	operator QAngleByValue &()				{ return *((QAngleByValue *)(this)); }
@@ -2411,7 +2399,6 @@ inline void AngularImpulseToQAngle( const AngularImpulse &impulse, QAngle &angle
 	angles.z = impulse.x;
 }
 
-#if !defined( _X360 ) && !defined( _PS3 )
 
 FORCEINLINE vec_t InvRSquared( const float* v )
 {
@@ -2423,40 +2410,7 @@ FORCEINLINE vec_t InvRSquared( const Vector &v )
 	return InvRSquared( v.Base() );
 }
 
-#else
 
-// call directly
-FORCEINLINE float _VMX_InvRSquared( const Vector &v )
-{
-#if !defined (_PS3)
-	XMVECTOR xmV = XMVector3ReciprocalLength( XMLoadVector3( v.Base() ) );
-	xmV = XMVector3Dot( xmV, xmV );
-	return xmV.x;
-#else	//!_PS3
-	vector_float_union vRet;
-	vec_float4 v0, v1, vIn, vOut;
-	vector unsigned char permMask;
-	v0	 = vec_ld( 0, v.Base() );			
-	permMask = vec_lvsl( 0, v.Base() );	
-	v1	 = vec_ld( 11, v.Base() );			
-	vIn  = vec_perm(v0, v1, permMask);  
-	vOut = vec_madd( vIn, vIn, _VEC_ZEROF );
-	vec_float4 vTmp  = vec_sld( vIn, vIn, 4 );
-	vec_float4 vTmp2 = vec_sld( vIn, vIn, 8 );
-	vOut = vec_madd( vTmp, vTmp, vOut );
-	vOut = vec_madd( vTmp2, vTmp2, vOut );
-	vOut = vec_re( vec_add(vOut, _VEC_EPSILONF) );
-	vec_st(vOut,0,&vRet.vf);
-	float ret = vRet.f[0];
-	return ret;
-#endif	//!_PS3
-}
-
-#define InvRSquared(x) _VMX_InvRSquared(x)
-
-#endif // _X360
-
-#if !defined( _X360 ) && !defined( _PS3 )
 
 // FIXME: Change this back to a #define once we get rid of the vec_t version
 float VectorNormalize( Vector& v );
@@ -2467,86 +2421,7 @@ FORCEINLINE float VectorNormalize( float * v )
 	return VectorNormalize(*(reinterpret_cast<Vector *>(v)));
 }
 
-#else
-#if !defined( _PS3 )
-// modified version of Microsoft's XMVector3Length
-// microsoft's version will return INF for very small vectors
-// e.g. 	Vector vTest(7.98555446e-20,-6.85012984e-21,0); VectorNormalize( vTest );
-// so we clamp to epsilon instead of checking for zero
-XMFINLINE XMVECTOR XMVector3Length_Fixed
-(
- FXMVECTOR V
- )
-{
-	// Returns a QNaN on infinite vectors.
-	static CONST XMVECTOR g_fl4SmallVectorEpsilon = {1e-24f,1e-24f,1e-24f,1e-24f};
 
-	XMVECTOR D;
-	XMVECTOR Rsq;
-	XMVECTOR Rcp;
-	XMVECTOR Zero;
-	XMVECTOR RT;
-	XMVECTOR Result;
-	XMVECTOR Length;
-	XMVECTOR H;
-
-	H = __vspltisw(1);
-	D = __vmsum3fp(V, V);
-	H = __vcfsx(H, 1);
-	Rsq = __vrsqrtefp(D);
-	RT = __vmulfp(D, H);
-	Rcp = __vmulfp(Rsq, Rsq);
-	H = __vnmsubfp(RT, Rcp, H);
-	Rsq = __vmaddfp(Rsq, H, Rsq);
-	Zero = __vspltisw(0);
-	Result = __vcmpgefp( g_fl4SmallVectorEpsilon, D );
-	Length = __vmulfp(D, Rsq);
-	Result = __vsel(Length, Zero, Result);
-
-	return Result;
-}
-#endif
-
-// call directly
-FORCEINLINE float _VMX_VectorNormalize( Vector &vec )
-{
-#if !defined _PS3
-	float mag = XMVector3Length_Fixed( XMLoadVector3( vec.Base() ) ).x;
-	float den = 1.f / (mag + FLT_EPSILON );
-	vec.x *= den;
-	vec.y *= den;
-	vec.z *= den;
-	return mag;
-#else	// !_PS3
-	vec_float4 vIn;
-	vec_float4 v0, v1;
-	vector unsigned char permMask;
-	v0	 = vec_ld( 0, vec.Base() );			
-	permMask = vec_lvsl( 0, vec.Base() );	
-	v1	 = vec_ld( 11, vec.Base() );			
-	vIn  = vec_perm(v0, v1, permMask);
-	float mag = vmathV3Length((VmathVector3 *)&vIn);
-	float den = 1.f / (mag + FLT_EPSILON );
-	vec.x *= den;
-	vec.y *= den;
-	vec.z *= den;
-	return mag;
-#endif	// !_PS3
-}
-// FIXME: Change this back to a #define once we get rid of the vec_t version
-FORCEINLINE float VectorNormalize( Vector& v )
-{
-	return _VMX_VectorNormalize( v );
-}
-// FIXME: Obsolete version of VectorNormalize, once we remove all the friggin float*s
-FORCEINLINE float VectorNormalize( float *pV )
-{
-	return _VMX_VectorNormalize(*(reinterpret_cast<Vector*>(pV)));
-}
-
-#endif // _X360
-
-#if !defined( _X360 ) && !defined( _PS3 )
 FORCEINLINE void VectorNormalizeFast (Vector& vec)
 {
 	float ool = FastRSqrt( FLT_EPSILON + vec.x * vec.x + vec.y * vec.y + vec.z * vec.z );
@@ -2555,57 +2430,6 @@ FORCEINLINE void VectorNormalizeFast (Vector& vec)
 	vec.y *= ool;
 	vec.z *= ool;
 }
-#else
-
-// call directly
-FORCEINLINE void VectorNormalizeFast( Vector &vec )
-{
-#if !defined (_PS3)
-	XMVECTOR xmV = XMVector3LengthEst( XMLoadVector3( vec.Base() ) );
-	float den = 1.f / (xmV.x + FLT_EPSILON);
-	vec.x *= den;
-	vec.y *= den;
-	vec.z *= den;
-#else	// !_PS3
-	vector_float_union vVec;
-
-	vec_float4 vIn, vOut, vOOLen, vDot;
-
-	// load
-	vec_float4 v0, v1;
-	vector unsigned char permMask;
-	v0	 = vec_ld( 0, vec.Base() );			
-	permMask = vec_lvsl( 0, vec.Base() );	
-	v1	 = vec_ld( 11, vec.Base() );			
-	vIn  = vec_perm(v0, v1, permMask);  
-
-	// vec.vec
-	vOut = vec_madd( vIn, vIn, _VEC_ZEROF );
-	vec_float4 vTmp  = vec_sld( vIn, vIn, 4 );
-	vec_float4 vTmp2 = vec_sld( vIn, vIn, 8 );
-	vOut = vec_madd( vTmp, vTmp, vOut );
-	vOut = vec_madd( vTmp2, vTmp2, vOut );
-
-	// splat dot to all 
-	vDot = vec_splat( vOut, 0 );
-
-	vOOLen = vec_rsqrte( vec_add( vDot, _VEC_EPSILONF ) );
-
-	// vec * 1.0/sqrt(vec.vec)
-	vOut = vec_madd( vIn, vOOLen, _VEC_ZEROF );
-
-	// store
-	vec_st(vOut,0,&vVec.vf);
-
-	// store vec
-	vec.x = vVec.f[0];
-	vec.y = vVec.f[1];
-	vec.z = vVec.f[2];
-
-#endif	// !_PS3
-}
-
-#endif // _X360
 
 inline vec_t Vector::NormalizeInPlace()
 {

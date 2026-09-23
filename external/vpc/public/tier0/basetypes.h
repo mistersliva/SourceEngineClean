@@ -34,21 +34,13 @@
 #include "tier0/platform.h"
 #include "commonmacros.h"
 #include "wchartypes.h"
-#ifdef _PS3
-#include <float.h>
-#elif defined( PLATFORM_POSIX )
+#if defined(PLATFORM_POSIX)
 #include <math.h>
 #endif
 
 #include "tier0/valve_off.h"
 
 
-#if defined(_PS3)
-#include <ppu_intrinsics.h>
-#include <sys/fs.h>
-#define PATH_MAX CELL_FS_MAX_FS_PATH_LENGTH
-#define _MAX_PATH PATH_MAX
-#endif
 // stdio.h
 #ifndef NULL
 #define NULL 0
@@ -134,7 +126,6 @@ inline T clamp( T const &val, Y const &minVal, X const &maxVal )
 //-----------------------------------------------------------------------------
 // fsel
 //-----------------------------------------------------------------------------
-#if !defined(_PS3) && !defined(_X360)
 
 #define fsel(c,x,y) ( (c) >= 0 ? (x) : (y) )
 
@@ -177,120 +168,6 @@ FORCEINLINE double fclamp( double x, double a, double b )
 #define imax( x, y ) ( (x) > (y) ? (x) : (y) )
 #define iclamp clamp
 
-#else
-
-// __fsel(double fComparand, double fValGE, double fLT) == fComparand >= 0 ? fValGE : fLT
-// this is much faster than if ( aFloat > 0 ) { x = .. }
-// the XDK defines two intrinsics, one for floats and one for doubles -- it's the same
-// opcode, but the __fself version tells the compiler not to do a wasteful unnecessary
-// rounding op after each sel.
-// #define fsel __fsel
-#ifdef _X360
-FORCEINLINE double fsel(double fComparand, double fValGE, double fLT) { return __fsel( fComparand, fValGE, fLT ); }
-FORCEINLINE float fsel(float fComparand, float fValGE, float fLT) { return __fself( fComparand, fValGE, fLT ); }
-#else
-FORCEINLINE double fsel(double fComparand, double fValGE, double fLT) { return __fsel( fComparand, fValGE, fLT ); }
-FORCEINLINE float fsel(float fComparand, float fValGE, float fLT) { return __fsels( fComparand, fValGE, fLT ); }
-#endif
-
-#if !defined(_X360)
-FORCEINLINE float fpmin( float a, float b )
-{
-	return fsel( a-b, b,a);
-}
-FORCEINLINE double fpmin( double a, double b )
-{
-	return fsel( a-b, b,a);
-}
-
-FORCEINLINE float fpmax( float a, float b )
-{
-	return fsel( a-b, a,b);
-}
-FORCEINLINE double fpmax( double a, double b )
-{
-	return fsel( a-b, a,b);
-}
-
-// any mixed calls should promote to double
-FORCEINLINE double fpmax(float a, double b)
-{
-	return fpmax( (double) a, b );
-}
-// any mixed calls should promote to double
-FORCEINLINE double fpmax(double a, float b)
-{
-	return fpmax( (double) a, (double) b );
-}
-#endif
-
-// clamp x to lie inside [a,b]. Assumes b>a
-FORCEINLINE float fclamp( float x, float a, float b )
-{
-	return fpmin( fpmax( x, a ), b );
-}
-// clamp x to lie inside [a,b]. Assumes b>a
-FORCEINLINE double fclamp( double x, double a, double b )
-{
-	return fpmin( fpmax( x, a ), b );
-}
-
-// if a >= 0, return x, else y
-FORCEINLINE int isel( int a, int x, int y )
-{
-	int mask = a >> 31; // arithmetic shift right, splat out the sign bit
-	return x + ((y - x) & mask);
-};
-
-// if a >= 0, return x, else y
-FORCEINLINE unsigned isel( int a, unsigned x, unsigned y )
-{
-	int mask = a >> 31; // arithmetic shift right, splat out the sign bit
-	return x + ((y - x) & mask);
-};
-
-// ( x == y ) ? a : b
-FORCEINLINE unsigned ieqsel( unsigned x, unsigned y, unsigned a, unsigned b )
-{
-	unsigned mask = (x == y) ? 0 : -1;
-	return a + ((b - a) & mask);
-};
-
-// ( x == y ) ? a : b
-FORCEINLINE int ieqsel( int x, int y, int a, int b )
-{
-	int mask = (x == y) ? 0 : -1;
-	return a + ((b - a) & mask);
-};
-
-FORCEINLINE int imin( int x, int y )
-{
-	int nMaxSign = x - y;									// Positive if x greater than y
-	int nMaxMask = nMaxSign >> 31;							// 0 if x greater than y, 0xffffffff if x smaller than y
-	int nMaxSaturated = y + ( nMaxSign & nMaxMask );
-	return nMaxSaturated;
-}
-
-FORCEINLINE int imax( int x, int y )
-{
-	int nMinSign = y - x;									// Positive if x smaller than y
-	int nMinMask = nMinSign >> 31;							// 0 if x smaller than y, 0xffffffff if x greater than y
-	int nMinSaturated = y - ( nMinSign & nMinMask);
-	return nMinSaturated;
-}
-
-FORCEINLINE int iclamp( int x, int min, int max )
-{
-	int nResult = imin( x, max );
-	return imax( nResult, min );
-}
-
-// if the nth bit of a is set (counting with 0 = LSB),
-// return x, else y
-// this is fast if nbit is a compile-time immediate 
-#define ibitsel(a, nbit, x, y) ( (x) + (((y) - (x)) & (((a) & (1 << (nbit))) ? 0 : -1)) )
-
-#endif
 
 #if CROSS_PLATFORM_VERSION < 1
 
@@ -305,7 +182,7 @@ typedef uint8 byte;
 typedef uint16 word;
 #endif
 
-#if defined( _WIN32 ) || defined( _PS3 )
+#if defined(_WIN32)
 typedef wchar_t ucs2; // under windows & PS3 wchar_t is ucs2
 #else
 typedef unsigned short ucs2;

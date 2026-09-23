@@ -199,9 +199,7 @@ PLATFORM_INTERFACE bool DoNewAssertDialog( const tchar *pFile, int line, const t
 #if defined(_CERT) || defined(_RETAIL) 
 #define AssertAligned(PTR)
 #else
-#  if defined( _X360 )
-#    define AssertAligned(PTR) __twnei( intp(PTR) & 0xF, 0 ) // trap if not equal to immediate value; unsigned comparison
-#  elif defined( DBGFLAG_ASSERT )
+#if defined(DBGFLAG_ASSERT)
 #    define  AssertAligned( adr )                               Assert( ( ( ( intp ) ( adr ) ) & 0xf ) == 0 )
 #  else
 #  define AssertAligned(PTR) 
@@ -310,18 +308,6 @@ PLATFORM_INTERFACE void Msg( const tchar* pMsg, ... );
 PLATFORM_INTERFACE void Warning( const tchar *pMsg, ... ) FMTFUNCTION( 1, 2 );
 PLATFORM_INTERFACE void Warning_SpewCallStack( int iMaxCallStackLength, const tchar *pMsg, ... ) FMTFUNCTION( 2, 3 );
 
-#ifdef _PS3
-
-PLATFORM_OVERLOAD void DevMsg( int level, const tchar* pMsg, ... ) FMTFUNCTION( 2, 3 );
-PLATFORM_OVERLOAD void DevWarning( int level, const tchar *pMsg, ... ) FMTFUNCTION( 2, 3 );
-
-PLATFORM_INTERFACE void DevMsg( const tchar* pMsg, ... ) FMTFUNCTION( 1, 2 );
-PLATFORM_INTERFACE void DevWarning( const tchar *pMsg, ... ) FMTFUNCTION( 1, 2 );
-
-PLATFORM_INTERFACE void ConColorMsg( const Color& clr, const tchar* pMsg, ... ) FMTFUNCTION( 2, 3 );
-PLATFORM_INTERFACE void ConMsg( const tchar* pMsg, ... ) FMTFUNCTION( 1, 2 );
-
-#else // !_PS3
 
 PLATFORM_INTERFACE void DevMsg( int level, const tchar* pMsg, ... ) FMTFUNCTION( 2, 3 );
 PLATFORM_INTERFACE void DevWarning( int level, const tchar *pMsg, ... ) FMTFUNCTION( 2, 3 );
@@ -332,7 +318,6 @@ PLATFORM_OVERLOAD void DevWarning( const tchar *pMsg, ... ) FMTFUNCTION( 1, 2 );
 PLATFORM_OVERLOAD void ConColorMsg( const Color& clr, const tchar* pMsg, ... ) FMTFUNCTION( 2, 3 );
 PLATFORM_OVERLOAD void ConMsg( const tchar* pMsg, ... ) FMTFUNCTION( 1, 2 );
 
-#endif // _PS3
 
 PLATFORM_INTERFACE void ConDMsg( const tchar* pMsg, ... ) FMTFUNCTION( 1, 2 );
 
@@ -507,7 +492,7 @@ private:
 //
 // Purpose: Embed debug info in each file.
 //
-#if defined( _WIN32 ) && !defined( _X360 )
+#if defined(_WIN32)
 
 	#ifdef _DEBUG
 		#pragma comment(compiler)

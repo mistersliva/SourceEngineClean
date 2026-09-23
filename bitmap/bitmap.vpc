@@ -15,7 +15,6 @@ $Configuration
 		$AdditionalIncludeDirectories	"$BASE;$SRCDIR\dx9sdk\include"					[$WINDOWS]
 		$AdditionalIncludeDirectories	"$BASE;$SRCDIR\thirdparty\stb"
 		
-		$PreprocessorDefinitions		"$BASE;NO_X360_XDK;" 
 	}
 }
 

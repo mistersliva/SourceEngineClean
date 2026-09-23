@@ -12,9 +12,7 @@
 
 
 #ifdef _WIN32
-#if !defined( _X360 )
 #include "winlite.h"
-#endif
 #endif
 
 #include "tier0/vcrmode.h"
@@ -35,11 +33,7 @@
 
 #if defined(_WIN32)
 
-#if !defined( _X360 )
 #include <winsock.h>
-#else
-#include "winsockx.h"
-#endif
 
 // #include <process.h>
 typedef int socklen_t;
@@ -82,7 +76,5 @@ typedef int SOCKET;
 #include "cl_rcon.h"
 #endif
 
-#if defined( _X360 )
-#endif
 
 #endif // NET_WS_HEADERS_H

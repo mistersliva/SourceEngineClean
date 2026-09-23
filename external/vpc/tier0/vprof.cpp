@@ -10,7 +10,7 @@
 #include "tier0/memalloc.h"
 #include "tier0/valve_off.h"
 
-#if defined(_WIN32) && !defined(_X360)
+#if defined(_WIN32)
 #define WIN_32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
@@ -36,17 +36,9 @@
 #include "strtools.h"
 
 
-#ifdef _X360
-
-
-#elif defined(_PS3)
-#include "ps3/ps3_console.h"
-
-#else // NOT _X360:
 
 #include "tier0/memdbgon.h"
 
-#endif
 
 // NOTE: Explicitly and intentionally using STL in here to not generate any
 // cyclical dependencies between the low-level debug library and the higher
@@ -56,11 +48,6 @@ using namespace std;
 #ifdef VPROF_ENABLED
 
 
-#if defined(_X360) && !defined(_CERT)  // enable PIX CPU trace:
-#include "tracerecording.h"
-#pragma comment( lib, "tracerecording.lib" )
-#pragma comment( lib, "xbdm.lib" )
-#endif
 
 //-----------------------------------------------------------------------------
 bool g_VProfSignalSpike;
@@ -115,39 +102,10 @@ void CVProfNode::EnterScope()
 	if ( m_nRecursions++ == 0 ) 
 	{
 		m_Timer.Start();
-#ifndef _X360
 		if ( g_VProfCurrentProfile.UsePME() )
 		{
 			m_L2Cache.Start();
 		}
-#else // 360 code:
-		if ( g_VProfCurrentProfile.UsePME() || ((m_iBitFlags & kRecordL2) != 0) ) 
-		{
-			m_PMCData.Start();
-		}
-
-		if ( (m_iBitFlags & kCPUTrace) != 0)
-		{
-			// this node is to be recorded. Which recording mode are we in?
-			switch ( g_VProfCurrentProfile.GetCPUTraceMode() )
-			{
-			case CVProfile::kFirstHitNode:
-			case CVProfile::kAllNodesInFrame_Recording:
-			case CVProfile::kAllNodesInFrame_RecordingMultiFrame:
-				// we are presently recording.
-				if ( !XTraceStartRecording( g_VProfCurrentProfile.GetCPUTraceFilename() ) )
-				{
-					Msg( "XTraceStartRecording failed, error code %d\n", GetLastError() );
-				}
-
-			default:
-				// no default.
-				break;
-			}
-
-		}
-
-#endif
 
 #ifdef VPROF_VTUNE_GROUP
 		g_VProfCurrentProfile.PushGroup( m_BudgetGroupID );
@@ -163,99 +121,11 @@ bool CVProfNode::ExitScope()
 	{
 		m_Timer.End();
 		m_CurFrameTime += m_Timer.GetDuration();
-#ifndef _X360
 		if ( g_VProfCurrentProfile.UsePME() )
 		{
 			m_L2Cache.End();
 			m_iCurL2CacheMiss += m_L2Cache.GetL2CacheMisses();
 		}
-#else // 360 code:
-		if ( g_VProfCurrentProfile.UsePME() || ((m_iBitFlags & kRecordL2) != 0) ) 
-		{
-			m_PMCData.End();
-			m_iCurL2CacheMiss   += m_PMCData.GetL2CacheMisses();
-			m_iCurLoadHitStores += m_PMCData.GetLHS();
-		}
-
-		if ( (m_iBitFlags & kCPUTrace) != 0 )
-		{
-			// this node is enabled to be recorded. What mode are we in?
-			switch ( g_VProfCurrentProfile.GetCPUTraceMode() )
-			{
-			case CVProfile::kFirstHitNode:
-			{
-				// one-off recording. stop now.
-				if ( XTraceStopRecording() )
-				{
-					Msg( "CPU trace finished.\n" );
-					if ( g_VProfCurrentProfile.TraceCompleteEvent() )
-					{
-						// signal VXConsole that trace is completed
-						XBX_rTraceComplete();
-					}
-				}
-				// don't trace again next frame, overwriting the file.
-				g_VProfCurrentProfile.SetCPUTraceEnabled( CVProfile::kDisabled );
-				break;
-			}
-
-			case CVProfile::kAllNodesInFrame_Recording:
-			case CVProfile::kAllNodesInFrame_RecordingMultiFrame:
-			{
-				// one-off recording. stop now.
-				if ( XTraceStopRecording() )
-				{
-					if ( g_VProfCurrentProfile.GetCPUTraceMode() == CVProfile::kAllNodesInFrame_RecordingMultiFrame )
-					{
-						Msg( "%.3f msec in %s\n", m_CurFrameTime.GetMillisecondsF(), g_VProfCurrentProfile.GetCPUTraceFilename() );
-					}
-					else
-					{
-						Msg( "CPU trace finished.\n" );
-					}
-				}
-				
-				// Spew time info for file to allow figuring it out later
-				g_VProfCurrentProfile.LatchMultiFrame( m_CurFrameTime.GetLongCycles() );
-				
-#if 0 // This doesn't want to work on the xbox360-- MoveFile not available or file still being put down to disk?
-				char suffix[ 32 ];
-				_snprintf( suffix, sizeof( suffix ), "_%.3f_msecs", flMsecs );
-
-				char fn[ 512 ];
-
-				strncpy( fn, g_VProfCurrentProfile.GetCPUTraceFilename(), sizeof( fn ) );
-
-				char *p = strrchr( fn, '.' );
-				if ( *p )
-				{	
-					*p = 0;
-				}
-				strncat( fn, suffix, sizeof( fn ) );
-				strncat( fn, ".pix2", sizeof( fn ) );
-			
-				BOOL bSuccess = MoveFile( g_VProfCurrentProfile.GetCPUTraceFilename(), fn );
-				if ( !bSuccess )
-				{
-					DWORD eCode = GetLastError();
-					Msg( "Error %d\n", eCode );
-				}
-#endif
-
-				// we're still recording until the frame is done.
-				// but, increment the index.
-				g_VProfCurrentProfile.IncrementMultiTraceIndex();
-				break;
-			}
-
-			}
-			
-			// g_VProfCurrentProfile.IsCPUTraceEnabled() && 
-
-
-		}
-
-#endif
 
 #ifdef VPROF_VTUNE_GROUP
 		g_VProfCurrentProfile.PopGroup();
@@ -273,20 +143,11 @@ void CVProfNode::Pause()
 		m_Timer.End();
 		m_CurFrameTime += m_Timer.GetDuration();
 
-#ifndef _X360
 		if ( g_VProfCurrentProfile.UsePME() )
 		{
 			m_L2Cache.End();
 			m_iCurL2CacheMiss += m_L2Cache.GetL2CacheMisses();
 		}
-#else // 360 code:
-		if ( g_VProfCurrentProfile.UsePME() || ((m_iBitFlags & kRecordL2) != 0) ) 
-		{
-			m_PMCData.End();
-			m_iCurL2CacheMiss   += m_PMCData.GetL2CacheMisses();
-			m_iCurLoadHitStores += m_PMCData.GetLHS();
-		}
-#endif
 	}
 	if ( m_pChild ) 
 	{
@@ -306,17 +167,10 @@ void CVProfNode::Resume()
 	{
 		m_Timer.Start();
 
-#ifndef _X360
 		if ( g_VProfCurrentProfile.UsePME() )
 		{
 			m_L2Cache.Start();
 		}
-#else
-		if ( g_VProfCurrentProfile.UsePME() || ((m_iBitFlags & kRecordL2) != 0) ) 
-		{
-			m_PMCData.Start();
-		}
-#endif
 	}
 	if ( m_pChild ) 
 	{
@@ -347,11 +201,6 @@ void CVProfNode::Reset()
 	m_iCurL2CacheMiss = 0;
 	m_iTotalL2CacheMiss = 0;
 
-#ifdef _X360
-	m_iPrevLoadHitStores = 0;
-	m_iCurLoadHitStores = 0;
-	m_iTotalLoadHitStores = 0;
-#endif
 
 	if ( m_pChild ) 
 	{
@@ -371,9 +220,6 @@ void CVProfNode::MarkFrame()
 	m_nPrevFrameCalls = m_nCurFrameCalls;
 	m_PrevFrameTime = m_CurFrameTime;
 	m_iPrevL2CacheMiss = m_iCurL2CacheMiss;
-#ifdef _X360
-	m_iPrevLoadHitStores = m_iCurLoadHitStores;
-#endif
 	m_nTotalCalls += m_nCurFrameCalls;
 	m_TotalTime += m_CurFrameTime;
 	
@@ -386,10 +232,6 @@ void CVProfNode::MarkFrame()
 	m_nCurFrameCalls = 0;
 	m_iTotalL2CacheMiss += m_iCurL2CacheMiss;
 	m_iCurL2CacheMiss = 0;
-#ifdef _X360
-	m_iTotalLoadHitStores += m_iCurLoadHitStores;
-	m_iCurLoadHitStores = 0;
-#endif
 	if ( m_pChild ) 
 	{
 		m_pChild->MarkFrame();
@@ -584,217 +426,6 @@ CVProfNode *CVProfile::FindNode( CVProfNode *pStartNode, const tchar *pszNode )
 }
 
 //-------------------------------------
-#ifdef _X360
-
-void CVProfile::PMCDisableAllNodes(CVProfNode *pStartNode)
-{
-	if (pStartNode == NULL)
-	{
-		pStartNode = GetRoot();
-	}
-
-	pStartNode->EnableL2andLHS(false);
-
-	if ( pStartNode->GetSibling() )
-	{
-		PMCDisableAllNodes(pStartNode->GetSibling());
-	}
-
-	if ( pStartNode->GetChild() )
-	{
-		PMCDisableAllNodes(pStartNode->GetChild());
-	}
-}
-
-// recursively set l2/lhs recording state for a node and all children AND SIBLINGS
-static void PMCRecursiveL2Set(CVProfNode *pNode, bool enableState)
-{
-	if ( pNode )
-	{
-		pNode->EnableL2andLHS(enableState);
-		if ( pNode->GetSibling() )
-		{
-			PMCRecursiveL2Set( pNode->GetSibling(), enableState );
-		}
-		if ( pNode->GetChild() )
-		{
-			PMCRecursiveL2Set( pNode->GetChild(), enableState );
-		}
-	}
-}
-
-bool CVProfile::PMCEnableL2Upon(const tchar *pszNodeName, bool bRecursive)
-{
-	// PMCDisableAllNodes();
-	CVProfNode *pNode = FindNode( GetRoot(), pszNodeName );
-	if (pNode)
-	{
-		pNode->EnableL2andLHS(true);
-		if (bRecursive)
-		{
-			PMCRecursiveL2Set(pNode->GetChild(), true);
-		}
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-}
-
-bool CVProfile::PMCDisableL2Upon(const tchar *pszNodeName, bool bRecursive)
-{
-	// PMCDisableAllNodes();
-	CVProfNode *pNode = FindNode( GetRoot(), pszNodeName );
-	if ( pNode )
-	{
-		pNode->EnableL2andLHS( false );
-		if ( bRecursive )
-		{
-			PMCRecursiveL2Set( pNode->GetChild(), false );
-		}
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-}
-
-static void DumpEnabledPMCNodesInner(CVProfNode* pNode)
-{
-	if (!pNode)
-		return;
-
-	if (pNode->IsL2andLHSEnabled())
-	{
-		Msg( _T("\t%s\n"), pNode->GetName() );
-	}
-
-	// depth first printing clearer
-	if ( pNode->GetChild() )
-	{
-		DumpEnabledPMCNodesInner(pNode->GetChild());
-	}
-
-	if ( pNode->GetSibling() )
-	{
-		DumpEnabledPMCNodesInner(pNode->GetChild());
-	}
-}
-
-void CVProfile::DumpEnabledPMCNodes( void )
-{
-	Msg( _T("Nodes enabled for PMC counters:\n") );
-	CVProfNode *pNode = GetRoot();
-	DumpEnabledPMCNodesInner( pNode );
-
-	Msg( _T("(end)\n") );
-}
-
-CVProfNode *CVProfile::CPUTraceGetEnabledNode(CVProfNode *pStartNode) 
-{
-	if (!pStartNode)
-	{
-		pStartNode = GetRoot();
-	}
-
-	if ( (pStartNode->m_iBitFlags & CVProfNode::kCPUTrace) != 0 )
-	{
-		return pStartNode;
-	}
-
-	if (pStartNode->GetSibling())
-	{
-		CVProfNode *retval = CPUTraceGetEnabledNode(pStartNode->GetSibling());
-		if (retval)
-			return retval;
-	}
-	
-	if (pStartNode->GetChild())
-	{
-		CVProfNode *retval = CPUTraceGetEnabledNode(pStartNode->GetChild());
-		if (retval)
-			return retval;
-	}
-
-	return NULL;
-}
-
-const char *CVProfile::SetCPUTraceFilename( const char *filename )
-{
-	strncpy( m_CPUTraceFilename, filename, sizeof( m_CPUTraceFilename ) );
-	return GetCPUTraceFilename();	
-}
-
-/// Returns a pointer to an internal static, so you don't need to 
-/// make temporary char buffers for this to write into. What of it?
-/// You're not hanging on to that pointer. That would be foolish. 
-const char *CVProfile::GetCPUTraceFilename()
-{
-	static char retBuf[256];
-
-	switch ( m_iCPUTraceEnabled )
-	{
-	case kAllNodesInFrame_WaitingForMark:
-	case kAllNodesInFrame_Recording:
-		_snprintf( retBuf, sizeof( retBuf ), "e:\\%.128s%.4d.pix2", m_CPUTraceFilename, m_iSuccessiveTraceIndex );
-		break;
-
-	case kAllNodesInFrame_WaitingForMarkMultiFrame:
-	case kAllNodesInFrame_RecordingMultiFrame:
-		_snprintf( retBuf, sizeof( retBuf ), "e:\\%.128s_%.4d_%.4d.pix2", m_CPUTraceFilename, m_nFrameCount, m_iSuccessiveTraceIndex );
-		break;
-
-	default:
-		_snprintf( retBuf, sizeof( retBuf ), "e:\\%.128s.pix2", m_CPUTraceFilename );
-	}
-
-	return retBuf;
-}
-
-bool CVProfile::TraceCompleteEvent( void )
-{
-	return m_bTraceCompleteEvent;
-}
-
-CVProfNode *CVProfile::CPUTraceEnableForNode(const tchar *pszNodeName)
-{
-	// disable whatever may be enabled already (we can only trace one node at a time)
-	CPUTraceDisableAllNodes();
-
-	CVProfNode *which = FindNode(GetRoot(), pszNodeName);
-	if (which)
-	{
-		which->m_iBitFlags |= CVProfNode::kCPUTrace;
-		return which;
-	}
-	else
-		return NULL;
-}
-
-void CVProfile::CPUTraceDisableAllNodes(CVProfNode *pStartNode)
-{
-	if (!pStartNode)
-	{
-		pStartNode = GetRoot();
-	}
-
-	pStartNode->m_iBitFlags &= ~CVProfNode::kCPUTrace;
-
-	if (pStartNode->GetSibling())
-	{
-		CPUTraceDisableAllNodes(pStartNode->GetSibling());
-	}
-
-	if (pStartNode->GetChild())
-	{
-		CPUTraceDisableAllNodes(pStartNode->GetChild());
-	}
-
-}
-
-#endif
 
 //-------------------------------------
 
@@ -1224,45 +855,6 @@ static void DumpSorted( const tchar *pszHeading, double totalTime, bool (*pfnSor
 	}
 }
 
-#if defined( _X360 )
-// Dump information on all nodes with PMC recording
-static void DumpPMC( CVProfNode *pNode, bool &bPrintHeader, uint64 L2thresh = 1, uint64 LHSthresh = 1 )
-{
-	if (!pNode) return;
-
-	uint64 l2 = pNode->GetL2CacheMisses();
-	uint64 lhs = pNode->GetLoadHitStores();
-	if ( l2  > L2thresh && 
-		 lhs > LHSthresh )
-	{
-		// met threshold.
-		if (bPrintHeader)
-		{
-			// print header
-			Msg( _T("-- 360 PMC information --\n") );
-			Msg( _T("Scope                                                  L2/call  L2/frame  LHS/call LHS/frame\n") );
-			Msg( _T("---------------------------------------------------- --------- --------- --------- ---------\n") );
-
-			bPrintHeader = false;
-		}
-
-		// print
-		float calls = pNode->GetTotalCalls();
-		float frames = g_TotalFrames;
-		Msg( _T("%52.52s %9.2f %9.2f %9.2f %9.2f\n"), pNode->GetName(), l2/calls, l2/frames, lhs/calls, lhs/frames );
-	}
-
-	if ( pNode->GetSibling() )
-	{
-		DumpPMC( pNode->GetSibling(), bPrintHeader, L2thresh, LHSthresh );
-	}
-
-	if ( pNode->GetChild() )
-	{
-		DumpPMC( pNode->GetChild(), bPrintHeader, L2thresh, LHSthresh );
-	}
-}
-#endif
 
 //-------------------------------------
 
@@ -1366,10 +958,6 @@ void CVProfile::OutputReport( int type, const tchar *pszStartNode, int budgetGro
 		g_TimeSumsMap.clear();
 		g_TimeSums.clear();
 
-#ifdef _X360
-		bool bPrintedHeader = true;
-		DumpPMC( FindNode( GetRoot(), pszStartNode ), bPrintedHeader );
-#endif
 
 	}
 	Msg( _T("******** END VPROF REPORT ********\n"));
@@ -1450,9 +1038,6 @@ CVProfile::CVProfile()
 	m_WorstCycles = 0;
 	m_WorstTraceFilename[ 0 ] = 0;
 	m_UpdateMode = 0;
-#endif
-#ifdef _X360
-	m_iCPUTraceEnabled = kDisabled;
 #endif
 }
 
@@ -1693,22 +1278,6 @@ CounterGroup_t CVProfile::GetCounterGroup( int index ) const
 	return (CounterGroup_t)m_CounterGroups[index];
 }
 
-#ifdef _X360
-void CVProfile::LatchMultiFrame( int64 cycles )
-{
-	if ( cycles > m_WorstCycles )
-	{
-		strncpy( m_WorstTraceFilename, GetCPUTraceFilename(), sizeof( m_WorstTraceFilename ) );
-		m_WorstCycles = cycles;
-	}
-}
-
-void CVProfile::SpewWorstMultiFrame()
-{
-	CCycleCount cc( m_WorstCycles );
-	Msg( "%s == %.3f msec\n", m_WorstTraceFilename, cc.GetMillisecondsF() );
-}
-#endif
 
 #ifdef DBGFLAG_VALIDATE
 

@@ -29,10 +29,7 @@
 #include "tier1/convar_serverbounded.h"
 #include "cam_thirdperson.h"
 
-#if defined( _X360 )
-#else
 #include "../common/xboxstubs.h"
-#endif
 
 #ifdef HL2_CLIENT_DLL
 // FIXME: Autoaim support needs to be moved from HL2_DLL to the client dll, so this include should be c_baseplayer.h

@@ -40,7 +40,7 @@
 // Need to include platform.h in case _PS3 and other tokens are not yet defined
 #include "tier0/platform.h"
 
-#if defined( POSIX ) && !defined( _PS3 )
+#if defined(POSIX)
 
 #include <dlfcn.h> // dlopen,dlclose, et al
 #include <unistd.h>
@@ -51,7 +51,7 @@
 #undef _snprintf
 #endif
 #define _snprintf snprintf
-#endif // POSIX && !_PS3
+#endif
 
 // All interfaces derive from this.
 class IBaseInterface
@@ -60,12 +60,7 @@ public:
 	virtual	~IBaseInterface() {}
 };
 
-#if !defined( _X360 )
 #define CREATEINTERFACE_PROCNAME	"CreateInterface"
-#else
-// x360 only allows ordinal exports, .def files export "CreateInterface" at 1
-#define CREATEINTERFACE_PROCNAME	((const char*)1)
-#endif
 
 typedef void* (*CreateInterfaceFn)(const char *pName, int *pReturnCode);
 typedef void* (*InstantiateInterfaceFn)();
@@ -164,9 +159,6 @@ enum
 //-----------------------------------------------------------------------------
 DLL_EXPORT void* CreateInterface(const char *pName, int *pReturnCode);
 
-#if defined( _X360 )
-DLL_EXPORT void *CreateInterfaceThunk( const char *pName, int *pReturnCode );
-#endif
 
 //-----------------------------------------------------------------------------
 // UNDONE: This is obsolete, use the module load/unload/get instead!!!

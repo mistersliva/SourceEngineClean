@@ -16,8 +16,6 @@
 
 #else
 
-#ifdef _X360
-#endif
 
 #endif
 

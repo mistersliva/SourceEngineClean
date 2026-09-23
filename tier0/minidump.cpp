@@ -9,7 +9,7 @@
 #include "tier0/minidump.h"
 #include "tier0/platform.h"
 
-#if defined( _WIN32 ) && !defined( _X360 )
+#if defined(_WIN32)
 
 #if _MSC_VER >= 1300
 #include "tier0/valve_off.h"
@@ -390,15 +390,6 @@ struct CatchAndWriteContext_t
 //			pv -			Void pointer to pass that function
 //			eAction -		Specifies what to do if it catches an exception
 //-----------------------------------------------------------------------------
-#if defined(_PS3)
-
-int CatchAndWriteMiniDump_Impl( CatchAndWriteContext_t &ctx )
-{
-	// we dont handle minidumps on ps3
-	return ctx.Invoke();
-}
-
-#else
 
 static const char *GetExceptionCodeName( unsigned long code )
 {
@@ -469,7 +460,6 @@ int CatchAndWriteMiniDump_Impl( CatchAndWriteContext_t &ctx )
 #endif
 }
 
-#endif // _PS3
 
 //-----------------------------------------------------------------------------
 // Purpose: Catches and writes out any exception throw by the specified function
@@ -600,12 +590,6 @@ PLATFORM_INTERFACE void CatchAndWriteMiniDump( FnWMain pfn, int argc, tchar *arg
 }
 
 #endif
-#elif defined(_X360 )
-PLATFORM_INTERFACE void WriteMiniDump( const char *pszFilenameSuffix )
-{
-	DmCrashDump(false);
-}
-
 #else // !_WIN32
 #include "tier0/minidump.h"
 

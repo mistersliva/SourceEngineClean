@@ -7,7 +7,7 @@
 //-------------------------------------------------------------------------------------
 #include "pch_tier0.h"
 
-#if defined(_WIN32) && !defined(_X360) && !defined( _PS3 )
+#if defined(_WIN32)
 #include "cputopology.h"
 #include <stdlib.h>
 #include <crtdbg.h>

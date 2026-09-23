@@ -36,34 +36,7 @@
 #include "functors.h"
 
 // XXX remove this later. (henryg)
-#if 0 && defined(_DEBUG) && defined(_WIN32) && !defined(_X360)
-typedef struct LARGE_INTEGER { unsigned long long QuadPart; } LARGE_INTEGER;
-extern "C" void __stdcall OutputDebugStringA( const char *lpOutputString );
-extern "C" long __stdcall QueryPerformanceCounter( LARGE_INTEGER *lpPerformanceCount );
-extern "C" long __stdcall QueryPerformanceFrequency( LARGE_INTEGER *lpPerformanceCount );
-namespace {
-	class CDebugMicroTimer
-	{
-	public:
-		CDebugMicroTimer(const char* n) : name(n) { QueryPerformanceCounter(&start); }
-		~CDebugMicroTimer() {
-			LARGE_INTEGER end;
-			char outbuf[128];
-			QueryPerformanceCounter(&end);
-			if (!freq) QueryPerformanceFrequency((LARGE_INTEGER*)&freq);
-			V_snprintf(outbuf, 128, "%s %6d us\n", name, (int)((end.QuadPart - start.QuadPart) * 1000000 / freq));
-			OutputDebugStringA(outbuf);
-		}
-		LARGE_INTEGER start;
-		const char* name;
-		static long long freq;
-	};
-	long long CDebugMicroTimer::freq = 0;
-}
-#define DEBUG_SCOPE_TIMER(name) CDebugMicroTimer dbgLocalTimer(#name)
-#else
 #define DEBUG_SCOPE_TIMER(name) (void)0
-#endif
 
 #ifdef _RETAIL
 #define NO_LOG_MDLCACHE 1
@@ -78,11 +51,7 @@ namespace {
 #define MdlCacheMsg		if ( !LogMdlCache() ) ; else Msg
 #define MdlCacheWarning if ( !LogMdlCache() ) ; else Warning
 
-#if defined( _X360 )
-#define AsyncMdlCache() 0	// Explicitly OFF for 360 (incompatible)
-#else
 #define AsyncMdlCache() 0
-#endif
 
 #define ERROR_MODEL		"models/error.mdl"
 #define IDSTUDIOHEADER	(('T'<<24)+('S'<<16)+('D'<<8)+'I')

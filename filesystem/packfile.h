@@ -269,9 +269,6 @@ protected:
 	void*						m_pPreloadData;
 	CByteswap					m_swap;
 
-#if defined ( _X360 )
-	void						*m_pSection;
-#endif
 };
 
 #endif // PACKFILE_H

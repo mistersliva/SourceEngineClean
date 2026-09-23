@@ -5,9 +5,7 @@
 //=============================================================================//
 
 #ifdef _WIN32
-#if !defined( _X360 )
 #include <windows.h>
-#endif
 #elif defined(POSIX)
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -28,8 +26,6 @@
 #include "tier0/vcrmode.h"
 #include "blockingudpsocket.h"
 
-#if defined( _X360 )
-#endif
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"

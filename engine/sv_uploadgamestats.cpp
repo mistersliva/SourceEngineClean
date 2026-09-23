@@ -8,11 +8,7 @@
 
 #ifdef _WIN32
 
-#if !defined( _X360 )
 #include <winsock.h>
-#else
-#include "winsockx.h"
-#endif
 
 #elif POSIX
 #define INVALID_SOCKET -1
@@ -59,8 +55,6 @@ typedef unsigned char uuid_t[16];
 #include "sv_steamauth.h"
 #include "host_state.h"
 
-#if defined( _X360 )
-#endif
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -471,7 +465,7 @@ public:
 	// Only works in single player
 	virtual bool IsHDREnabled( void )
 	{
-#if defined( SWDS ) || defined( _X360 )
+#if defined(SWDS)
 		return false;
 #else
 		return g_pMaterialSystemHardwareConfig->GetHDREnabled();

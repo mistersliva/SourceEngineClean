@@ -6,7 +6,7 @@
 //=============================================================================//
 #include "pch_tier0.h"
 
-#if defined(_WIN32) && !defined(_X360)
+#if defined(_WIN32)
 #define WINDOWS_LEAN_AND_MEAN
 #include <windows.h>
 #include "cputopology.h"
@@ -14,9 +14,7 @@
 #include <sys/sysctl.h>
 #endif
 
-#ifndef _PS3
 #include "tier0_strtools.h"
-#endif
 
 //#include "tier1/strtools.h" // this is included for the definition of V_isspace()
 #ifdef PLATFORM_WINDOWS_PC
@@ -30,9 +28,7 @@ const tchar* GetProcessorVendorId();
 
 static bool cpuid(uint32 function, uint32& out_eax, uint32& out_ebx, uint32& out_ecx, uint32& out_edx)
 {
-#if defined( _X360 ) || defined( _PS3 )
-	return false;
-#elif defined(GNUC)
+#if defined(GNUC)
 	asm("mov %%ebx, %%esi\n\t"
 		"cpuid\n\t"
 		"xchg %%esi, %%ebx"
@@ -90,15 +86,11 @@ static bool cpuid(uint32 function, uint32& out_eax, uint32& out_ebx, uint32& out
 
 static bool CheckMMXTechnology(void)
 {
-#if defined( _X360 ) || defined( _PS3 ) 
-	return true;
-#else
     uint32 eax,ebx,edx,unused;
     if ( !cpuid(1,eax,ebx,unused,edx) )
 		return false;
 
     return ( edx & 0x800000 ) != 0;
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -107,7 +99,7 @@ static bool CheckMMXTechnology(void)
 //-----------------------------------------------------------------------------
 static bool IsWin98OrOlder()
 {
-#if defined( _X360 ) || defined( _PS3 ) || defined( POSIX )
+#if defined(POSIX)
 	return false;
 #else
 	bool retval = false;
@@ -152,9 +144,6 @@ static bool IsWin98OrOlder()
 
 static bool CheckSSETechnology(void)
 {
-#if defined( _X360 ) || defined( _PS3 )
-	return true;
-#else
 	if ( IsWin98OrOlder() )
 	{
 		return false;
@@ -167,40 +156,28 @@ static bool CheckSSETechnology(void)
 	}
 
     return ( edx & 0x2000000L ) != 0;
-#endif
 }
 
 static bool CheckSSE2Technology(void)
 {
-#if defined( _X360 ) || defined( _PS3 )
-	return false;
-#else
 	uint32 eax,ebx,edx,unused;
     if ( !cpuid(1,eax,ebx,unused,edx) )
 		return false;
 
     return ( edx & 0x04000000 ) != 0;
-#endif
 }
 
 bool CheckSSE3Technology(void)
 {
-#if defined( _X360 ) || defined( _PS3 )
-	return false;
-#else
 	uint32 eax,ebx,edx,ecx;
 	if( !cpuid(1,eax,ebx,ecx,edx) )
 		return false;
 
 	return ( ecx & 0x00000001 ) != 0;	// bit 1 of ECX
-#endif
 }
 
 bool CheckSSSE3Technology(void)
 {
-#if defined( _X360 ) || defined( _PS3 )
-	return false;
-#else
 	// SSSE 3 is implemented by both Intel and AMD
 	// detection is done the same way for both vendors
 	uint32 eax,ebx,edx,ecx;
@@ -208,14 +185,10 @@ bool CheckSSSE3Technology(void)
 		return false;
 
 	return ( ecx & ( 1 << 9 ) ) != 0;	// bit 9 of ECX
-#endif
 }
 
 bool CheckSSE41Technology(void)
 {
-#if defined( _X360 ) || defined( _PS3 )
-	return false;
-#else
 	// SSE 4.1 is implemented by both Intel and AMD
 	// detection is done the same way for both vendors
 
@@ -224,14 +197,10 @@ bool CheckSSE41Technology(void)
 		return false;
 
 	return ( ecx & ( 1 << 19 ) ) != 0;	// bit 19 of ECX
-#endif
 }
 
 bool CheckSSE42Technology(void)
 {
-#if defined( _X360 ) || defined( _PS3 )
-	return false;
-#else
 	// SSE4.2 is an Intel-only feature
 
 	const char *pchVendor = GetProcessorVendorId();
@@ -243,15 +212,11 @@ bool CheckSSE42Technology(void)
 		return false;
 
 	return ( ecx & ( 1 << 20 ) ) != 0;	// bit 20 of ECX
-#endif
 }
 
 
 bool CheckSSE4aTechnology( void )
 {
-#if defined( _X360 ) || defined( _PS3 )
-	return false;
-#else
 	// SSE 4a is an AMD-only feature
 
 	const char *pchVendor = GetProcessorVendorId();
@@ -263,55 +228,39 @@ bool CheckSSE4aTechnology( void )
 		return false;
 
 	return ( ecx & ( 1 << 6 ) ) != 0;	// bit 6 of ECX
-#endif
 }
 
 
 static bool CheckCMOVTechnology()
 {
-#if defined( _X360 ) || defined( _PS3 )
-	return false;
-#else
 	uint32 eax,ebx,edx,unused;
     if ( !cpuid(1,eax,ebx,unused,edx) )
 		return false;
 
     return ( edx & (1<<15) ) != 0;
-#endif
 }
 
 static bool CheckFCMOVTechnology(void)
 {
-#if defined( _X360 ) || defined( _PS3 )
-	return false;
-#else
     uint32 eax,ebx,edx,unused;
     if ( !cpuid(1,eax,ebx,unused,edx) )
 		return false;
 
     return ( edx & (1<<16) ) != 0;
-#endif
 }
 
 static bool CheckRDTSCTechnology(void)
 {
-#if defined( _X360 ) || defined( _PS3 )
-	return false;
-#else
 	uint32 eax,ebx,edx,unused;
     if ( !cpuid(1,eax,ebx,unused,edx) )
 		return false;
 
     return ( edx & 0x10 ) != 0;
-#endif
 }
 
 // Return the Processor's vendor identification string, or "Generic_x86" if it doesn't exist on this CPU
 const tchar* GetProcessorVendorId()
 {
-#if defined( _X360 ) || defined( _PS3 )
-	return "PPC";
-#else
 	uint32 unused, VendorIDRegisters[3];
 
 	static tchar VendorID[13];
@@ -336,7 +285,6 @@ const tchar* GetProcessorVendorId()
 	}
 
 	return VendorID;
-#endif
 }
 
 // Returns non-zero if Hyper-Threading Technology is supported on the processors and zero if not.
@@ -345,11 +293,6 @@ const tchar* GetProcessorVendorId()
 // http://www.intel.com/Assets/PDF/appnote/241618.pdf
 static bool HTSupported(void)
 {
-#if ( defined( _X360 ) || defined( _PS3 ) )
-	// not entirtely sure about the semantic of HT support, it being an intel name
-	// are we asking about HW threads or HT?
-	return true;
-#else
 	enum {
 		HT_BIT		 = 0x10000000,  // EDX[28] - Bit 28 set indicates Hyper-Threading Technology is supported in hardware.
 		FAMILY_ID     = 0x0f00,      // EAX[11:8] - Bit 11 thru 8 contains family processor id
@@ -383,14 +326,13 @@ static bool HTSupported(void)
 			   ((reg_ebx >> 16) & 0xFF) > 1 ; // Hyper-Threading OR Core Multi-Processing has been enabled
 
 	return false;  // This is not a genuine Intel processor.
-#endif
 }
 
 // See Intel Processor Identification and the CPUID instruction Application Note 485
 // http://www.intel.com/Assets/PDF/appnote/241618.pdf
 int LogicalProcessorsPerCore()
 {
-#if defined( _X360 ) || defined( _PS3 ) || defined( LINUX )
+#if defined(LINUX)
 	return 2; // 
 #elif defined(_WIN32) 
 	uint32 nMaxStandardFnSupported, nVendorId[3];
@@ -496,10 +438,6 @@ int LogicalProcessorsPerCore()
 // for some fraction of a second, then measuring the elapsed number of cycles.
 static int64 CalculateClockSpeed()
 {
-#if defined( _X360 ) || defined(_PS3)
-	// Xbox360 and PS3 have the same clock speed and share a lot of characteristics on PPU
-	return 3200000000LL;
-#else	
 #if defined( _WIN32 )
 	LARGE_INTEGER waitTime, startCount, curCount;
 	CCycleCount start, end;
@@ -530,7 +468,6 @@ static int64 CalculateClockSpeed()
 #else
 	#error "Please implement Clock Speed function for this platform"
 #endif
-#endif
 }
 
 static CPUInformation s_cpuInformation;
@@ -553,13 +490,7 @@ const CPUInformation& GetCPUInformation()
 	
 	// Get the logical and physical processor counts:
 
-#if defined( _X360 )
-	pi.m_nPhysicalProcessors = 3;
-	pi.m_nLogicalProcessors  = 6;
-#elif defined( _PS3 )
-	pi.m_nPhysicalProcessors = 1;
-	pi.m_nLogicalProcessors  = 2;
-#elif defined(_WIN32) && !defined( _X360 )
+#if defined(_WIN32)
 	SYSTEM_INFO si;
 	ZeroMemory( &si, sizeof(si) );
 

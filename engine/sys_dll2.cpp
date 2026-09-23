@@ -10,7 +10,7 @@
 #include "appframework/ilaunchermgr.h"
 #endif
 
-#if defined( _WIN32 ) && !defined( _X360 )
+#if defined(_WIN32)
 #include "winlite.h"
 #include <Psapi.h>
 #endif
@@ -93,10 +93,7 @@
 #include <dlfcn.h>
 #endif
 
-#if defined( _X360 )
-#else
 #include "xboxstubs.h"
-#endif
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -662,11 +659,7 @@ public:
 	bool m_bIsDedicatedServer;
 };
 
-#if defined( _X360 )
-static CErrorText<3500> errorText;
-#else
 static CErrorText<95000> errorText;
-#endif
 
 void BuildMinidumpComment( char const *pchSysErrorText, bool bRealCrash )
 {
@@ -850,7 +843,6 @@ static eSteamInfoInit Sys_TryInitSteamInfo( void *pvAPI, SteamInfVersionInfo_t& 
 	if ( initState == eSteamInfo_Initialized && VerInfo.ServerAppID == k_uAppIdInvalid )
 		VerInfo.ServerAppID = VerInfo.AppID;
 
-#if !defined(_X360)
 	if ( VerInfo.AppID )
 	{
 		// steamclient.dll doesn't know about steam.inf files in mod folder,
@@ -866,7 +858,6 @@ static eSteamInfoInit Sys_TryInitSteamInfo( void *pvAPI, SteamInfVersionInfo_t& 
 			fclose( fh );
 		}
 	}
-#endif // !_X360
 
 	//
 	// Update minidump info if we have more information than before
@@ -1177,7 +1168,7 @@ InitReturnVal_t CEngineAPI::Init()
 	m_bRunningSimulation = false;
 
 	// Initialize the FPU control word
-#if defined(WIN32) && !defined( SWDS ) && !defined( _X360 ) && !defined (__arm__) && !defined(PLATFORM_WINDOWS_PC64)
+#if defined(WIN32) && !(defined(SWDS)) && !(defined(__arm__)) && !(defined(PLATFORM_WINDOWS_PC64))
 	_asm
 	{
 		fninit
@@ -1651,9 +1642,6 @@ bool CEngineAPI::OnStartup( void *pInstance, const char *pStartupModName )
 	// (when we're running stand-alone)
 	InitMaterialSystemConfig( InEditMode() );
 
-#if defined( _X360 )
-	XBX_NotifyCreateListener( XNOTIFY_SYSTEM|XNOTIFY_LIVE|XNOTIFY_XMP );
-#endif
 
 	ShutdownRegistry();
 	return true;
@@ -1719,9 +1707,7 @@ bool CEngineAPI::ModInit( const char *pModName, const char *pGameDir )
 
 	// This sets up the game search path, depends on host_parms
 	TRACEINIT( MapReslistGenerator_Init(), MapReslistGenerator_Shutdown() );
-#if !defined( _X360 )
 	TRACEINIT( DevShotGenerator_Init(), DevShotGenerator_Shutdown() );
-#endif
 
 	// Slam cvars based on mod/config.cfg
 	Host_ReadPreStartupConfiguration();
@@ -1751,9 +1737,7 @@ void CEngineAPI::ModShutdown()
 	// Stop accepting input from the window
 	game->InputDetachFromGameWindow();
 
-#if !defined( _X360 )
 	TRACESHUTDOWN( DevShotGenerator_Shutdown() );
-#endif
 	TRACESHUTDOWN( MapReslistGenerator_Shutdown() );
 
 	ShutdownRegistry();
@@ -1880,9 +1864,7 @@ int CEngineAPI::Run()
 		Host_DisallowSecureServers();
 	}
 
-#ifdef _X360
-	return RunListenServer(); // don't handle exceptions on 360 (because if we do then minidumps won't work at all)
-#elif defined ( _WIN32 )
+#if defined(_WIN32)
 	// Ensure that we crash when we do something naughty in a callback
 	// such as a window proc. Otherwise on a 64-bit OS the crashes will be
 	// silently swallowed.

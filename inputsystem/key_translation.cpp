@@ -6,12 +6,9 @@
 
 
 #if defined( WIN32 ) 
-#if !defined( _X360 )
 #include <wtypes.h>
 #include <winuser.h>
 #include "xboxstubs.h"
-#else
-#endif
 #endif // WIN32
 
 #include "key_translation.h"
@@ -223,7 +220,7 @@ static const char *s_pButtonCodeName[ ] =
 	"MWHEELUP",		// MOUSE_WHEEL_UP
 	"MWHEELDOWN",	// MOUSE_WHEEL_DOWN
 
-#if defined ( _X360 ) || defined ( _LINUX )
+#if defined(_LINUX)
 	"A_BUTTON",		// JOYSTICK_FIRST_BUTTON		
 	"B_BUTTON",		
 	"X_BUTTON",		
@@ -270,25 +267,6 @@ static const char *s_pButtonCodeName[ ] =
 	"JOY31",		
 	"JOY32",		// JOYSTICK_LAST_BUTTON
 
-#if defined ( _X360 )
-	"UP",			// JOYSTICK_FIRST_POV_BUTTON
-	"RIGHT",		
-	"DOWN",		
-	"LEFT",			// JOYSTICK_LAST_POV_BUTTON
-
-	"S1_RIGHT",		// JOYSTICK_FIRST_AXIS_BUTTON
-	"S1_LEFT",		
-	"S1_DOWN",
-	"S1_UP",		
-	"L_TRIGGER",		
-	"R_TRIGGER",
-	"S2_RIGHT",
-	"S2_LEFT",		
-	"S2_DOWN",
-	"S2_UP",		// JOYSTICK_LAST_AXIS_BUTTON
-	"V AXIS POS",
-	"V AXIS NEG",		
-#else
 	"POV_UP",		// JOYSTICK_FIRST_POV_BUTTON
 	"POV_RIGHT",		
 	"POV_DOWN",		
@@ -315,7 +293,6 @@ static const char *s_pButtonCodeName[ ] =
 	"FALCON2_2",
 	"FALCON2_3",
 	"FALCON2_4", // NOVINT_LAST
-#endif
 
 	SCONTROLLERBUTTONS_BUTTONS( 0 ),
 	SCONTROLLERBUTTONS_BUTTONS( 1 ),
@@ -360,7 +337,6 @@ static const char *s_pAnalogCodeName[ ] =
 	"V AXIS",		// JOY_AXIS_V
 };
 
-#if !defined ( _X360 )
 static const char *s_pXControllerButtonCodeNames[ ] =
 {
 	"A_BUTTON",		// JOYSTICK_FIRST_BUTTON		
@@ -414,7 +390,6 @@ static const char *s_pXControllerButtonCodeNames[ ] =
 	"V AXIS POS",
 	"V AXIS NEG",		
 };
-#endif
 
 // this maps non-translated keyboard scan codes to engine key codes
 // Google for 'Keyboard Scan Code Specification'
@@ -703,10 +678,8 @@ ButtonCode_t ButtonCode_XKeyToButtonCode( int nPort, int keyCode )
 // Convert back + forth between ButtonCode/AnalogCode + strings
 const char *ButtonCode_ButtonCodeToString( ButtonCode_t code, bool bXController )
 {
-#if !defined ( _X360 )
 	if ( bXController && code >= JOYSTICK_FIRST_BUTTON && code <= JOYSTICK_LAST_AXIS_BUTTON )
 		return s_pXControllerButtonCodeNames[ code - JOYSTICK_FIRST_BUTTON ];
-#endif
 
 	return s_pButtonCodeName[ code ];
 }
@@ -738,7 +711,6 @@ ButtonCode_t ButtonCode_StringToButtonCode( const char *pString, bool bXControll
 			return (ButtonCode_t)i;
 	}
 
-#if !defined ( _X360 )
 	if ( bXController )
 	{
 		for ( int i = 0; i < ARRAYSIZE(s_pXControllerButtonCodeNames); ++i )
@@ -747,7 +719,6 @@ ButtonCode_t ButtonCode_StringToButtonCode( const char *pString, bool bXControll
 				return (ButtonCode_t)(JOYSTICK_FIRST_BUTTON + i);
 		}
 	}
-#endif
 
 	return BUTTON_CODE_INVALID;
 }
@@ -866,7 +837,7 @@ void ButtonCode_UpdateScanCodeLayout( )
 	// reset the keyboard
 	memcpy( s_pScanToButtonCode, s_pScanToButtonCode_QWERTY, sizeof(s_pScanToButtonCode) );
 
-#if !defined( _X360 ) && !defined( POSIX )
+#if !(defined(POSIX))
 	// fix up keyboard layout for other languages
 	HKL currentKb = ::GetKeyboardLayout( 0 );
 	HKL englishKb = ::LoadKeyboardLayout("00000409", 0);

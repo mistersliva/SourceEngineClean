@@ -1679,10 +1679,6 @@ void CNPC_BaseZombie::Spawn( void )
 	SetSolid( SOLID_BBOX );
 	SetMoveType( MOVETYPE_STEP );
 
-#ifdef _XBOX
-	// Always fade the corpse
-	AddSpawnFlags( SF_NPC_FADE_CORPSE );
-#endif // _XBOX
 
 	m_NPCState			= NPC_STATE_NONE;
 

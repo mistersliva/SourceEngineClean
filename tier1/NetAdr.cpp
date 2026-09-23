@@ -5,7 +5,7 @@
 // NetAdr.cpp: implementation of the CNetAdr class.
 //
 //===========================================================================//
-#if defined( _WIN32 ) && !defined( _X360 )
+#if defined(_WIN32)
 #include <windows.h>
 #endif
 
@@ -13,11 +13,11 @@
 #include "netadr.h"
 #include "tier1/strtools.h"
 
-#if defined( _WIN32 ) && !defined( _X360 )
+#if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
 #include <winsock.h>
 typedef int socklen_t;
-#elif !defined( _X360 )
+#elif 1
 #include <netinet/in.h> // ntohs()
 #include <netdb.h>		// gethostbyname()
 #include <sys/socket.h>	// getsockname()
@@ -317,7 +317,6 @@ bool netadr_t::SetFromString( const char *pch, bool bUseDNS )
 	// dgoodenough - since this is skipped on X360, seems reasonable to skip as well on PS3
 	// PS3_BUILDFIX
 	// FIXME - Leap of faith, this works without asserting on X360, so I assume it will on PS3
-#if !defined( _X360 ) && !defined( _PS3 )
 		// Null out the colon if there is one
 		char *pchColon = strchr( address, ':' );
 		if ( pchColon )
@@ -338,10 +337,6 @@ bool netadr_t::SetFromString( const char *pch, bool bUseDNS )
 			SetPort( V_atoi( ++pchColon ) );
 		}
 		return true;
-#else
-		Assert( 0 );
-		return false;
-#endif
 	}
 
 	return false;
@@ -362,7 +357,6 @@ void netadr_t::SetFromSocket( int hSocket )
 	// dgoodenough - since this is skipped on X360, seems reasonable to skip as well on PS3
 	// PS3_BUILDFIX
 	// FIXME - Leap of faith, this works without asserting on X360, so I assume it will on PS3
-#if !defined( _X360 ) && !defined( _PS3 )
 	Clear();
 	type = NA_IP;
 
@@ -372,7 +366,4 @@ void netadr_t::SetFromSocket( int hSocket )
 	{
 		SetFromSockadr( &address );
 	}
-#else
-	Assert(0);
-#endif
 }

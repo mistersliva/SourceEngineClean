@@ -65,8 +65,6 @@
 #include "cl_steamauth.h"
 #include "sv_steamauth.h"
 #include "engine/ivmodelinfo.h"
-#ifdef _X360
-#endif
 #if defined( REPLAY_ENABLED )
 #include "replay_internal.h"
 #endif
@@ -301,9 +299,6 @@ const CPrecacheUserData* CL_GetPrecacheUserData( INetworkStringTable *table, int
 static bool s_bIsHL2Demo = false;
 void CL_InitHL2DemoFlag()
 {
-#if defined(_X360)
-	s_bIsHL2Demo = false;
-#else
 	static bool initialized = false;
 	if ( !initialized )
 	{
@@ -326,7 +321,6 @@ void CL_InitHL2DemoFlag()
 			s_bIsHL2Demo = true;
 		}
 	}
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -341,9 +335,6 @@ bool CL_IsHL2Demo()
 static bool s_bIsPortalDemo = false;
 void CL_InitPortalDemoFlag()
 {
-#if defined(_X360)
-	s_bIsPortalDemo = false;
-#else
 	static bool initialized = false;
 	if ( !initialized )
 	{
@@ -367,7 +358,6 @@ void CL_InitPortalDemoFlag()
 			s_bIsPortalDemo = true;
 		}
 	}
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -380,16 +370,6 @@ bool CL_IsPortalDemo()
 }
 
 
-#ifdef _XBOX
-extern void Host_WriteConfiguration( const char *dirname, const char *filename );
-//-----------------------------------------------------------------------------
-// Convar callback to write the user configuration 
-//-----------------------------------------------------------------------------
-void WriteConfig_f( ConVar *var, const char *pOldString )
-{
-	Host_WriteConfiguration( "xboxuser.cfg" );
-}
-#endif
 
 //-----------------------------------------------------------------------------
 // Purpose: If the client is in the process of connecting and the cl.signon hits
@@ -1169,14 +1149,6 @@ void CL_FullyConnected( void )
 		scr_nextdrawtick = host_tickcount + TIME_TO_TICKS( 0.25f );
 	}
 
-#ifdef _X360
-	// At this point, check for a valid controller connection.  If it's been lost, then we need to pop our game UI up
-	XINPUT_CAPABILITIES caps;
-	if ( XInputGetCapabilities( XBX_GetPrimaryUserId(), XINPUT_FLAG_GAMEPAD, &caps ) == ERROR_DEVICE_NOT_CONNECTED )
-	{
-		EngineVGui()->ActivateGameUI();
-	}
-#endif // _X360
 
 	// Now that we're connected, toggle the clan tag so it gets sent to the server
 	int id = cl_clanid.GetInt();
@@ -2380,11 +2352,6 @@ bool CL_ShouldLoadBackgroundLevel( const CCommand &args )
 		CommandLine()->CheckParm("-makereslists"))
 		return false;
 
-#ifdef _X360
-	// check if we are accepting an invite
-	if ( XboxLaunch()->GetLaunchFlags() & LF_INVITERESTART )
-		return false;
-#endif
 
 	// nothing else is going on, so load the startup level
 
@@ -2596,7 +2563,7 @@ void CL_SetPagedPoolInfo()
 {
 	if ( IsX360() )
 		return;
-#if !defined( _X360 ) && !defined(NO_STEAM) && !defined(SWDS)
+#if !(defined(NO_STEAM)) && !(defined(SWDS))
 	Plat_GetPagedPoolInfo( &g_pagedpoolinfo );
 #endif
 }
@@ -2660,9 +2627,7 @@ void CL_SetSteamCrashComment()
 	ConVarRef mat_aaquality( "mat_aaquality" );
 	ConVarRef r_shadowrendertotexture( "r_shadowrendertotexture" );
 	ConVarRef r_flashlightdepthtexture( "r_flashlightdepthtexture" );
-#ifndef _X360
 	ConVarRef r_waterforceexpensive( "r_waterforceexpensive" );
-#endif
 		ConVarRef r_waterforcereflectentities( "r_waterforcereflectentities" );
 		ConVarRef mat_vsync( "mat_vsync" );
 		ConVarRef r_rootlod( "r_rootlod" );
@@ -2670,15 +2635,6 @@ void CL_SetSteamCrashComment()
 		ConVarRef mat_motion_blur_enabled( "mat_motion_blur_enabled" );
 		ConVarRef mat_queue_mode( "mat_queue_mode" );
 
-#ifdef _X360
-	Q_snprintf( videoinfo, sizeof(videoinfo), "picmip: %i forceansio: %i trilinear: %i antialias: %i vsync: %i rootlod: %i reducefillrate: %i\n"\
-		"shadowrendertotexture: %i r_flashlightdepthtexture %i waterforcereflectentities: %i mat_motion_blur_enabled: %i",
-										mat_picmip.GetInt(), mat_forceaniso.GetInt(), mat_trilinear.GetInt(), mat_antialias.GetInt(), mat_aaquality.GetInt(),
-										mat_vsync.GetInt(), r_rootlod.GetInt(), mat_reducefillrate.GetInt(), 
-										r_shadowrendertotexture.GetInt(), r_flashlightdepthtexture.GetInt(),
-										r_waterforcereflectentities.GetInt(),
-										mat_motion_blur_enabled.GetInt() );
-#else
 		Q_snprintf( videoinfo, sizeof(videoinfo), "picmip: %i forceansio: %i trilinear: %i antialias: %i vsync: %i rootlod: %i reducefillrate: %i\n"\
 			"shadowrendertotexture: %i r_flashlightdepthtexture %i waterforceexpensive: %i waterforcereflectentities: %i mat_motion_blur_enabled: %i mat_queue_mode %i",
 											mat_picmip.GetInt(), mat_forceaniso.GetInt(), mat_trilinear.GetInt(), mat_antialias.GetInt(), 
@@ -2686,7 +2642,6 @@ void CL_SetSteamCrashComment()
 											r_shadowrendertotexture.GetInt(), r_flashlightdepthtexture.GetInt(),
 											r_waterforceexpensive.GetInt(), r_waterforcereflectentities.GetInt(),
 											mat_motion_blur_enabled.GetInt(), mat_queue_mode.GetInt() );
-#endif
 	int latency = 0;
 	if ( cl.m_NetChannel )
 	{

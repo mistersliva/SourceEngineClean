@@ -9,8 +9,6 @@
 #include <vgui_controls/Panel.h>
 #include <vgui/ISurface.h>
 #include "vgui_avatarimage.h"
-#if defined( _X360 )
-#endif
 #include "steam/steam_api.h"
 
 DECLARE_BUILD_FACTORY( CAvatarImagePanel );

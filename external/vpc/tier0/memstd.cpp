@@ -22,12 +22,7 @@
 #include "memstd.h"
 #include "tier0/stacktools.h"
 #include "tier0/minidump.h"
-#ifdef _X360
-#endif
 
-#ifdef _PS3
-#include "memoverride_ps3.h"
-#endif
 
 #ifndef _WIN32
 #define IsDebuggerPresent() false
@@ -41,24 +36,14 @@
 
 #define DEF_REGION 0
 
-#if defined( _WIN32 ) || defined( _PS3 )
+#if defined(_WIN32)
 #define USE_DLMALLOC
 #define MEMALLOC_SEGMENT_MIXED
 #define MBH_SIZE_MB ( 45 + MBYTES_STEAM_MBH_USAGE )
 //#define MEMALLOC_REGIONS
-#endif // _WIN32 || _PS3
+#endif
 
 #ifndef USE_DLMALLOC
-#ifdef _PS3
-#define malloc_internal( region, bytes ) (g_pMemOverrideRawCrtFns->pfn_malloc)(bytes)
-#define malloc_aligned_internal( region, bytes, align ) (g_pMemOverrideRawCrtFns->pfn_memalign)(align, bytes)
-#define realloc_internal (g_pMemOverrideRawCrtFns->pfn_realloc)
-#define realloc_aligned_internal (g_pMemOverrideRawCrtFns->pfn_reallocalign)
-#define free_internal (g_pMemOverrideRawCrtFns->pfn_free)
-#define msize_internal (g_pMemOverrideRawCrtFns->pfn_malloc_usable_size)
-#define compact_internal() (0)
-#define heapstats_internal(p) (void)(0)
-#else // _PS3
 #define malloc_internal( region, bytes) malloc(bytes)
 #define malloc_aligned_internal( region, bytes, align ) memalign(align, bytes)
 #define realloc_internal realloc
@@ -71,7 +56,6 @@
 #endif // POSIX
 #define compact_internal() (0)
 #define heapstats_internal(p) (void)(0)
-#endif // _PS3
 #else // USE_DLMALLOC
 #define MSPACES 1
 #include "dlmalloc/malloc-2.8.3.h"
@@ -230,13 +214,6 @@ CSmallBlockPool< CStdMemAlloc::CVirtualAllocator >::SharedData_t CSmallBlockPool
 
 static CStdMemAlloc s_StdMemAlloc CONSTRUCT_EARLY;
 
-#ifdef _PS3
-
-MemOverrideRawCrtFunctions_t *g_pMemOverrideRawCrtFns;
-IMemAlloc *g_pMemAllocInternalPS3 = &s_StdMemAlloc;
-PLATFORM_OVERRIDE_MEM_ALLOC_INTERNAL_PS3_IMPL
-
-#else // !_PS3
 
 #ifndef TIER0_VALIDATE_HEAP
 IMemAlloc *g_pMemAlloc = &s_StdMemAlloc;
@@ -244,23 +221,12 @@ IMemAlloc *g_pMemAlloc = &s_StdMemAlloc;
 IMemAlloc *g_pActualAlloc = &s_StdMemAlloc;
 #endif
 
-#endif // _PS3
 
 CStdMemAlloc::CStdMemAlloc()
 :	m_pfnFailHandler( DefaultFailHandler ),
 	m_sMemoryAllocFailed( (size_t)0 ),
 	m_bInCompact( false )
 {
-#ifdef _PS3
-	g_pMemAllocInternalPS3 = &s_StdMemAlloc;
-	PLATFORM_OVERRIDE_MEM_ALLOC_INTERNAL_PS3.m_pMemAllocCached = &s_StdMemAlloc;
-	malloc_managed_size mms;
-	mms.current_inuse_size = 0x12345678;
-	mms.current_system_size = 0x09ABCDEF;
-	mms.max_system_size = reinterpret_cast< size_t >( this );
-	int iResult = malloc_stats( &mms );
-	g_pMemOverrideRawCrtFns = reinterpret_cast< MemOverrideRawCrtFunctions_t * >( iResult );
-#endif
 }
 
 #if MEM_SBH_ENABLED
@@ -1238,9 +1204,6 @@ bool CSmallBlockHeap<CAllocator>::Validate()
 #else // LIGHT_MEM_DEBUG_REQUIRES_CMD_LINE_SWITCH
 bool g_bUsingLMD = ( Plat_GetCommandLineA() ) ? ( strstr( Plat_GetCommandLineA(), "-uselmd" ) != NULL ) : false;
 #define UsingLMD() g_bUsingLMD
-#if defined( _PS3 )
-#error "Plat_GetCommandLineA() not implemented on PS3"
-#endif
 #endif // LIGHT_MEM_DEBUG_REQUIRES_CMD_LINE_SWITCH
 
 const char *g_pszUnknown = "unknown";
@@ -2067,13 +2030,7 @@ void CStdMemAlloc::DumpStatsFileBase( char const *pchFileBase )
 #if defined( _WIN32 ) || defined( _GAMECONSOLE )
 	char filename[ 512 ];
 	_snprintf( filename, sizeof( filename ) - 1,
-#ifdef _X360
-		"D:\\%s.txt",
-#elif defined( _PS3 )
-		"/app_home/%s.txt",
-#else
 		"%s.txt",
-#endif
 		pchFileBase );
 	filename[ sizeof( filename ) - 1 ] = 0;
 	FILE *pFile = ( IsGameConsole() ) ? NULL : fopen( filename, "wt" );
@@ -2100,16 +2057,8 @@ void CStdMemAlloc::DumpStatsFileBase( char const *pchFileBase )
 #endif // MEMALLOC_NO_FALLBACK
 #endif // MEM_SBH_ENABLED
 
-#ifdef _PS3
-	malloc_managed_size mms;
-	(g_pMemOverrideRawCrtFns->pfn_malloc_stats)( &mms );
-	Msg( "PS3 malloc_stats: %u / %u / %u \n", mms.current_inuse_size, mms.current_system_size, mms.max_system_size );
-#endif // _PS3
 
 	heapstats_internal( pFile );
-#if defined( _X360 )
-	XBX_rMemDump( filename );
-#endif
 
 	if ( pFile )
 		fclose( pFile );
@@ -2133,16 +2082,6 @@ size_t CStdMemAlloc::ComputeMemoryUsedBy( char const *pchSubStr )
 
 static inline size_t ExtraDevkitMemory( void )
 {
-#if defined( _PS3 )
-	// 213MB are available in retail mode, so adjust free mem to reflect that even if we're in devkit mode
-	const size_t RETAIL_SIZE = 213*1024*1024;
-	static sys_memory_info stat;
-	sys_memory_get_user_memory_size( &stat );
-	if ( stat.total_user_memory > RETAIL_SIZE )
-		return ( stat.total_user_memory - RETAIL_SIZE );
-#elif defined( _X360 )
-	// TODO: detect the new 1GB devkit...
-#endif // _PS3/_X360
 	return 0;
 }
 
@@ -2164,42 +2103,11 @@ void CStdMemAlloc::GlobalMemoryStatus( size_t *pUsedMemory, size_t *pFreeMemory 
 	dlMallocFree += info.fordblks;
 #endif // USE_DLMALLOC
 
-#if defined ( _X360 )
-
-	// GlobalMemoryStatus tells us how much physical memory is free
-	MEMORYSTATUS stat;
-	::GlobalMemoryStatus( &stat );
-	*pFreeMemory  = stat.dwAvailPhys;
-	*pFreeMemory += dlMallocFree;
-	// Adjust free mem to reflect a retail box, even if we're using a devkit with extra memory
-	*pFreeMemory -= ExtraDevkitMemory();
-
-	// Used is total minus free (discount the 32MB system reservation)
-	*pUsedMemory = ( stat.dwTotalPhys - 32*1024*1024 ) - *pFreeMemory;
-
-#elif defined( _PS3 )
-
-	// NOTE: we use dlmalloc instead of the system heap, so we do NOT count the system heap's free space!
-	//static malloc_managed_size mms;
-	//(g_pMemOverrideRawCrtFns->pfn_malloc_stats)( &mms );
-	//int heapFree = mms.current_system_size - mms.current_inuse_size;
-
-	// sys_memory_get_user_memory_size tells us how much PPU memory is used/free
-	static sys_memory_info stat;
-	sys_memory_get_user_memory_size( &stat );
-	*pFreeMemory  = stat.available_user_memory;
-	*pFreeMemory += dlMallocFree;
-	*pUsedMemory  = stat.total_user_memory - *pFreeMemory;
-	// Adjust free mem to reflect a retail box, even if we're using a devkit with extra memory
-	*pFreeMemory -= ExtraDevkitMemory();
-
-#else // _X360/_PS3/other
 
 	// no data
 	*pFreeMemory = 0;
 	*pUsedMemory = 0;
 
-#endif // _X360/_PS3//other
 }
 
 #define MAX_GENERIC_MEMORY_STATS 64
@@ -2280,52 +2188,10 @@ int CStdMemAlloc::GetGenericMemoryStats( GenericMemoryStat_t **ppMemoryStats )
 
 	size_t nMaxPhysMemUsed_Delta;
 	nMaxPhysMemUsed_Delta = 0;
-#ifdef _PS3
-	{
-		// System heap (should not exist!)
-		static malloc_managed_size mms;
-		(g_pMemOverrideRawCrtFns->pfn_malloc_stats)( &mms );
-		if ( mms.current_system_size )
-			AddGenericMemoryStat( "sys_heap",		(int)mms.current_system_size );
-
-		// Virtual Memory Manager
-		size_t nReserved = 0, nReservedMax = 0, nCommitted = 0, nCommittedMax = 0;
-		extern void VirtualMemoryManager_GetStats( size_t &nReserved, size_t &nReservedMax, size_t &nCommitted, size_t &nCommittedMax );
-		VirtualMemoryManager_GetStats( nReserved, nReservedMax, nCommitted, nCommittedMax );
-		AddGenericMemoryStat( "VMM_reserved",		(int)nReserved );
-		AddGenericMemoryStat( "VMM_reserved_max",	(int)nReservedMax );
-		AddGenericMemoryStat( "VMM_committed",		(int)nCommitted );
-		AddGenericMemoryStat( "VMM_committed_max",	(int)nCommittedMax );
-
-		// Estimate memory committed by memory stacks (these account for all VMM allocations other than the SBH/MBH/LBH)
-		size_t nHeapTotal = 1024*1024*MBYTES_PRIMARY_SBH;
-#if defined( USE_DLMALLOC )
-		for ( int i = 0; i < ARRAYSIZE(g_AllocRegions); i++ )
-		{
-			nHeapTotal += mspace_footprint( g_AllocRegions[i] );
-		}
-#endif // USE_DLMALLOC
-		size_t nMemStackTotal = nCommitted - nHeapTotal;
-		AddGenericMemoryStat( "MemStacks",	(int)nMemStackTotal );
-
-		// On PS3, we can more accurately determine 'phys_free_min', since we know nCommittedMax
-		// (otherwise nPhysFreeMin is only updated intermittently; when this function is called):
-		nMaxPhysMemUsed_Delta = nCommittedMax - nCommitted;
-	}
-#endif // _PS3
 
 #if defined( _GAMECONSOLE )
 	// Total/free/min-free physical pages
 	{
-#if defined( _X360 )
-		MEMORYSTATUS stat;
-		::GlobalMemoryStatus( &stat );
-		size_t nPhysTotal = stat.dwTotalPhys,       nPhysFree = stat.dwAvailPhys           - ExtraDevkitMemory();
-#elif defined( _PS3 )
-		static sys_memory_info stat;
-		sys_memory_get_user_memory_size( &stat );
-		size_t nPhysTotal = stat.total_user_memory, nPhysFree = stat.available_user_memory - ExtraDevkitMemory();
-#endif // _X360/_PS3
 		static size_t nPhysFreeMin = nPhysTotal;
 		nPhysFreeMin = MIN( nPhysFreeMin, ( nPhysFree - nMaxPhysMemUsed_Delta ) );
 		AddGenericMemoryStat( "phys_total",		(int)nPhysTotal );
@@ -2417,15 +2283,6 @@ size_t CStdMemAlloc::DefaultFailHandler( size_t nBytes )
 {
 	if ( IsX360() )
 	{
-#ifdef _X360 
-		ExecuteOnce(
-		{
-			char buffer[256];
-			_snprintf( buffer, sizeof( buffer ), "***** Memory pool overflow, attempted allocation size: %u (not a critical error)\n", nBytes );
-			XBX_OutputDebugString( buffer ); 
-		}
-		);
-#endif // _X360
 	}
 	return 0;
 }
@@ -2439,9 +2296,6 @@ void CStdMemAlloc::SetCRTAllocFailed( size_t nSize )
 	m_sMemoryAllocFailed = nSize;
 
 	DebuggerBreakIfDebugging();
-#if defined( _PS3 ) && defined( _DEBUG )
-	DebuggerBreak();
-#endif // _PS3
 
 	char buffer[256];
 #ifdef COMPILER_GCC
@@ -2450,35 +2304,21 @@ void CStdMemAlloc::SetCRTAllocFailed( size_t nSize )
 	_snprintf( buffer, sizeof( buffer ), "***** OUT OF MEMORY! attempted allocation size: %u ****\n", nSize );
 #endif // COMPILER_GCC
 
-#ifdef _X360 
-	XBX_OutputDebugString( buffer );
-	if ( !Plat_IsInDebugSession() )
-	{
-		XBX_CrashDump( true );
-#if defined( _DEMO )
-		XLaunchNewImage( XLAUNCH_KEYWORD_DEFAULT_APP, 0 );
-#else
-		XLaunchNewImage( "default.xex", 0 );
-#endif // _DEMO
-	}
-#elif defined(_WIN32 )
+#if defined(_WIN32)
 	OutputDebugString( buffer );
 	if ( !Plat_IsInDebugSession() )
 	{
 		WriteMiniDump();
 		abort();
 	}
-#else // _X360/_WIN32/other
+#else
 	printf( "%s\n", buffer );
 	if ( !Plat_IsInDebugSession() )
 	{
 		WriteMiniDump();
-#if defined( _PS3 )
-		DumpStats();
-#endif
 		Plat_ExitProcess( 0 );
 	}
-#endif // _X360/_WIN32/other
+#endif
 
 }
 

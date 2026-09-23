@@ -71,17 +71,10 @@ bool ToolFramework_SetupEngineMicrophone( Vector &origin, QAngle &angles );
 extern ConVar default_fov;
 extern bool g_bRenderingScreenshot;
 
-#if !defined( _X360 )
 #define SAVEGAME_SCREENSHOT_WIDTH	180
 #define SAVEGAME_SCREENSHOT_HEIGHT	100
-#else
-#define SAVEGAME_SCREENSHOT_WIDTH	128
-#define SAVEGAME_SCREENSHOT_HEIGHT	128
-#endif
 
-#ifndef _XBOX
 extern ConVar sensitivity;
-#endif
 
 ConVar zoom_sensitivity_ratio( "zoom_sensitivity_ratio", "1.0", 0, "Additional mouse sensitivity scale factor applied when FOV is zoomed in." );
 
@@ -533,21 +526,17 @@ void CViewRender::OnRenderStart()
 		localFOV = MAX( min_fov, localFOV );
 
 		gHUD.m_flFOVSensitivityAdjust = 1.0f;
-#ifndef _XBOX
 		if ( gHUD.m_flMouseSensitivityFactor )
 		{
 			gHUD.m_flMouseSensitivity = sensitivity.GetFloat() * gHUD.m_flMouseSensitivityFactor;
 		}
 		else
-#endif
 		{
 			// No override, don't use huge sensitivity
 			if ( localFOV == iDefaultFOV )
 			{
-#ifndef _XBOX
 				// reset to saved sensitivity
 				gHUD.m_flMouseSensitivity = 0;
-#endif
 			}
 			else
 			{  
@@ -561,9 +550,7 @@ void CViewRender::OnRenderStart()
 				gHUD.m_flFOVSensitivityAdjust = 
 					((float)localFOV / (float)iDefaultFOV) * // linear fov downscale
 					zoom_sensitivity_ratio.GetFloat(); // sensitivity scale factor
-#ifndef _XBOX
 				gHUD.m_flMouseSensitivity = gHUD.m_flFOVSensitivityAdjust * sensitivity.GetFloat(); // regular sensitivity
-#endif
 			}
 		}
 	}
@@ -829,7 +816,6 @@ void CViewRender::SetUpViews()
 void CViewRender::WriteSaveGameScreenshotOfSize( const char *pFilename, int width, int height, bool bCreatePowerOf2Padded/*=false*/,
 												 bool bWriteVTF/*=false*/ )
 {
-#ifndef _X360
 	CMatRenderContextPtr pRenderContext( materials );
 	pRenderContext->MatrixMode( MATERIAL_PROJECTION );
 	pRenderContext->PushMatrix();
@@ -968,7 +954,6 @@ void CViewRender::WriteSaveGameScreenshotOfSize( const char *pFilename, int widt
 	pRenderContext->PopMatrix();
 
 	g_bRenderingScreenshot = false;
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -1291,10 +1276,8 @@ void CViewRender::Render( vrect_t *rect )
 	g_pClientMode->PostRender();
 	engine->EngineStats_EndFrame();
 
-#if !defined( _X360 )
 	// Stop stubbing the material system so we can see the budget panel
 	matStub.End();
-#endif
 
 
 	// Draw all of the UI stuff "fullscreen"

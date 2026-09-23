@@ -832,10 +832,8 @@ void ServerDLL_Unload()
 }
 
 #if !defined(DEDICATED)
-#if !defined(_X360)
 // Put this function declaration at global scope to avoid the ambiguity of the most vexing parse.
 bool CL_IsHL2Demo();
-#endif
 #endif
 
 //-----------------------------------------------------------------------------
@@ -853,7 +851,6 @@ void SV_InitGameDLL( void )
 	}
 
 #if !defined(SWDS)
-#if !defined(_X360)
 	if ( CL_IsHL2Demo() && !sv.IsDedicated() && Q_stricmp( COM_GetModDirectory(), "hl2" ) )
 	{
 		Error( "The HL2 demo is unable to run Mods.\n" );
@@ -902,7 +899,6 @@ void SV_InitGameDLL( void )
 		}
 	}
 
-#endif // _X360
 #endif
 
 	COM_TimestampedLog( "SV_InitGameDLL" );
@@ -2045,9 +2041,6 @@ void SV_CreateBaseline (void)
 	// Send SendTable info.
 	if ( sv_sendtables.GetInt() )
 	{
-#ifdef _XBOX
-		Error( "sv_sendtables not allowed on XBOX." );
-#endif
 		sv.m_FullSendTablesBuffer.EnsureCapacity( NET_MAX_PAYLOAD );
 		sv.m_FullSendTables.StartWriting( sv.m_FullSendTablesBuffer.Base(), sv.m_FullSendTablesBuffer.Count() );
 		

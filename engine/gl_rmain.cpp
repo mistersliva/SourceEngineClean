@@ -38,14 +38,10 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-#ifndef _X360
 extern ConVar r_waterforceexpensive;
-#endif
 
 ConVar r_aspectratio( "r_aspectratio", "0" 
-#if !defined( _X360 )
 					 , FCVAR_CHEAT
-#endif
 					 );
 ConVar r_dynamiclighting( "r_dynamiclighting", "1", FCVAR_CHEAT );
 extern ConVar building_cubemaps;
@@ -1147,14 +1143,8 @@ void DrawLightmapPage( int lightmapPageID )
 	CMeshBuilder meshBuilder;
 	meshBuilder.Begin( pMesh, MATERIAL_QUADS, 1 );
 
-#ifndef _XBOX
 	int x = 0;
 	int y = 0;
-#else
-	// xboxissue - border safe
-	int x = 32;
-	int	y = 32;
-#endif
 	float s = 1.0f;
 	float t = 1.0f;
 

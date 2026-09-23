@@ -3,7 +3,7 @@
 // Purpose: 
 //
 //===========================================================================//
-#if defined( _WIN32 ) && !defined( _X360 )
+#if defined(_WIN32)
 #include <windows.h>
 #endif
 
@@ -29,19 +29,10 @@
 #ifdef _WIN32
 #include <direct.h> // getcwd
 #endif
-#if defined( _X360 )
-#endif
 
-#ifdef _PS3
-#include "sys/prx.h"
-#include "tier1/utlvector.h"
-#include "ps3/ps3_platform.h"
-#include "ps3/ps3_win32stubs.h"
-#include "ps3/ps3_helpers.h"
-#include "ps3_pathinfo.h"
-#elif defined(POSIX)
+#if defined(POSIX)
 #include "tier0/platform.h"
-#endif // _PS3
+#endif
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -104,7 +95,7 @@ void* CreateInterface( const char *pName, int *pReturnCode )
 
 
 
-#if defined( POSIX ) && !defined( _PS3 )
+#if defined(POSIX)
 // Linux doesn't have this function so this emulates its functionality
 void *GetModuleHandle(const char *name)
 {
@@ -132,7 +123,7 @@ void *GetModuleHandle(const char *name)
 }
 #endif
 
-#if defined( _WIN32 ) && !defined( _X360 )
+#if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
 #include "windows.h"
 #endif
@@ -144,31 +135,18 @@ void *GetModuleHandle(const char *name)
 //-----------------------------------------------------------------------------
 static void *Sys_GetProcAddress( const char *pModuleName, const char *pName )
 {
-#if defined( _PS3 )
-	Assert( !"Unsupported, use HMODULE" );
-	return NULL;
-#else // !_PS3
 	HMODULE hModule = (HMODULE)GetModuleHandle( pModuleName );
 #if defined( WIN32 )
 	return (void *)GetProcAddress( hModule, pName );
 #else // !WIN32
 	return (void *)dlsym( (void *)hModule, pName );
 #endif // WIN32
-#endif // _PS3
 }
 
 static void *Sys_GetProcAddress( HMODULE hModule, const char *pName )
 {
-#if defined( WIN32 )
+#if defined(WIN32)
 	return (void *)GetProcAddress( hModule, pName );
-#elif defined( _PS3 )
-	PS3_LoadAppSystemInterface_Parameters_t *pPRX = reinterpret_cast< PS3_LoadAppSystemInterface_Parameters_t * >( hModule );
-	if ( !pPRX )
-		return NULL;
-	if ( !strcmp( pName, CREATEINTERFACE_PROCNAME ) )
-		return reinterpret_cast< void * >( pPRX->pfnCreateInterface );
-	Assert( !"Unknown PRX function requested!" );
-	return NULL;
 #else
 	return (void *)dlsym( (void *)hModule, pName );
 #endif
@@ -192,11 +170,7 @@ struct ThreadedLoadLibaryContext_t
 // wraps LoadLibraryEx() since 360 doesn't support that
 static HMODULE InternalLoadLibrary( const char *pName )
 {
-#if defined(_X360)
-	return LoadLibrary( pName );
-#else
 	return LoadLibraryEx( pName, NULL, LOAD_WITH_ALTERED_SEARCH_PATH );
-#endif
 }
 unsigned ThreadedLoadLibraryFunc( void *pParam )
 {
@@ -282,9 +256,6 @@ static HMODULE Sys_LoadLibraryGuts( const char *pLibraryName )
 
 	ThreadHandle_t h = CreateSimpleThread( ThreadedLoadLibraryFunc, &context );
 
-#ifdef _X360
-	ThreadSetAffinity( h, XBOX_PROCESSOR_3 );
-#endif
 
 	unsigned int nTimeout = 0;
 	while( WaitForSingleObject( (HANDLE)h, nTimeout ) == WAIT_TIMEOUT )
@@ -306,7 +277,7 @@ static HMODULE Sys_LoadLibraryGuts( const char *pLibraryName )
 
 	return context.m_hLibrary;
 
-#elif defined( POSIX ) && !defined( _PS3 )
+#elif defined(POSIX)
 	HMODULE ret = (HMODULE)dlopen( str, RTLD_NOW );
 	if ( ! ret )
 	{
@@ -415,21 +386,6 @@ CSysModule *Sys_LoadModule( const char *pModuleName )
 	{
 		// full path wasn't passed in, using the current working dir
 		char szAbsoluteModuleName[1024];
-#if defined( _PS3 ) 
-		// getcwd not supported on ps3; use PRX PATCH path if patched
-		if ( g_pPS3PathInfo->IsPatched() )
-		{
-			V_snprintf( szAbsoluteModuleName, sizeof(szAbsoluteModuleName), "%s/bin/%s",
-				g_pPS3PathInfo->GamePatchBasePath(), pModuleName );
-			hDLL = Sys_LoadLibrary( szAbsoluteModuleName );
-		}
-		if ( !hDLL ) // use base PRX path
-		{
-			V_snprintf( szAbsoluteModuleName, sizeof(szAbsoluteModuleName), "%s/%s",
-				g_pPS3PathInfo->PrxPath(), pModuleName );
-			hDLL = Sys_LoadLibrary( szAbsoluteModuleName );
-		}
-#else // !_PS3
 		char szCwd[1024];
 		_getcwd( szCwd, sizeof( szCwd ) );
 		if ( IsX360() )
@@ -456,7 +412,6 @@ CSysModule *Sys_LoadModule( const char *pModuleName )
 			V_snprintf( szAbsoluteModuleName, sizeof(szAbsoluteModuleName), "%s/bin/%s", szCwd, pModuleName );
 		}
 		hDLL = Sys_LoadLibrary( szAbsoluteModuleName );
-#endif // _PS3
 	}
 
 	if ( !hDLL )
@@ -467,7 +422,7 @@ CSysModule *Sys_LoadModule( const char *pModuleName )
 		if ( !hDLL )
 		{
 // So you can see what the error is in the debugger...
-#if defined( _WIN32 ) && !defined( _X360 )
+#if defined(_WIN32)
 			char *lpMsgBuf;
 			
 			FormatMessage( 
@@ -483,11 +438,6 @@ CSysModule *Sys_LoadModule( const char *pModuleName )
 			);
 
 			LocalFree( (HLOCAL)lpMsgBuf );
-#elif defined( _X360 )
-			DWORD error = g_nLoadLibraryError ? g_nLoadLibraryError : GetLastError();
-			Msg( "Error(%d) - Failed to load %s:\n", error, pModuleName );
-#elif defined( _PS3 )
-			Msg( "Failed to load %s:\n", pModuleName );
 #else
 			Msg( "Failed to load %s: %s\n", pModuleName, dlerror() );
 #endif // _WIN32
@@ -561,9 +511,6 @@ void Sys_UnloadModule( CSysModule *pModule )
 
 #ifdef _WIN32
 	FreeLibrary( hDLL );
-#elif defined( _PS3 )
-	PS3_PrxUnload( ( ( PS3_PrxLoadParametersBase_t *)pModule )->sysPrxId );
-	delete ( PS3_PrxLoadParametersBase_t *)pModule;
 #elif defined( POSIX )
 	dlclose((void *)hDLL);
 #endif
@@ -583,8 +530,6 @@ CreateInterfaceFn Sys_GetFactory( CSysModule *pModule )
 	HMODULE	hDLL = reinterpret_cast<HMODULE>(pModule);
 #ifdef _WIN32
 	return reinterpret_cast<CreateInterfaceFn>(GetProcAddress( hDLL, CREATEINTERFACE_PROCNAME ));
-#elif defined( _PS3 )
-	return reinterpret_cast<CreateInterfaceFn>(Sys_GetProcAddress( hDLL, CREATEINTERFACE_PROCNAME ));
 #elif defined( POSIX )
 	// Linux gives this error:
 	//../public/interface.cpp: In function `IBaseInterface *(*Sys_GetFactory
@@ -615,9 +560,6 @@ CreateInterfaceFn Sys_GetFactory( const char *pModuleName )
 {
 #ifdef _WIN32
 	return static_cast<CreateInterfaceFn>( Sys_GetProcAddress( pModuleName, CREATEINTERFACE_PROCNAME ) );
-#elif defined( _PS3 )
-	Assert( 0 );
-	return NULL;
 #elif defined(POSIX)
 	// see Sys_GetFactory( CSysModule *pModule ) for an explanation
 	return (CreateInterfaceFn)( Sys_GetProcAddress( pModuleName, CREATEINTERFACE_PROCNAME ) );

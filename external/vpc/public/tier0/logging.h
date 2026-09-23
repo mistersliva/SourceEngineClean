@@ -19,8 +19,6 @@
 #include <stdio.h>
 
 // For XBX_** functions
-#if defined( _X360 )
-#endif
 
 // Used by CColorizedLoggingListener
 #if defined( _WIN32 ) || (defined(POSIX) && !defined(_GAMECONSOLE))
@@ -274,14 +272,6 @@ public:
 
 	  virtual void Log( const LoggingContext_t *pContext, const tchar *pMessage )
 	  {
-#ifdef _X360
-		  if ( !m_bQuietDebugger && XBX_IsConsoleConnected() )
-		  {
-			  // send to console
-			  XBX_DebugString( XMAKECOLOR( 0,0,0 ), pMessage );
-		  }
-		  else
-#endif
 		  {
 #if !defined( _CERT ) && !defined( DBGFLAG_STRINGS_STRIP )
 			  if ( !m_bQuietPrintf )

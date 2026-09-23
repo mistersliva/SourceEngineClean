@@ -1,7 +1,5 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
-#ifndef _XBOX
 //#include <windows.h>
-#endif
 #include "cbase.h"
 #include "convar.h"
 
@@ -46,7 +44,7 @@ using sixenseMath::Vector4;
 using sixenseMath::Quat;
 using sixenseMath::Line;
 
-#if defined( WIN32 ) && !defined( _X360 )
+#if defined(WIN32)
 #define _WIN32_WINNT 0x0502
 #endif
 #include <winlite.h>

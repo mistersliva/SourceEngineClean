@@ -21,8 +21,6 @@
 #include "tier0/icommandline.h"
 #include "vehicle_base.h"
 
-#if defined( _X360 )
-#endif
 
 #define GAMESTATS_LOG_FILE "gamestats.log"
 #define GAMESTATS_PATHID "MOD"

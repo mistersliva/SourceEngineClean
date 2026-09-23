@@ -148,19 +148,6 @@ public:
 	virtual const FileSystemStatistics *GetFilesystemStatistics()												{ return m_pFileSystemPassThru->GetFilesystemStatistics(); }
 
 
-#if defined( _PS3 )
-	// These should never be called on PS3!
-	virtual Ps3FileType_t GetPs3FileType(const char* path) { return PS3_FILETYPE_UNKNOWN; }
-	virtual void LogFileAccess( const char *pFullFileName ) { }
-
-	virtual bool PrefetchFile( const char *pFileName, int nPriority, bool bPersist )								{ return m_pFileSystemPassThru->PrefetchFile( pFileName, nPriority, bPersist ); }
-	virtual bool PrefetchFile( const char *pFileName, int nPriority, bool bPersist, int64 nOffset, int64 nSize )	{ return m_pFileSystemPassThru->PrefetchFile( pFileName, nPriority, bPersist, nOffset, nSize ); }
-	virtual void FlushCache()																						{ m_pFileSystemPassThru->FlushCache(); }
-	virtual void SuspendPrefetches( const char * pWhy )																{ m_pFileSystemPassThru->SuspendPrefetches( pWhy ); }
-	virtual void ResumePrefetches( const char * pWhy )																{ m_pFileSystemPassThru->ResumePrefetches( pWhy ); }
-	virtual void OnSaveStateChanged( bool bSaving )																	{ m_pFileSystemPassThru->OnSaveStateChanged( bSaving ); }
-	virtual bool IsPrefetchingDone( )																				{ return m_pFileSystemPassThru->IsPrefetchingDone(); }
-#endif //_PS3
 
 	virtual WaitForResourcesHandle_t WaitForResources( const char *resourcelist )								{ return m_pFileSystemPassThru->WaitForResources( resourcelist ); }
 	virtual bool			GetWaitForResourcesProgress( WaitForResourcesHandle_t handle, 

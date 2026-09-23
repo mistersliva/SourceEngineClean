@@ -14,11 +14,11 @@
 #pragma once
 #endif
 
-#if ( defined( PLATFORM_X360 ) || defined( PLATFORM_WINDOWS_PC64 ) )
+#if (defined(PLATFORM_WINDOWS_PC64))
 #define USE_NATIVE_SLIST
 #endif
 
-#if defined( USE_NATIVE_SLIST ) && !defined( _X360 ) && !defined( _PS3 )
+#if defined(USE_NATIVE_SLIST)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
@@ -138,17 +138,12 @@ public:
 #endif
 
 #ifdef USE_NATIVE_SLIST
-#ifdef _X360
-		// integrated write-release barrier
-		return (TSLNodeBase_t *)InterlockedPushEntrySListRelease( &m_Head, pNode );
-#else
 		return (TSLNodeBase_t *)InterlockedPushEntrySList( &m_Head, pNode );
-#endif
 #else
 		TSLHead_t oldHead;
 		TSLHead_t newHead;
 
-		#if defined( PLATFORM_PS3 ) || defined( PLATFORM_X360 )
+#if defined(PLATFORM_PS3)
 		__lwsync(); // write-release barrier
 		#endif
 
@@ -175,12 +170,7 @@ public:
 	TSLNodeBase_t *Pop()
 	{
 #ifdef USE_NATIVE_SLIST
-#ifdef _X360
-		// integrated read-acquire barrier
-		TSLNodeBase_t *pNode = (TSLNodeBase_t *)InterlockedPopEntrySListAcquire( &m_Head );
-#else
 		TSLNodeBase_t *pNode = (TSLNodeBase_t *)InterlockedPopEntrySList( &m_Head );
-#endif
 		return pNode;
 #else
 		TSLHead_t oldHead;
@@ -198,7 +188,7 @@ public:
 
 			if ( ThreadInterlockedAssignIf64( &m_Head.value64, newHead.value64, oldHead.value64 ) )
 			{
-				#if defined( PLATFORM_PS3 ) || defined( PLATFORM_X360 )
+#if defined(PLATFORM_PS3)
 					__lwsync(); // read-acquire barrier
 				#endif
 				break;
@@ -214,9 +204,6 @@ public:
 	{
 #ifdef USE_NATIVE_SLIST
 		TSLNodeBase_t *pBase = (TSLNodeBase_t *)InterlockedFlushSList( &m_Head );
-#if defined( _X360 ) || defined( _PS3 )
-		__lwsync(); // read-acquire barrier
-#endif
 		return pBase;
 #else
 		TSLHead_t oldHead;
