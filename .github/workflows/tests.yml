@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   tests-linux-i386:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
     - uses: actions/checkout@v2
@@ -13,7 +13,7 @@ jobs:
         scripts/tests-ubuntu-i386.sh
 
   tests-linux-amd64:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
     - uses: actions/checkout@v2
@@ -31,7 +31,7 @@ jobs:
         scripts/tests-macos-amd64.sh
 
   tests-windows-i386:
-    runs-on: windows-2019
+    runs-on: windows-2022
 
     steps:
     - uses: actions/checkout@v2
@@ -45,7 +45,7 @@ jobs:
         ./unittest.exe
 
   tests-windows-amd64:
-    runs-on: windows-2019
+    runs-on: windows-2022
 
     steps:
     - uses: actions/checkout@v2
