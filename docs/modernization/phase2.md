@@ -386,6 +386,148 @@ byte-for-byte.
   none of them is a `WindowLong` call, so Stage 4 neither fixed nor
   regressed them.
 
+## Stage 5 execution notes (pointer-width warnings → 0)
+
+**Why the two codes were so lopsided.** Stage 1's baseline recorded 24
+first-party C4311 (a pointer narrowed to a 32-bit type) against 27,697
+first-party C4312 (a narrow integer widened back into a pointer), plus 70
+more inside the `ivp` submodule (68 C4311 + 2 C4312). Almost the whole
+C4312 mass traces to one line: `public/tier1/utlmemory.h` defines
+`UTL_INVAL_SYMBOL` as an `int`-sized sentinel that essentially every
+pointer debug cast in the codebase routes through, so a single wrong-width
+literal accounted for **27,626** of them. Widening that literal resolves
+all 21 memhandle call sites at once. That is the correct shape of the fix
+— widen the shared field — rather than laundering the same truncation at
+each individual use site, and it is why the C4312 column collapsed in one
+edit while C4311 needed twenty-four separate ones.
+
+**The 24 first-party C4311, by file, and what each one needed.**
+
+| file | n | transformation |
+|---|---|---|
+| `vgui2/src/InputWin32.cpp` | 19 | six method signatures, two returns, one `p->` and sixteen `item->` reads widened to `uintp`, matching the `IInput.h` virtuals and struct fields they serve. |
+| `gameui/Sys_Utils.h` | 2 | `typedef int WHANDLE` became `typedef intp WHANDLE`, with `tier0/platform.h` included so the typedef is self-contained. |
+| `engine/audio/voice_mixer_controls.cpp` | 1 | two-step `(UINT)(UINT_PTR)`, **kept on purpose** — see below. |
+| `game/server/baseentity.cpp` | 1 | `%08lx` plus cast became `%p`. |
+| `vguimatsurface/Input.cpp` | 1 | the producer stopped stuffing an `HWND` into `event.m_nData` at all. |
+
+**Where a two-step cast is the honest answer, and where it is a fig
+leaf.** The rule applied throughout Stage 5 is that a two-step cast is
+acceptable only when the value provably cannot be widened, and wrong the
+moment it is hiding a round-trip that used to be broken.
+`voice_mixer_controls.cpp` is the legitimate case: the Windows SDK
+`mmeapi.h` really does declare `mixerGetDevCaps(UINT uMxId, ...)`, so the
+parameter is genuinely a 32-bit device id and no pointer ever crosses it —
+`(UINT)(UINT_PTR)` is a bit-identical value moving through a
+misdescribing intermediate, and it is written out with that justification
+in a comment. `game/server/baseentity.h` `SetMoveDone` is the other
+edge: `(void *)(intp)(...)` is width-only at all 43 call sites, because
+`int` to `intp` and `int` to `void *` sign-extend identically, so the fix
+is one cast rather than a new field type. `tier1/datamanager.h` gets its
+fix one level up too: `memhandle_t` is a `FORWARD_DECLARE_HANDLE` (i.e. a
+pointer), so widening `INVALID_MEMHANDLE` to `(uintp)0xffffffff` makes all
+21 of its sites narrow consistently through the macro instead of each one
+re-deriving the cast.
+
+**The IME ABI was genuinely broken on x64, not merely unpretty.**
+`IInput` enumerated IME language, conversion and sentence modes through
+`int handleValue` fields while the underlying `HIMC`/`HKL` values are
+pointer-sized, so on x64 any consumer read back a sign-extended low 32
+bits — a real round-trip failure. The three struct fields, the two getter
+returns and the three `OnChangeIMEByHandle`-family parameters are now
+`uintp` throughout, and the matching `TEXTENTRY_IME_*` handlers moved to
+the already-present `MESSAGE_FUNC_UINT64` / `SetUint64` dispatch path so
+`KeyValues` carries the full value end to end. No include had to be added
+to the public headers for this: `uintp` is already visible through
+`vgui/VGUI.h`, which `IInput.h`, `TextEntry.h` and `InputWin32.cpp` all
+include directly.
+
+**`vguimatsurface/Input.cpp` deliberately did not widen `m_nData`.**
+That field is named and read as a generic 32-bit payload all over the
+file, so widening it would have started a wave of narrowing elsewhere.
+Instead the producer that was stuffing an `HWND` into it now records the
+handle in a file-scope variable that the `IE_IMESetWindow` consumer reads
+directly, which removes the round-trip without touching the struct layout
+that other message types depend on.
+
+**Residues left in place, and why.** `materialsystem/cmaterial.cpp:3567`
+still casts `0xffffffff` to `ITexture *` as a sentinel; the extension's
+reload semantics around that magic value have not been audited, so
+changing it could silently alter behaviour, and it is a single warning
+outside this stage's gate. `external/vpc/public/tier1/utlmemory.h:432`
+holds the untouched twin of the utlmemory fix; it is not in the warning
+baseline and touching it risks the standalone VPC tool build for no
+measured gain. On the lint side, `suspicious_ptr_cast` moves **45 -> 29**:
+the 16 removed are the truncations fixed here, and each of the remaining
+29 is a pointer deliberately narrowed to compare against a documented
+magic constant — none of them can reach storage.
+
+**A pre-existing defect was found and deliberately not fixed.**
+`vgui2/vgui_controls/TextEntry.cpp:1380` builds a sentence-mode menu item
+from `modes[i]` while labelling it with `sentencemodes[i].menuname`, and
+dispatches `"DoConversionModeChanged"` where `TextEntry.h:125` expects
+`"DoSentenceModeChanged"`. This is a copy-paste bug that predates Phase 2;
+the Stage 5 rewrite preserved `modes[i]` exactly rather than fixing it,
+because it is a behaviour change with no bearing on pointer width and
+belongs to whoever owns the sentence-mode feature.
+
+**`ivp` was forked rather than left dirty.** The submodule contributed
+exactly 70 warnings, and `scripts/lint-legacy.ps1` structurally cannot see
+them — it greps tracked files, and submodules are outside that set. Since
+upstream is not ours to patch, `nillerusr/source-physics` was forked to
+`mistersliva/source-physics`, the casts fixed there (63 lines across 13
+files, `47533475..318b93f`), and `.gitmodules` repointed. The fork is
+public, so CI's `git submodule init && git submodule update` fetches it
+unauthenticated exactly as it did the upstream URL. The dominant pattern
+was `(long)somePointer` feeding a `%lx`, which truncates on Win64 where
+`long` is 32-bit but happens to be pointer-sized on LP64 — which is why
+this never surfaced before the port. Each was widened through ivp's own
+`intp` before the final `(long)` narrowing, so the value every `%lx`
+receives is bit-identical on both ABIs. Three sites needed individual
+treatment: `ivu_set.hxx` hashed a set key straight to `long` and now also
+includes `ivu_types.hxx` instead of relying on its includer's include
+order; `ivp_surbuild_pointsoup.cxx` stores an integer index in a
+pointer-typed set slot; and `ivp_gridbuild_array.cxx:840` **was a real
+64-bit bug rather than a warning** — it aligned a destination pointer by
+truncating it to `long` first, which on Win64 yields an address outside
+the buffer it came from, and now aligns through `uintp`. Casts sitting
+inside `#ifdef DEBUG` were converted too, so enabling a debug flag cannot
+quietly reintroduce a truncation. Two `(long)` sites remain untouched on
+purpose: an integer `fseek` offset in `3dsimport_load.cxx`, which is not
+listed in any `wscript` source list and is not a pointer, and one inside a
+comment.
+
+**Stage 5 verification — measured on a clean rebuild, not an incremental
+one.** Emptying `build/` (keeping `c4che`) and rebuilding ran **2214
+tasks**, 2161 of them compile steps, in 5m03s with **0 errors**:
+
+| code | Stage 1 baseline | after Stage 5 |
+|---|---|---|
+| C4311 | 92 (24 first-party + 68 `ivp`) | **0** |
+| C4302 | 0 | **0** |
+| C4312 | 27,699 (27,697 first-party + 2 `ivp`) | **1** — only `cmaterial.cpp:3567`, above |
+| C4291 / C4477 / C4273 / C4838 | 11 / 3 / 3 / 1 | 11 / 3 / 3 / 1 (untouched) |
+| **total** | **27,809** | **19** |
+
+Every one of the 19 is a pre-existing warning of a class this phase never
+touched (AI `operator new`/`delete` mismatch, printf format-type mismatch,
+`Sleep` dll linkage, a `char` narrowing). Lint confirms
+`inline_asm = 0`, `win32_long_no_ptr = 0`, `suspicious_ptr_cast = 29`,
+`dx_to_gl_abstraction = 215`, `d3d9_com_types = 924`, `local_minmax_macro
+= 6`.
+
+**A defect the Windows-only build could not see.** The first push of Stage
+5 passed a full local MSVC build and then **failed CI on Linux and macOS**
+with `use of undeclared identifier 's_hLastHWnd'`. The variable the new
+`IE_IMESetWindow` consumer reads sits inside the file's `#ifdef WIN32`
+block, and the consumer did not. The message is posted nowhere except by
+that Win32 window procedure, so the fix was to compile the forward under
+the same `WIN32` guard — a no-op with a comment on other platforms, and
+bit-identical behaviour on Windows. The commit was amended rather than
+followed up, so the Stage 5 commit compiles on every platform in the
+matrix. The general lesson stands: a green local build on one platform is
+not evidence about the other five jobs.
+
 ## Gate 2 completion criteria
 
 - CI matrix is 64-bit-only (no i386, no armv7 Android) and green;
