@@ -256,6 +256,12 @@ def define_platform(conf):
 			'NO_HOOK_MALLOC',
 			'_DLL_EXT=.dylib'
 		])
+		# ivp/ (submodule) only includes <alloca.h> under
+		# defined(LINUX)||defined(SUN)||(__MWERKS__&&__POWERPC__), so on
+		# Apple it relied on transitive includes that modern Xcode no longer
+		# provides -> force-include it for every TU instead.
+		conf.env.append_unique('CXXFLAGS', ['-include', 'alloca.h'])
+		conf.env.append_unique('CFLAGS', ['-include', 'alloca.h'])
 
 	elif conf.env.DEST_OS in ['freebsd', 'openbsd', 'netbsd', 'dragonflybsd']: # Tested only in freebsd
 		conf.env.append_unique('DEFINES', [
