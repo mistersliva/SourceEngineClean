@@ -16,7 +16,7 @@
 
 FORWARD_DECLARE_HANDLE( memhandle_t );
 
-#define INVALID_MEMHANDLE ((memhandle_t)0xffffffff)
+#define INVALID_MEMHANDLE ((memhandle_t)(uintp)0xffffffff)
 
 class CDataManagerBase
 {

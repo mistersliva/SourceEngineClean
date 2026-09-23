@@ -2654,7 +2654,7 @@ inline void CBaseEntity::FireBullets( int cShots, const Vector &vecSrc,
 	do \
 	{ \
 		m_pfnMoveDone = static_cast <void (CBaseEntity::*)(void)> (a); \
-		FunctionCheck( (void *)*((int *)((char *)this + ( offsetof(CBaseEntity,m_pfnMoveDone)))), "BaseMoveFunc" ); \
+		FunctionCheck( (void *)(intp) (*((int *)((char *)this + ( offsetof(CBaseEntity,m_pfnMoveDone))))), "BaseMoveFunc" ); \
 	} while ( 0 )
 #else
 #define SetMoveDone( a ) \

@@ -3365,7 +3365,7 @@ void CBaseEntity::FunctionCheck( void *pFunction, const char *name )
 	// class in your list of ancestors, which it must be.
 	if (pFunction && !UTIL_FunctionToName( GetDataDescMap(), *(inputfunc_t*)pFunction ) )
 	{
-		Warning( "FUNCTION NOT IN TABLE!: %s:%s (%08lx)\n", STRING(m_iClassname), name, (unsigned long)pFunction );
+		Warning( "FUNCTION NOT IN TABLE!: %s:%s (%p)\n", STRING(m_iClassname), name, pFunction );
 		Assert(0);
 	}
 #endif

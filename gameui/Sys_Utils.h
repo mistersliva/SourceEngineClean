@@ -11,7 +11,9 @@
 #pragma once
 #endif
 
-typedef int WHANDLE;
+#include "tier0/platform.h"
+
+typedef intp WHANDLE;
 
 // ERROR HANDLING
 extern const unsigned int SYS_NO_ERROR;

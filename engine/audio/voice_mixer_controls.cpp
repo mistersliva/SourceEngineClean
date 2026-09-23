@@ -108,7 +108,10 @@ bool CMixerControls::Init()
 
 		// Iterate over each destination line, looking for Play Controls.
 		MIXERCAPS mxcaps;
-		mmr = mixerGetDevCaps((UINT)m_hMixer, &mxcaps, sizeof(mxcaps));
+		// The API declares a 32-bit UINT id, so widen HMIXER to UINT_PTR
+		// before narrowing: the pointer->integer step is no longer a
+		// truncating cast and the value passed is bit-identical to before.
+		mmr = mixerGetDevCaps((UINT)(UINT_PTR)m_hMixer, &mxcaps, sizeof(mxcaps));
 		if(mmr != MMSYSERR_NOERROR)
 		{
 			continue;

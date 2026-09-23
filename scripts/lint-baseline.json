@@ -7,6 +7,6 @@
     "win32_long_no_ptr":  0,
     "inline_asm":  0,
     "d3d9_com_types":  924,
-    "suspicious_ptr_cast":  45,
+    "suspicious_ptr_cast":  29,
     "local_minmax_macro":  6
 }

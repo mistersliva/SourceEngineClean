@@ -1321,7 +1321,9 @@ void TextEntry::CreateEditMenu()
 
 			for ( int i = 0; i < count; ++i )
 			{
-				int id = subMenu->AddCheckableMenuItem( "Language", UnlocalizeUnicode( langs[ i ].menuname ), new KeyValues( "DoLanguageChanged", "handle", langs[ i ].handleValue ), this );
+				KeyValues *pHandleKV = new KeyValues( "DoLanguageChanged" );
+				pHandleKV->SetUint64( "handle", (uint64)langs[ i ].handleValue );
+				int id = subMenu->AddCheckableMenuItem( "Language", UnlocalizeUnicode( langs[ i ].menuname ), pHandleKV, this );
 				if ( langs[ i ].active )
 				{
 					subMenu->SetMenuItemChecked( id, true );
@@ -1349,7 +1351,9 @@ void TextEntry::CreateEditMenu()
 
 			for ( int i = 0; i < count; ++i )
 			{
-				int id = subMenu->AddCheckableMenuItem( "ConversionMode", UnlocalizeUnicode( modes[ i ].menuname ), new KeyValues( "DoConversionModeChanged", "handle", modes[ i ].handleValue ), this );
+				KeyValues *pHandleKV = new KeyValues( "DoConversionModeChanged" );
+				pHandleKV->SetUint64( "handle", (uint64)modes[ i ].handleValue );
+				int id = subMenu->AddCheckableMenuItem( "ConversionMode", UnlocalizeUnicode( modes[ i ].menuname ), pHandleKV, this );
 				if ( modes[ i ].active )
 				{
 					subMenu->SetMenuItemChecked( id, true );
@@ -1377,7 +1381,9 @@ void TextEntry::CreateEditMenu()
 
 			for ( int i = 0; i < count; ++i )
 			{
-				int id = subMenu->AddCheckableMenuItem( "SentenceMode", UnlocalizeUnicode( sentencemodes[ i ].menuname ), new KeyValues( "DoConversionModeChanged", "handle", modes[ i ].handleValue ), this );
+				KeyValues *pHandleKV = new KeyValues( "DoConversionModeChanged" );
+				pHandleKV->SetUint64( "handle", (uint64)modes[ i ].handleValue );
+				int id = subMenu->AddCheckableMenuItem( "SentenceMode", UnlocalizeUnicode( sentencemodes[ i ].menuname ), pHandleKV, this );
 				if ( modes[ i ].active )
 				{
 					subMenu->SetMenuItemChecked( id, true );
@@ -3948,7 +3954,7 @@ void TextEntry::OnChangeIME( bool forward )
 // Purpose: 
 // Input  : handleValue - 
 //-----------------------------------------------------------------------------
-void TextEntry::LanguageChanged( int handleValue )
+void TextEntry::LanguageChanged( uint64 handleValue )
 {
 	input()->OnChangeIMEByHandle( handleValue );
 }
@@ -3958,7 +3964,7 @@ void TextEntry::LanguageChanged( int handleValue )
 // Purpose: 
 // Input  : handleValue - 
 //-----------------------------------------------------------------------------
-void TextEntry::ConversionModeChanged( int handleValue )
+void TextEntry::ConversionModeChanged( uint64 handleValue )
 {
 	input()->OnChangeIMEConversionModeByHandle( handleValue );
 }
@@ -3968,7 +3974,7 @@ void TextEntry::ConversionModeChanged( int handleValue )
 // Purpose: 
 // Input  : handleValue - 
 //-----------------------------------------------------------------------------
-void TextEntry::SentenceModeChanged( int handleValue )
+void TextEntry::SentenceModeChanged( uint64 handleValue )
 {
 	input()->OnChangeIMESentenceModeByHandle( handleValue );
 }
@@ -4163,8 +4169,8 @@ void TextEntry::UpdateIMECandidates()
 //-----------------------------------------------------------------------------
 void TextEntry::FlipToLastIME()
 {
-	int hCurrentIME = input()->GetCurrentIMEHandle();
-	int hEnglishIME = input()->GetEnglishIMEHandle();
+	uint64 hCurrentIME = input()->GetCurrentIMEHandle();
+	uint64 hEnglishIME = input()->GetEnglishIMEHandle();
 
 	bool isEnglish = ( hCurrentIME == hEnglishIME ) ? true : false;
 

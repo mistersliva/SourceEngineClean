@@ -120,9 +120,9 @@ public:
 	MESSAGE_FUNC( CopySelected, "DoCopySelected" );
 	MESSAGE_FUNC( Paste, "DoPaste" );
 
-	MESSAGE_FUNC_INT( LanguageChanged, "DoLanguageChanged", handle );
-	MESSAGE_FUNC_INT( ConversionModeChanged, "DoConversionModeChanged", handle );
-	MESSAGE_FUNC_INT( SentenceModeChanged, "DoSentenceModeChanged", handle );
+	MESSAGE_FUNC_UINT64( LanguageChanged, "DoLanguageChanged", handle );
+	MESSAGE_FUNC_UINT64( ConversionModeChanged, "DoConversionModeChanged", handle );
+	MESSAGE_FUNC_UINT64( SentenceModeChanged, "DoSentenceModeChanged", handle );
 
 	MESSAGE_FUNC_WCHARPTR( CompositionString, "DoCompositionString", string );
 
@@ -377,7 +377,7 @@ private:
 
 	wchar_t				m_szComposition[ MAX_COMPOSITION_STRING ];
 	Menu				*m_pIMECandidates;
-	int					m_hPreviousIME;
+	uint64				m_hPreviousIME;
 	bool				m_bDrawLanguageIDAtLeft;
 	int					m_nLangInset;
 

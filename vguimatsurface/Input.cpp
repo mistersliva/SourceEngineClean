@@ -94,7 +94,10 @@ static LRESULT CALLBACK MatSurfaceWindowProc( HWND hwnd, UINT uMsg, WPARAM wPara
 	{
 		s_hLastHWnd = hwnd;
 		event.m_nType = IE_IMESetWindow;
-		event.m_nData = (int)s_hLastHWnd;
+		// NOTE: the HWND is deliberately not stored in event.m_nData.
+		// That field is a 32-bit slot and would truncate the handle on
+		// 64-bit builds; the IE_IMESetWindow handler below reads
+		// s_hLastHWnd directly instead.
 		g_pInputSystem->PostUserEvent( event );
 	}
 
@@ -491,7 +494,13 @@ bool InputHandleInputEvent( const InputEvent_t &event )
 		return true;
 
 	case IE_IMESetWindow:
-		g_pIInput->SetIMEWindow( (void *)(intp)event.m_nData );
+#if defined( WIN32 )
+		// s_hLastHWnd is written by MatSurfaceWindowProc above; it is used in
+		// place of event.m_nData, whose 32 bits would truncate the HWND. Both
+		// that writer and this message are Win32-only, so other platforms have
+		// nothing to forward.
+		g_pIInput->SetIMEWindow( s_hLastHWnd );
+#endif
 		return true;
 
 	case IE_LocateMouseClick:

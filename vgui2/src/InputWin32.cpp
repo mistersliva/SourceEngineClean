@@ -151,8 +151,8 @@ public:
 
 	// Change keyboard layout type
 	virtual void OnChangeIME( bool forward );
-	virtual int  GetCurrentIMEHandle();
-	virtual int  GetEnglishIMEHandle();
+	virtual uintp GetCurrentIMEHandle();
+	virtual uintp GetEnglishIMEHandle();
 
 	// Returns the Language Bar label (Chinese, Korean, Japanese, Russion, Thai, etc.)
 	virtual void GetIMELanguageName( wchar_t *buf, int unicodeBufferSizeInBytes );
@@ -164,9 +164,9 @@ public:
 	virtual int	 GetIMEConversionModes( ConversionModeItem *dest, int destcount );
 	virtual int	 GetIMESentenceModes( SentenceModeItem *dest, int destcount );
 
-	virtual void OnChangeIMEByHandle( int handleValue );
-	virtual void OnChangeIMEConversionModeByHandle( int handleValue );
-	virtual void OnChangeIMESentenceModeByHandle( int handleValue );
+	virtual void OnChangeIMEByHandle( uintp handleValue );
+	virtual void OnChangeIMEConversionModeByHandle( uintp handleValue );
+	virtual void OnChangeIMESentenceModeByHandle( uintp handleValue );
 
 	virtual void OnInputLanguageChanged();
 	virtual void OnIMEStartComposition();
@@ -2143,29 +2143,29 @@ void CInputSystem::OnChangeIME( bool forward )
 #endif
 }
 
-int CInputSystem::GetCurrentIMEHandle()
+uintp CInputSystem::GetCurrentIMEHandle()
 {
 	ASSERT_IF_IME_NYI();
 
 #ifdef DO_IME
 	HKL hkl = (HKL)GetKeyboardLayout( 0 );
-	return (int)hkl;
+	return (uintp)hkl;
 #else
 	return 0;
 #endif
 }
 
-int CInputSystem::GetEnglishIMEHandle()
+uintp CInputSystem::GetEnglishIMEHandle()
 {
 #ifdef DO_IME
 	HKL hkl = (HKL)0x04090409;
-	return (int)hkl;
+	return (uintp)hkl;
 #else
 	return 0;
 #endif
 }
 
-void CInputSystem::OnChangeIMEByHandle( int handleValue )
+void CInputSystem::OnChangeIMEByHandle( uintp handleValue )
 {
 	ASSERT_IF_IME_NYI();
 
@@ -2258,7 +2258,7 @@ int CInputSystem::GetIMELanguageList( LanguageItem *dest, int destcount )
 				wcsncpy( p->menuname, info->displayname, sizeof( p->menuname ) / sizeof( wchar_t ) );
 				p->menuname[ sizeof( p->menuname ) / sizeof( wchar_t ) - 1 ] = L'\0';
 
-				p->handleValue = (int)hkl;
+				p->handleValue = (uintp)hkl;
 				p->active = ( hkl == GetKeyboardLayout( 0 ) ) ? true : false;
 			}
 		}
@@ -2486,12 +2486,12 @@ int CInputSystem::GetIMEConversionModes( ConversionModeItem *dest, int destcount
 			int i = 0;
 			item = &dest[ i++ ];
 			wcsncpy( item->menuname, L"#IME_Chinese", sizeof( item->menuname ) / sizeof( wchar_t ) );
-			item->handleValue = (int)&g_ConversionMode_CHT_ToChinese;
+			item->handleValue = (uintp)&g_ConversionMode_CHT_ToChinese;
 			item->active = g_ConversionMode_CHT_ToChinese.ConvMatches( dwConvMode );
 
 			item = &dest[ i++ ];
 			wcsncpy( item->menuname, L"#IME_English", sizeof( item->menuname ) / sizeof( wchar_t ) );
-			item->handleValue = (int)&g_ConversionMode_CHT_ToEnglish;
+			item->handleValue = (uintp)&g_ConversionMode_CHT_ToEnglish;
 			item->active = g_ConversionMode_CHT_ToEnglish.ConvMatches( dwConvMode );
 		}
 		return 2;
@@ -2504,32 +2504,32 @@ int CInputSystem::GetIMEConversionModes( ConversionModeItem *dest, int destcount
 			int i = 0;
 			item = &dest[ i++ ];
 			wcsncpy( item->menuname, L"#IME_Hiragana", sizeof( item->menuname ) / sizeof( wchar_t ) );
-			item->handleValue = (int)&g_ConversionMode_JP_Hiragana;
+			item->handleValue = (uintp)&g_ConversionMode_JP_Hiragana;
 			item->active = g_ConversionMode_JP_Hiragana.ConvMatches( dwConvMode );
 			
 			item = &dest[ i++ ];
 			wcsncpy( item->menuname, L"#IME_FullWidthKatakana", sizeof( item->menuname ) / sizeof( wchar_t ) );
-			item->handleValue = (int)&g_ConversionMode_JP_FullwidthKatakana;
+			item->handleValue = (uintp)&g_ConversionMode_JP_FullwidthKatakana;
 			item->active = g_ConversionMode_JP_FullwidthKatakana.ConvMatches( dwConvMode );
 			
 			item = &dest[ i++ ];
 			wcsncpy( item->menuname, L"#IME_FullWidthAlphanumeric", sizeof( item->menuname ) / sizeof( wchar_t ) );
-			item->handleValue = (int)&g_ConversionMode_JP_FullwidthAlphanumeric;
+			item->handleValue = (uintp)&g_ConversionMode_JP_FullwidthAlphanumeric;
 			item->active = g_ConversionMode_JP_FullwidthAlphanumeric.ConvMatches( dwConvMode );
 			
 			item = &dest[ i++ ];
 			wcsncpy( item->menuname, L"#IME_HalfWidthKatakana", sizeof( item->menuname ) / sizeof( wchar_t ) );
-			item->handleValue = (int)&g_ConversionMode_JP_HalfwidthKatakana;
+			item->handleValue = (uintp)&g_ConversionMode_JP_HalfwidthKatakana;
 			item->active = g_ConversionMode_JP_HalfwidthKatakana.ConvMatches( dwConvMode );
 			
 			item = &dest[ i++ ];
 			wcsncpy( item->menuname, L"#IME_HalfWidthAlphanumeric", sizeof( item->menuname ) / sizeof( wchar_t ) );
-			item->handleValue = (int)&g_ConversionMode_JP_HalfwidthAlphanumeric;
+			item->handleValue = (uintp)&g_ConversionMode_JP_HalfwidthAlphanumeric;
 			item->active = g_ConversionMode_JP_HalfwidthAlphanumeric.ConvMatches( dwConvMode );
 			
 			item = &dest[ i++ ];
 			wcsncpy( item->menuname, L"#IME_English", sizeof( item->menuname ) / sizeof( wchar_t ) );
-			item->handleValue = (int)&g_ConversionMode_JP_DirectInput;
+			item->handleValue = (uintp)&g_ConversionMode_JP_DirectInput;
 			item->active = g_ConversionMode_JP_DirectInput.ConvMatches( dwConvMode );
 			
 		}
@@ -2542,12 +2542,12 @@ int CInputSystem::GetIMEConversionModes( ConversionModeItem *dest, int destcount
 			int i = 0;
 			item = &dest[ i++ ];
 			wcsncpy( item->menuname, L"#IME_Korean", sizeof( item->menuname ) / sizeof( wchar_t ) );
-			item->handleValue = (int)&g_ConversionMode_KO_ToKorean;
+			item->handleValue = (uintp)&g_ConversionMode_KO_ToKorean;
 			item->active = g_ConversionMode_KO_ToKorean.ConvMatches( dwConvMode );
 
 			item = &dest[ i++ ];
 			wcsncpy( item->menuname, L"#IME_English", sizeof( item->menuname ) / sizeof( wchar_t ) );
-			item->handleValue = (int)&g_ConversionMode_KO_ToEnglish;
+			item->handleValue = (uintp)&g_ConversionMode_KO_ToEnglish;
 			item->active = g_ConversionMode_KO_ToEnglish.ConvMatches( dwConvMode );
 		}
 		return 2;
@@ -2559,12 +2559,12 @@ int CInputSystem::GetIMEConversionModes( ConversionModeItem *dest, int destcount
 			int i = 0;
 			item = &dest[ i++ ];
 			wcsncpy( item->menuname, L"#IME_Chinese", sizeof( item->menuname ) / sizeof( wchar_t ) );
-			item->handleValue = (int)&g_ConversionMode_CHS_ToChinese;
+			item->handleValue = (uintp)&g_ConversionMode_CHS_ToChinese;
 			item->active = g_ConversionMode_CHS_ToChinese.ConvMatches( dwConvMode );
 
 			item = &dest[ i++ ];
 			wcsncpy( item->menuname, L"#IME_English", sizeof( item->menuname ) / sizeof( wchar_t ) );
-			item->handleValue = (int)&g_ConversionMode_CHS_ToChinese;
+			item->handleValue = (uintp)&g_ConversionMode_CHS_ToChinese;
 			item->active = g_ConversionMode_CHS_ToChinese.ConvMatches( dwConvMode );
 		}
 		return 2;
@@ -2640,22 +2640,22 @@ int CInputSystem::GetIMESentenceModes( SentenceModeItem *dest, int destcount )
 			int i = 0;
 			item = &dest[ i++ ];
 			wcsncpy( item->menuname, L"#IME_General", sizeof( item->menuname ) / sizeof( wchar_t ) );
-			item->handleValue = (int)&g_SentenceMode_JP_General;
+			item->handleValue = (uintp)&g_SentenceMode_JP_General;
 			item->active = g_SentenceMode_JP_General.SentMatches( dwSentMode );
 			
 			item = &dest[ i++ ];
 			wcsncpy( item->menuname, L"#IME_BiasNames", sizeof( item->menuname ) / sizeof( wchar_t ) );
-			item->handleValue = (int)&g_SentenceMode_JP_BiasNames;
+			item->handleValue = (uintp)&g_SentenceMode_JP_BiasNames;
 			item->active = g_SentenceMode_JP_BiasNames.SentMatches( dwSentMode );
 			
 			item = &dest[ i++ ];
 			wcsncpy( item->menuname, L"#IME_BiasSpeech", sizeof( item->menuname ) / sizeof( wchar_t ) );
-			item->handleValue = (int)&g_SentenceMode_JP_BiasSpeech;
+			item->handleValue = (uintp)&g_SentenceMode_JP_BiasSpeech;
 			item->active = g_SentenceMode_JP_BiasSpeech.SentMatches( dwSentMode );
 
 			item = &dest[ i++ ];
 			wcsncpy( item->menuname, L"#IME_NoConversion", sizeof( item->menuname ) / sizeof( wchar_t ) );
-			item->handleValue = (int)&g_SentenceMode_JP_None;
+			item->handleValue = (uintp)&g_SentenceMode_JP_None;
 			item->active = g_SentenceMode_JP_None.SentMatches( dwSentMode );
 		}
 		return 4;
@@ -2665,7 +2665,7 @@ int CInputSystem::GetIMESentenceModes( SentenceModeItem *dest, int destcount )
 	return 0;
 }
 
-void CInputSystem::OnChangeIMEConversionModeByHandle( int handleValue )
+void CInputSystem::OnChangeIMEConversionModeByHandle( uintp handleValue )
 {
 	ASSERT_IF_IME_NYI();
 
@@ -2678,7 +2678,7 @@ void CInputSystem::OnChangeIMEConversionModeByHandle( int handleValue )
 #endif
 }
 
-void CInputSystem::OnChangeIMESentenceModeByHandle( int handleValue )
+void CInputSystem::OnChangeIMESentenceModeByHandle( uintp handleValue )
 {
 }
 
