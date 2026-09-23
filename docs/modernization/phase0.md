@@ -99,16 +99,40 @@ scripts/tests-macos-amd64.sh
 Existing CI workflows: `.github/workflows/build.yml` (i386 + amd64
 Windows/Linux/Android), `tests.yml`, and now `lint.yml`.
 
-### Warning-count baseline (TODO during Phase 2 start)
+### Warning-count baseline (recorded — Phase 2 Stage 1)
 
-Snapshot the compiler warning count so it cannot regress:
+Measured on a **clean full MSVC x64 `-T debug` rebuild at `7667fe09`**
+(2026-09-23), file-redirect capture (PS 5.1-safe):
 
 ```powershell
-./waf.bat build -j 8 2>&1 | Select-String -Pattern 'warning [CW]\d+' |
+cmd /c '.\waf.bat clean'
+cmd /c '.\waf.bat build -j 8 > fullbuild.log 2>&1'
+Select-String -Path fullbuild.log -Pattern 'warning [CW]\d+' |
     Measure-Object | Select-Object -ExpandProperty Count
 ```
 
-Record the number here when first measured, and ratchet it down.
+| metric | count |
+|---|---:|
+| total `warning C/W` | **27,809** |
+| C4311 (pointer truncation) — Gate 2 subtotal | **92** |
+| C4302 (signed/unsigned pointer loss) — Gate 2 subtotal | **0** |
+| C4312 (int → pointer of greater size) | 27,699 |
+| C4291 / C4477 / C4273 / C4838 | 11 / 3 / 3 / 1 |
+
+Root causes (scoping detail: [phase2.md](phase2.md)):
+
+- **27,626 of the 27,699 C4312 come from one line** —
+  `public/tier1/utlmemory.h:440`'s `reinterpret_cast` from `unsigned int`
+  to `T *`, instantiated once per `CUtlMemory` use site. Stage 5's sweep
+  collapses the total from ~27.8k to ~183 with that single fix.
+- **68 of the 92 C4311s live in the pinned `ivp` submodule** (physics
+  object pointers cast to `long`); the other 24 are first-party
+  (`vgui2/src/InputWin32.cpp` 19, `gameui/Sys_Utils.cpp` 2, and one each
+  in `voice_mixer_controls`, `baseentity`, `vguimatsurface/Input`).
+
+Ratchet rules: the total must never exceed **27,809** and must fall as
+Stages 3–5 land; **Gate 2 additionally requires the C4311+C4302 subtotal
+to reach 0** on a clean full rebuild.
 
 ## 3. Runtime smoke checklist (manual, requires game content)
 
