@@ -147,6 +147,56 @@ Same workflow as Phase 1a: patch →
    documented per decision 2; smoke checklist items 6, 11, 12 executed
    against HL2 content and recorded in `phase0.md` §3.
 
+## Stage 2 execution notes (32-bit target removal)
+
+**`wscript`** (7 removals, guarded by an `ast.parse` syntax check): the
+`-4/--32bits` option; the `TARGET32` → `MSVC_TARGETS = ['x86']` branch
+(base line re-commented to x64-only); the `BIT32_MANDATORY` assignment
+plus the `force_32bit` tool load; and four x86-only flag arms — `'x86'`
+dropped from the `-march=core2` and `-mfpmath=sse` lists (now
+`== 'x86_64'`, byte-identical behavior for every surviving platform),
+the `/arch:SSE` ternary collapsed to plain `/arch:AVX` (the string x64
+already received), and the `DEST_CPU == 'x86'` → `COMPILER_MSVC32`
+define (never fires on x64 — the source-side `#ifdef COMPILER_MSVC32`
+guards stay inert and untouched, a possible later source sweep with no
+Gate 2 coverage need).
+
+**CI: 7 jobs deleted** — `build-linux-i386`, `build-windows-i386`,
+`build-dedicated-linux-i386`, `build-dedicated-windows-i386`
+(confirmed duplicate: byte-identical `-T debug -d` command to its amd64
+twin, so the "i386" name was simply wrong), `build-android-armv7a`
+(decision 1), `tests-linux-i386`, `tests-windows-i386` (its configure
+was the last `--32bits` invocation outside docs). Six 64-bit build jobs
+and three test jobs remain — this commit's CI run exercises exactly
+that matrix.
+
+**Scripts**: deleted `build-ubuntu-i386.sh`, `tests-ubuntu-i386.sh`,
+`build-android-armv7a.sh`, and `waifulib/force_32bit.py` (its only
+loader was the removed wscript branch — a 32-bit enforcement tool with
+no consumer left). `deploy.sh` de-i386'd: no
+`dpkg --add-architecture i386`, no `:i386` package qualifiers, no i386
+`PKG_CONFIG_PATH` — native amd64 packages and a plain configure.
+
+**Docs**: `phase0.md` §2's "32-bit (current default …)" block was
+stale — the wscript default was always x64 — so the 64-bit block is now
+the only block, and the script/CI lists were updated to the
+64-bit-only reality.
+
+Verification: `--32bits` survives only as historical mentions in
+`phase0.md` / `phase2.md` / one wscript comment; `TARGET32` /
+`BIT32_MANDATORY` / `force_32bit` / deleted-script names = docs-only;
+`i386` across `.github/**` + `scripts/**` = **0**; wscript parses;
+lint **PASS** (10 ids, every baseline untouched); reconfigure success
+(`Target CPU: amd64`, "Testing 64bit support: yes"); full build green
+(8m20s) with the warning total **exactly 27,809 — no regression**
+(C4311/C4302 still 92, Stage 5's worklist).
+
+Kept deliberately: waf's `xcompile.py` / `--android` tooling
+(infrastructure with no CI consumer now), XP-era
+`MSVC_SUBSYSTEM = 'WINDOWS,5.01'` (not gate-critical), the amd64 `masm`
+load (`.asm` sources are not inline `__asm`), and all aarch64/arm flag
+handling (decision 3's 64-bit-only reading).
+
 ## Gate 2 completion criteria
 
 - CI matrix is 64-bit-only (no i386, no armv7 Android) and green;

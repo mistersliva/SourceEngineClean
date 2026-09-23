@@ -290,9 +290,6 @@ def define_platform(conf):
 def options(opt):
 	grp = opt.add_option_group('Common options')
 
-	grp.add_option('-4', '--32bits', action = 'store_true', dest = 'TARGET32', default = False,
-		help = 'allow targetting 32-bit engine(Linux/Windows/OSX x86 only) [default: %default]')
-
 	grp.add_option('-d', '--dedicated', action = 'store_true', dest = 'DEDICATED', default = False,
 		help = 'build dedicated server [default: %default]')
 
@@ -445,9 +442,7 @@ def configure(conf):
 	# subsystem=bld.env.MSVC_SUBSYSTEM
 	# TODO: wrapper around bld.stlib, bld.shlib and so on?
 	conf.env.MSVC_SUBSYSTEM = 'WINDOWS,5.01'
-	conf.env.MSVC_TARGETS = ['x64'] # explicitly request x86 target for MSVC
-	if conf.options.TARGET32:
-		conf.env.MSVC_TARGETS = ['x86']
+	conf.env.MSVC_TARGETS = ['x64'] # 64-bit-only: Phase 2 removed the --32bits option
 
 	if sys.platform == 'win32':
 		conf.load('msvc_pdb_ext msdev msvs msvcdeps')
@@ -456,11 +451,6 @@ def configure(conf):
 		conf.load('masm')
 	elif conf.env.DEST_OS == 'darwin':
 		conf.load('mm_hook')
-
-	conf.env.BIT32_MANDATORY = conf.options.TARGET32
-	if conf.env.BIT32_MANDATORY:
-		Logs.info('WARNING: will build engine for 32-bit target')
-		conf.load('force_32bit')
 
 	define_platform(conf)
 
@@ -523,10 +513,10 @@ def configure(conf):
 		]
 
 		flags += ['-funwind-tables', '-g']
-	elif conf.env.COMPILER_CC != 'msvc' and conf.env.DEST_OS != 'darwin' and conf.env.DEST_CPU in ['x86', 'x86_64']:
+	elif conf.env.COMPILER_CC != 'msvc' and conf.env.DEST_OS != 'darwin' and conf.env.DEST_CPU == 'x86_64':
 		flags += ['-march=core2']
 
-	if conf.env.DEST_CPU in ['x86', 'x86_64']:
+	if conf.env.DEST_CPU == 'x86_64':
 		flags += ['-mfpmath=sse']
 	elif conf.env.DEST_CPU in ['arm', 'aarch64']:
 		flags += ['-fsigned-char']
@@ -543,7 +533,7 @@ def configure(conf):
 	else:
 		cflags += [
 			'/I'+os.path.abspath('.')+'/thirdparty/SDL',
-			'/arch:SSE' if conf.env.DEST_CPU == 'x86' else '/arch:AVX',
+			'/arch:AVX',
 			'/GF',
 			'/Gy',
 			'/fp:fast',
@@ -587,9 +577,7 @@ def configure(conf):
 	elif conf.env.COMPILER_CC == 'msvc':
 		conf.define('COMPILER_MSVC', 1)
 		conf.define('MSVC', 1)
-		if conf.env.DEST_CPU == 'x86':
-			conf.define('COMPILER_MSVC32', 1)
-		elif conf.env.DEST_CPU in ['x86_64', 'amd64']:
+		if conf.env.DEST_CPU in ['x86_64', 'amd64']:
 			conf.define('COMPILER_MSVC64', 1)
 
 	if conf.env.COMPILER_CC != 'msvc':

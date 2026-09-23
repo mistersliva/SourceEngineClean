@@ -70,11 +70,8 @@ git submodule init && git submodule update
 Windows (waf):
 
 ```powershell
-# 32-bit (current default - keep green until Phase 2 removes it)
-./waf.bat configure -T debug --32bits
-./waf.bat build
-
-# 64-bit (must stay green; this becomes the only target in Phase 2)
+# 64-bit (the only target since Phase 2 removed --32bits; 32-bit used to be
+# `configure -T debug --32bits` and was neither the default nor supported)
 ./waf.bat configure -T debug
 ./waf.bat build
 ```
@@ -82,22 +79,19 @@ Windows (waf):
 Linux / macOS (existing scripts, also used by CI):
 
 ```
-scripts/build-ubuntu-i386.sh
 scripts/build-ubuntu-amd64.sh
-scripts/build-android-armv7a.sh
 scripts/build-macos-amd64.sh
 ```
 
 Existing test scripts (also used by CI):
 
 ```
-scripts/tests-ubuntu-i386.sh
 scripts/tests-ubuntu-amd64.sh
 scripts/tests-macos-amd64.sh
 ```
 
-Existing CI workflows: `.github/workflows/build.yml` (i386 + amd64
-Windows/Linux/Android), `tests.yml`, and now `lint.yml`.
+Existing CI workflows: `.github/workflows/build.yml` (64-bit
+Windows/Linux/macOS), `tests.yml`, and now `lint.yml`.
 
 ### Warning-count baseline (recorded — Phase 2 Stage 1)
 
