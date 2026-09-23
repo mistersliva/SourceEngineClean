@@ -566,7 +566,7 @@ inline void CAlignedMemPool<ITEM_SIZE, ALIGNMENT, CHUNK_SIZE, CAllocator, GROWMO
 		{
 			if ( p->pNext && p > p->pNext )
 			{
-				__asm { int 3 }
+				DebuggerBreak()
 			}
 			p = p->pNext;
 		}
@@ -577,7 +577,7 @@ inline void CAlignedMemPool<ITEM_SIZE, ALIGNMENT, CHUNK_SIZE, CAllocator, GROWMO
 			{
 				if ( m_Chunks[i] > m_Chunks[i + 1] )
 				{
-					__asm { int 3 }
+					DebuggerBreak()
 				}
 			}
 		}

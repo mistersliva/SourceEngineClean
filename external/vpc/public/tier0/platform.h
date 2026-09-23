@@ -675,8 +675,6 @@ typedef void * HINSTANCE;
 //-----------------------------------------------------------------------------
 #ifdef COMPILER_MSVC64
 	#define DebuggerBreak()		__debugbreak()
-#elif COMPILER_MSVC32
-	#define DebuggerBreak()		__asm { int 3 }
 #elif COMPILER_MSVCX360
 	#define DebuggerBreak()		DebugBreak()
 #elif COMPILER_GCC
@@ -843,111 +841,9 @@ typedef int socklen_t;
 //#define CHECK_FLOAT_EXCEPTIONS		1
 //#define CHECK_FPU_CONTROL_WORD_SET	1	// x360 only
 
-#if defined( COMPILER_MSVC64 )
-
 	inline void SetupFPUControlWord()
 	{
 	}
-
-#elif defined ( COMPILER_MSVC32 )
-
-	inline void SetupFPUControlWordForceExceptions()
-	{
-		// use local to get and store control word
-		uint16 tmpCtrlW;
-		__asm
-		{
-			fnclex						/* clear all current exceptions */
-			fnstcw word ptr [tmpCtrlW]	/* get current control word */
-			and [tmpCtrlW], 0FCC0h		/* Keep infinity control + rounding control */
-			or [tmpCtrlW], 0230h		/* set to 53-bit, mask only inexact, underflow */
-			fldcw word ptr [tmpCtrlW]	/* put new control word in FPU */
-		}
-	}
-
-	#ifdef CHECK_FLOAT_EXCEPTIONS
-
-		inline void SetupFPUControlWord()
-		{
-			SetupFPUControlWordForceExceptions();
-		}
-
-	#else
-
-		inline void SetupFPUControlWord()
-		{
-			// use local to get and store control word
-			uint16 tmpCtrlW;
-			__asm
-			{
-				fnstcw word ptr [tmpCtrlW]	/* get current control word */
-				and [tmpCtrlW], 0FCC0h		/* Keep infinity control + rounding control */
-				or [tmpCtrlW], 023Fh		/* set to 53-bit, mask only inexact, underflow */
-				fldcw word ptr [tmpCtrlW]	/* put new control word in FPU */
-			}
-		}
-
-	#endif
-
-#elif defined ( COMPILER_GCC )
-
-// Works for PS3 
-	inline void SetupFPUControlWord()
-	{
-		__volatile unsigned short int __cw;
-		__asm __volatile ("fnstcw %0" : "=m" (__cw));
-		__cw = __cw & 0x0FCC0;	// keep infinity control, keep rounding mode
-		__cw = __cw | 0x023F;	// set 53-bit, no exceptions
-		__asm __volatile ("fldcw %0" : : "m" (__cw));
-	}
-
-#elif defined ( COMPILER_SNC )
-
-// Works for PS3 
-	inline void SetupFPUControlWord()
-	{
-		__volatile unsigned short int __cw;
-		__asm __volatile ("fnstcw %0" : "=m" (__cw));
-		__cw = __cw & 0x0FCC0;	// keep infinity control, keep rounding mode
-		__cw = __cw | 0x023F;	// set 53-bit, no exceptions
-		__asm __volatile ("fldcw %0" : : "m" (__cw));
-	}
-
-#elif defined( COMPILER_MSVCX360 )
-
-	#ifdef CHECK_FPU_CONTROL_WORD_SET
-		FORCEINLINE bool IsFPUControlWordSet()
-		{
-			float f = 0.996f;
-			union
-			{
-				double flResult;
-				int pResult[2];
-			};
-			flResult = __fctiw( f );
-			return ( pResult[1] == 1 );
-		}
-	#else
-		#define IsFPUControlWordSet() 1
-	#endif
-
-	inline void SetupFPUControlWord()
-	{
-		// Set round-to-nearest in FPSCR
-		// (cannot assemble, must use op-code form)
-		__emit( 0xFF80010C );	// mtfsfi  7,0
-
-		// Favour compatibility over speed (make sure the VPU set to Java-compliant mode)
-		// NOTE: the VPU *always* uses round-to-nearest
-			__vector4  a = { 0.0f, 0.0f, 0.0f, 0.0f };
-			a;				//	Avoid compiler warning
-			__asm
-		{
-			mtvscr a;	// Clear the Vector Status & Control Register to zero
-		}
-	}
-
-#endif // COMPILER_MSVCX360
 
 
 
@@ -1008,36 +904,6 @@ inline T DWordSwapC( T dw )
 		__storewordbytereverse( dw, 0, &output );
 		return output;
 	}
-
-#elif defined( COMPILER_MSVC32 )
-
-	#define WordSwap  WordSwapAsm
-	#define DWordSwap DWordSwapAsm
-
-	#pragma warning(push)
-	#pragma warning (disable:4035) // no return value
-
-	template <typename T>
-	inline T WordSwapAsm( T w )
-	{
-	   __asm
-	   {
-		  mov ax, w
-		  xchg al, ah
-	   }
-	}
-
-	template <typename T>
-	inline T DWordSwapAsm( T dw )
-	{
-	   __asm
-	   {
-		  mov eax, dw
-		  bswap eax
-	   }
-	}
-
-	#pragma warning(pop)
 
 #else
 

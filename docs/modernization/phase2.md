@@ -197,6 +197,116 @@ Kept deliberately: waf's `xcompile.py` / `--android` tooling
 load (`.asm` sources are not inline `__asm`), and all aarch64/arm flag
 handling (decision 3's 64-bit-only reading).
 
+## Stage 3 execution notes (`inline_asm` 127 → 0)
+
+**Method.** The 127 hits were classified by walking each site's full
+`#if`/`#elif`/`#else` guard stack rather than by text pattern, then every
+edit was specified as a line range plus verbatim substring assertions on
+the surrounding directives. One two-phase Python script applied them:
+phase 1 re-reads each target file and checks every assertion against the
+**pristine** source, refusing to write *anything* unless all **95 edits
+across 31 files** verify; phase 2 then applies each file's edits
+descending by line so earlier line numbers stay valid. The phase split is
+the point — it converts line drift from a silent mis-edit into an abort.
+
+Three classes of edit:
+
+* **dead-everywhere blocks** (the majority): i386-only arms behind
+  `_WIN32 && !_WIN64`, `_M_IX86`, `__i386__`, `PLATFORM_WINDOWS_PC32` or
+  `COMPILER_MSVC32` — all false on every 64-bit target — deleted, with the
+  now-constant guard unwrapped to whichever arm survives;
+* **GNU-syntax asm that still assembles on x64** (`luaconf.h`'s
+  `lua_number2int` trick): replaced with C or intrinsics, because the lint
+  id counts these even where a GNU toolchain would accept them;
+* **comment-resident / `#if 0` corpses**: deleted wholesale with their
+  enclosing dead region.
+
+**Notable calls, with rationale.**
+
+* `ThreadPause()` (`public/tier0/threadtools.h`) now calls `_mm_pause()`,
+  reached through a new guarded include:
+  `#if !defined(_MSC_VER) && (defined(__i386__) || defined(__x86_64__))` →
+  `<immintrin.h>` (MSVC already gets it via the existing `<intrin.h>`
+  under `COMPILER_MSVC64`). `__builtin_ia32_pause` was the first choice
+  and was rejected: Clang treats it as an unknown builtin (curl issue
+  #9058), so it would have broken the Linux/macOS CI jobs. `_mm_pause()`
+  is guaranteed and is already this repo's idiom
+  (`thirdparty/SDL-src/src/atomic/SDL_spinlock.c`), so the GCC and MSVC64
+  arms share it. The `#elif defined(POSIX)` → `sched_yield()` arm is
+  retained so macOS **arm64** still compiles (no x86 intrinsic there);
+  the MSVC32 / X360 arms are gone.
+* `SetupFPUControlWord()` (`public/tier0/platform.h:790`) collapses from a
+  7-branch x87/GCC/Clang ladder to an empty body. Justification: the
+  `COMPILER_MSVC64` arm was *already* a no-op, `CHECK_FLOAT_EXCEPTIONS`
+  is commented out at the call site's own `#define`, and on x86-64 GCC/
+  Clang use SSE (`-mfpmath=sse`) for `float`/`double`, so the x87 control
+  word it was twiddling does not govern any arithmetic that survives.
+* `tier0/cpumonitoring.cpp` loses its entire `#ifdef PLATFORM_WINDOWS_PC32`
+  implementation (360 lines) plus the closing `#endif`; only the `#else`
+  stubs remain and the file is now 37 lines. `PLATFORM_WINDOWS_PC32` is
+  defined *only* in the `_WIN32 && !_WIN64` branch of `platform.h`, so
+  that code was dead on every 64-bit target and the stubs are what has
+  always linked.
+* `engine/audio/snd_mix.cpp`: four `#if !id386` wrappers unwrapped —
+  `id386` is unconditionally 0 on x64, so the C path was already the only
+  path taken (behavior-preserving, no audio change).
+* `tier0/memdbg.cpp`: the `USE_STACK_WALK` region goes — that macro is
+  commented out in the same file, so the stack-walking arm never built.
+* `utils/vmpi/vmpi_launch.cpp`: the rdtsc `__asm` became
+  `CCycleCount::Sample()/GetMicroseconds()` (mirrors `vmpi.cpp`), plus a
+  `tier0/fasttimer.h` include.
+* `external/vpc/tier0/threadtools.cpp`'s `xchgl` lock became
+  `__sync_lock_test_and_set()`, matching how the GNU arm already worked.
+
+**One apply-script defect, found and repaired (recorded for honesty).**
+Three of the 95 edits deleted an `#else`…`#endif` **tail** while leaving
+the parent `#if defined(_WIN64)` in place — `tier0/threadtools.cpp` edit 4
+and `external/vpc/tier0/threadtools.cpp` edits 3 and 4. Each lost its
+`#endif`, and MSVC aborted the tier0 compile with
+`C1070: mismatched #if/#endif pair`. The verification I had done asserted
+the *start* and *end* directives of each range but never counted directive
+*balance inside* it; that is the hole the bug got through. A standalone
+balance checker over all 31 edited files found exactly those three (extra
+`#if`s are reported as unclosed entries; a stray `#endif` anywhere would
+also have been reported, and none was — so the three were provably the
+complete set). The repair deletes just the stranded `#if defined(_WIN64)`
+line in each case, identified structurally by its unmistakable shape —
+`#if defined(_WIN64)` / `return …` / `}` with no `#endif` before the
+brace. That leaves the `return` unconditional, which is correct on a
+64-bit-only build since `_WIN64` is the only arm that was ever taken.
+Re-running the balance checker afterwards reports **0 unbalanced across
+all 31 files**.
+
+**Residue deliberately left (out of lint scope).** The lint pattern
+requires `{` on the *same* line as `_asm`, so it does not see MSVC's
+`_asm` + newline + `{` form. 21 such lines survive in first-party source
+(`dedicated/sys_ded.cpp`, `tier0/cpu.cpp`, `tier1/processor_detect.cpp` ×5,
+`engine/sys_dll2.cpp`, `studiorender/r_studiodraw.cpp` ×3,
+`game/server/hl2/npc_manhack.cpp`, `public/mathlib/mathlib.h`,
+`public/tier0/{K8,P4}PerformanceCounters.h`, `mathlib/sse.cpp` ×3, plus
+their `external/vpc` twins). Every one sits inside a guard that excludes
+Win64 — baseline CI is green with them present — so they compile nowhere
+in the 64-bit matrix; they are Stage 5/6-adjacent cleanup, not Gate 2
+blockers. `ivp/**` and `thirdparty/**` also contain `__asm` but are
+outside the lint scope entirely (vendored / pinned), same as before.
+
+**Stage 3 verification.**
+
+* lint: `inline_asm` = **0** (was 127); all nine other ids untouched.
+* preprocessor balance: **0 unbalanced across all 31 edited files**.
+* full x64 build green, 7m27s, **0 errors**, 2214/2214 tasks.
+* warning total **27,739** — at or below the ratchet. (It is not directly
+  comparable to the 27,809 baseline because this build *skipped* `ivp`:
+  waf keys staleness on md5, and no header `ivp` includes was among the
+  edited set, so ivp's objects were reused and its warnings never
+  re-emitted. Forcing an ivp-only rebuild measured its profile exactly —
+  **70 warnings, all of them 68 × C4311 + 2 × C4312, zero other codes,
+  zero errors** — and 27,739 + 70 = **27,809**, the baseline to the digit.
+  Per-code: first-party C4311 24/24 and C4312 27,697/27,697 are unchanged,
+  and C4291/C4477/C4273/C4838 stay 11/3/3/1. So Stage 3 introduced **no
+  new warnings anywhere**: the deleted code was never compiled on 64-bit,
+  so removing it could not move the count either way.)
+
 ## Gate 2 completion criteria
 
 - CI matrix is 64-bit-only (no i386, no armv7 Android) and green;

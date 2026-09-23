@@ -408,7 +408,13 @@ typedef void * HINSTANCE;
 #   define DebuggerBreak()  raise(SIGTRAP)
 #  endif
 # else
-#  define DebuggerBreak()  do { if ( Plat_IsInDebugSession() ) { __asm ( "int $3" ); } else { raise(SIGTRAP); } } while(0)
+#  ifdef __clang__
+#   define DebuggerBreak()  do { if ( Plat_IsInDebugSession() ) { __builtin_debugtrap(); } else { raise(SIGTRAP); } } while(0)
+#  elif defined __GNUC__
+#   define DebuggerBreak()  do { if ( Plat_IsInDebugSession() ) { __builtin_trap(); } else { raise(SIGTRAP); } } while(0)
+#  else
+#   define DebuggerBreak()  raise(SIGTRAP)
+#  endif
 # endif
 #else
 # define DebuggerBreak()  raise(SIGTRAP)
@@ -781,64 +787,9 @@ static FORCEINLINE double fsel(double fComparand, double fValGE, double fLT)
 //-----------------------------------------------------------------------------
 //#define CHECK_FLOAT_EXCEPTIONS		1
 
-#if defined( _MSC_VER )
-
-	#if defined( PLATFORM_WINDOWS_PC64 )
-		inline void SetupFPUControlWord()
-		{
-		}
-	#else
-		inline void SetupFPUControlWordForceExceptions()
-		{
-			// use local to get and store control word
-			uint16 tmpCtrlW;
-			__asm
-			{
-				fnclex						/* clear all current exceptions */
-				fnstcw word ptr [tmpCtrlW]	/* get current control word */
-				and [tmpCtrlW], 0FCC0h		/* Keep infinity control + rounding control */
-				or [tmpCtrlW], 0230h		/* set to 53-bit, mask only inexact, underflow */
-				fldcw word ptr [tmpCtrlW]	/* put new control word in FPU */
-			}
-		}
-
-		#ifdef CHECK_FLOAT_EXCEPTIONS
-
-			inline void SetupFPUControlWord()
-			{
-				SetupFPUControlWordForceExceptions();
-			}
-
-		#else
-
-			inline void SetupFPUControlWord()
-			{
-				// use local to get and store control word
-				uint16 tmpCtrlW;
-				__asm
-				{
-					fnstcw word ptr [tmpCtrlW]	/* get current control word */
-					and [tmpCtrlW], 0FCC0h		/* Keep infinity control + rounding control */
-					or [tmpCtrlW], 023Fh		/* set to 53-bit, mask only inexact, underflow */
-					fldcw word ptr [tmpCtrlW]	/* put new control word in FPU */
-				}
-			}
-
-		#endif
-	#endif
-#elif defined (__arm__) || defined (__aarch64__)
-	inline void SetupFPUControlWord() {}
-#else
-	inline void SetupFPUControlWord()
-	{
-		__volatile unsigned short int __cw;
-		__asm __volatile ("fnstcw %0" : "=m" (__cw));
-		__cw = __cw & 0x0FCC0;	// keep infinity control, keep rounding mode
-		__cw = __cw | 0x023F;	// set 53-bit, no exceptions
-		__asm __volatile ("fldcw %0" : : "m" (__cw));
-	}
-
-#endif // _MSC_VER
+inline void SetupFPUControlWord()
+{
+}
 
 
 //-----------------------------------------------------------------------------
@@ -899,42 +850,8 @@ inline T QWordSwapC( T dw )
 // Fast swaps
 //-------------------------------------
 
-#if defined(_MSC_VER) && !(defined(PLATFORM_WINDOWS_PC64))
-
-	#define WordSwap  WordSwapAsm
-	#define DWordSwap DWordSwapAsm
-
-	#pragma warning(push)
-	#pragma warning (disable:4035) // no return value
-
-	template <typename T>
-	inline T WordSwapAsm( T w )
-	{
-	   __asm
-	   {
-		  mov ax, w
-		  xchg al, ah
-	   }
-	}
-
-	template <typename T>
-	inline T DWordSwapAsm( T dw )
-	{
-	   __asm
-	   {
-		  mov eax, dw
-		  bswap eax
-	   }
-	}
-
-	#pragma warning(pop)
-
-#else
-
-	#define WordSwap  WordSwapC
-	#define DWordSwap DWordSwapC
-
-#endif
+#define WordSwap  WordSwapC
+#define DWordSwap DWordSwapC
 
 // No ASM implementation for this yet
 #define QWordSwap QWordSwapC
@@ -1103,13 +1020,6 @@ inline uint64 Plat_Rdtsc()
 	return t.tv_sec * 1000000000ULL + t.tv_nsec;
 #elif defined( _WIN64 )
 	return ( uint64 )__rdtsc();
-#elif defined( _WIN32 )
-  #if defined( _MSC_VER ) && ( _MSC_VER >= 1400 )
-	return ( uint64 )__rdtsc();
-  #else
-    __asm rdtsc;
-	__asm ret;
-  #endif
 #elif defined( __i386__ )
 	uint64 val;
 	__asm__ __volatile__ ( "rdtsc" : "=A" (val) );

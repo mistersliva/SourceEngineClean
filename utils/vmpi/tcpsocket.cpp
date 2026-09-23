@@ -519,7 +519,7 @@ public:
 			{
 				// This case should never ever happen!
 #if defined( _DEBUG )
-					__asm int 3;
+					DebuggerBreak();
 #endif
 
 				SetConnectionLost( "Received too much data in a packet!" );

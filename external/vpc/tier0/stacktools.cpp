@@ -147,80 +147,6 @@ inline bool ValidStackAddress( void *pAddress, const void *pNoLessThan, const vo
 int GetCallStack_Fast( void **pReturnAddressesOut, int iArrayCount, int iSkipCount )
 {
 	//Only tested in windows. This function won't work with frame pointer omission enabled. "vpc /nofpo" all projects
-#if (defined(TIER0_FPO_DISABLED) || defined(_DEBUG)) && (defined(WIN32))
-	void *pStackCrawlEBP;
-	__asm
-	{
-		mov [pStackCrawlEBP], ebp;
-	}
-
-	/*
-	With frame pointer omission disabled, this should be the pattern all the way up the stack
-	[ebp+00]   Old ebp value
-	[ebp+04]   Return address
-	*/
-
-	void *pNoLessThan = pStackCrawlEBP; //impossible for a valid stack to traverse before this address
-	int i;
-
-	CStackTop_FriendFuncs *pTop = (CStackTop_FriendFuncs *)(CStackTop_Base *)g_StackTop;
-	if( pTop != NULL ) //we can do fewer error checks if we have a valid reference point for the top of the stack
-	{		
-		void *pNoGreaterThan = pTop->m_pStackBase;
-
-		//skips
-		for( i = 0; i != iSkipCount; ++i )
-		{
-			if( (pStackCrawlEBP < pNoLessThan) || (pStackCrawlEBP > pNoGreaterThan) )
-				return AppendParentStackTrace( pReturnAddressesOut, iArrayCount, 0 );
-
-			pNoLessThan = pStackCrawlEBP;
-			pStackCrawlEBP = *(void **)pStackCrawlEBP; //should be pointing at old ebp value
-		}
-
-		//store
-		for( i = 0; i != iArrayCount; ++i )
-		{
-			if( (pStackCrawlEBP < pNoLessThan) || (pStackCrawlEBP > pNoGreaterThan) )
-				break;
-
-			pReturnAddressesOut[i] = *((void **)pStackCrawlEBP + 1);
-
-			pNoLessThan = pStackCrawlEBP;
-			pStackCrawlEBP = *(void **)pStackCrawlEBP; //should be pointing at old ebp value
-		}
-
-		return AppendParentStackTrace( pReturnAddressesOut, iArrayCount, i );
-	}
-	else
-	{
-		void *pNoGreaterThan = ((unsigned char *)pNoLessThan) + (1024 * 1024); //standard stack is 1MB. TODO: Get actual stack end address if available since this check isn't foolproof	
-
-		//skips
-		for( i = 0; i != iSkipCount; ++i )
-		{
-			if( !ValidStackAddress( pStackCrawlEBP, pNoLessThan, pNoGreaterThan ) )
-				return AppendParentStackTrace( pReturnAddressesOut, iArrayCount, 0 );
-
-			pNoLessThan = pStackCrawlEBP;
-			pStackCrawlEBP = *(void **)pStackCrawlEBP; //should be pointing at old ebp value
-		}
-
-		//store
-		for( i = 0; i != iArrayCount; ++i )
-		{
-			if( !ValidStackAddress( pStackCrawlEBP, pNoLessThan, pNoGreaterThan ) )
-				break;
-
-			pReturnAddressesOut[i] = *((void **)pStackCrawlEBP + 1);
-
-			pNoLessThan = pStackCrawlEBP;
-			pStackCrawlEBP = *(void **)pStackCrawlEBP; //should be pointing at old ebp value
-		}
-
-		return AppendParentStackTrace( pReturnAddressesOut, iArrayCount, i );
-	}
-#endif
 
 	return 0;
 }
@@ -1433,19 +1359,8 @@ CStackTop_CopyParentStack::CStackTop_CopyParentStack( void * const *pParentStack
 {
 #if defined( ENABLE_RUNTIME_STACK_TRANSLATION )
 	//miniature version of GetCallStack_Fast()
-#if (defined(TIER0_FPO_DISABLED) || defined(_DEBUG)) && (defined(WIN32))
-	void *pStackCrawlEBP;
-	__asm
-	{
-		mov [pStackCrawlEBP], ebp;
-	}
-	pStackCrawlEBP = *(void **)pStackCrawlEBP;
-	m_pReplaceAddress = *((void **)pStackCrawlEBP + 1);
-	m_pStackBase = (void *)((void **)pStackCrawlEBP + 1);
-#else
 	m_pReplaceAddress = NULL;
 	m_pStackBase = this;
-#endif
 
 	m_pParentStackTrace = NULL;
 
@@ -1490,19 +1405,8 @@ CStackTop_ReferenceParentStack::CStackTop_ReferenceParentStack( void * const *pP
 {
 #if defined( ENABLE_RUNTIME_STACK_TRANSLATION )
 	//miniature version of GetCallStack_Fast()
-#if (defined(TIER0_FPO_DISABLED) || defined(_DEBUG)) && (defined(WIN32))
-	void *pStackCrawlEBP;
-	__asm
-	{
-		mov [pStackCrawlEBP], ebp;
-	}
-	pStackCrawlEBP = *(void **)pStackCrawlEBP;
-	m_pReplaceAddress = *((void **)pStackCrawlEBP + 1);
-	m_pStackBase = (void *)((void **)pStackCrawlEBP + 1);
-#else
 	m_pReplaceAddress = NULL;
 	m_pStackBase = this;
-#endif
 
 	m_pParentStackTrace = pParentStackTrace;
 

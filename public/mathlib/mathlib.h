@@ -1208,7 +1208,7 @@ FORCEINLINE unsigned long RoundFloatToUnsignedLong(float f)
 {
 #if defined(__arm__) || defined(__aarch64__)
         return (unsigned long)(f + 0.5f);
-#elif defined( PLATFORM_WINDOWS_PC64 )
+#else
 	uint nRet = ( uint ) f;
 	if ( nRet & 1 )
 	{
@@ -1225,22 +1225,6 @@ FORCEINLINE unsigned long RoundFloatToUnsignedLong(float f)
 		}
 	}
 	return nRet;
-#else // PLATFORM_WINDOWS_PC64
-	unsigned char nResult[8];
-
-	#if defined( _WIN32 )
-		__asm
-		{
-			fld f
-			fistp       qword ptr nResult
-		}
-	#elif POSIX
-		__asm __volatile__ (
-			"fistpl %0;": "=m" (nResult): "t" (f) : "st"
-		);
-	#endif
-
-		return *((unsigned long*)nResult);
 #endif // PLATFORM_WINDOWS_PC64
 }
 

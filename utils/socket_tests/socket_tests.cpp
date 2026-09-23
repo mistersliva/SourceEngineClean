@@ -23,7 +23,7 @@
 		#undef assert
 	#endif
 
-	#define assert(x)	if ( !x ) __asm int 3;
+	#define assert(x)	if ( !x ) DebuggerBreak();
 #else
 	#define assert(x)
 #endif

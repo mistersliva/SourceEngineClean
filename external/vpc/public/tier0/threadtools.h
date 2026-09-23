@@ -44,6 +44,10 @@
 #include <intrin.h>
 #endif
 
+#if !defined(_MSC_VER) && (defined(__i386__) || defined(__x86_64__))
+#include <immintrin.h>
+#endif
+
 // #define THREAD_PROFILER 1
 
 #define THREAD_MUTEX_TRACING_SUPPORTED
@@ -133,17 +137,10 @@ inline void ThreadPause()
 {
 #if defined( COMPILER_PS3 )
 	__db16cyc();
-#elif defined( COMPILER_GCC )
-	__asm __volatile( "pause" );
+#elif defined( COMPILER_GCC ) && (defined( __i386__ ) || defined( __x86_64__ ))
+	_mm_pause();
 #elif defined ( COMPILER_MSVC64 )
 	_mm_pause();
-#elif defined( COMPILER_MSVC32 )
-	__asm pause;
-#elif defined( COMPILER_MSVCX360 )
-	YieldProcessor(); 
-	__asm { or r0,r0,r0 } 
-	YieldProcessor(); 
-	__asm { or r1,r1,r1 } 
 #else
 #error "implement me"
 #endif
@@ -190,15 +187,7 @@ inline int32 ThreadInterlockedDecrement( int32 volatile *p )
 inline int32 ThreadInterlockedExchange( int32 volatile *p, int32 value )
 {
 	Assert( (size_t)p % 4 == 0 );
-	int32 nRet;
-
-	// Note: The LOCK instruction prefix is assumed on the XCHG instruction and GCC gets very confused on the Mac when we use it.
-	__asm __volatile(
-		"xchgl %2,(%1)"
-		: "=r" (nRet)
-		: "r" (p), "0" (value)
-		: "memory");
-	return nRet;
+	return __sync_lock_test_and_set( p, value );
 }
 
 inline int32 ThreadInterlockedExchangeAdd( int32 volatile *p, int32 value )

@@ -5,7 +5,7 @@
     "fn3dnow":  0,
     "dx_to_gl_abstraction":  215,
     "win32_long_no_ptr":  63,
-    "inline_asm":  127,
+    "inline_asm":  0,
     "d3d9_com_types":  924,
     "suspicious_ptr_cast":  45,
     "local_minmax_macro":  6

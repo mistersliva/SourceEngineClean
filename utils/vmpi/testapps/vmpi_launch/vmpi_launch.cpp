@@ -12,6 +12,7 @@
 #include "iphelpers.h"
 #include "bitbuf.h"
 #include "vmpi.h"
+#include "tier0/fasttimer.h"
 
 bool g_bBroadcast = false;
 
@@ -27,13 +28,9 @@ int GetCurMicrosecondsAndSleep( int sleepLen )
 {
 	Sleep( sleepLen );
 
-	int retVal;
-	__asm
-	{
-		rdtsc
-		mov		retVal,   eax
-	}
-	return retVal;
+	CCycleCount cnt;
+	cnt.Sample();
+	return cnt.GetMicroseconds();
 }
 
 

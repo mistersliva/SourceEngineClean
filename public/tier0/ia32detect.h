@@ -132,21 +132,6 @@ public:
 #ifdef COMPILER_MSVC64
 			__cpuid((int *) (d + (i-1) * 4), i);
 
-#else
-			uint32 *t = d + (i - 1) * 4;
-
-			__asm
-			{
-				mov	eax, i;
-				mov esi, t;
-
-				cpuid;
-
-				mov dword ptr [esi + 0x0], eax;
-				mov dword ptr [esi + 0x4], ebx;
-				mov dword ptr [esi + 0x8], ecx;
-				mov dword ptr [esi + 0xC], edx;
-			}
 #endif
 		}
 
@@ -285,17 +270,6 @@ private:
 		{
 #ifdef COMPILER_MSVC64
 			__cpuid((int *) d, 2);
-#else
-			__asm
-			{
-				mov	eax, 2;
-				lea esi, d;
-				cpuid;
-				mov [esi + 0x0], eax;
-				mov [esi + 0x4], ebx;
-				mov [esi + 0x8], ecx;
-				mov [esi + 0xC], edx;
-			}
 #endif
 
 			if (i == 0)
@@ -332,13 +306,6 @@ private:
 		int data[4];
 		__cpuid(data, 0x80000000);
 		m = data[0];
-#else
-		__asm
-		{
-			mov	eax, 0x80000000;
-			cpuid;
-			mov m, eax
-		}
 #endif
 
 		if ((m & 0x80000000) != 0)
@@ -351,17 +318,6 @@ private:
 
 #ifdef COMPILER_MSVC64
 				__cpuid((int *) (d + (i - 0x80000001) * 4), i);
-#else
-				__asm
-				{
-					mov	eax, i;
-					mov	esi, t;
-					cpuid;
-					mov dword ptr [esi + 0x0], eax;
-					mov dword ptr [esi + 0x4], ebx;
-					mov dword ptr [esi + 0x8], ecx;
-					mov dword ptr [esi + 0xC], edx;
-				}
 #endif
 			}
 

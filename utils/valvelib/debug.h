@@ -29,11 +29,7 @@ BOOL AssertFailedLine(LPCSTR lpszFileName, int nLine);
 void Trace(PRINTF_FORMAT_STRING LPCTSTR lpszFormat, ...);
 
 // by default, debug break is asm int 3, or a call to DebugBreak, or nothing
-#if defined(_M_IX86)
-#define CustomDebugBreak() _asm { int 3 }
-#else
 #define CustomDebugBreak() DebugBreak()
-#endif
 
 #define TRACE              ::Trace
 #define THIS_FILE          __FILE__

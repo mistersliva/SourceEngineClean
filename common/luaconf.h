@@ -553,34 +553,11 @@
 ** in C is extremely slow, so any alternative is worth trying.
 */
 
-/* On a Pentium, resort to a trick */
-#if defined(LUA_NUMBER_DOUBLE) && !defined(LUA_ANSI) && !defined(__SSE2__) && \
-    (defined(__i386) || defined (_M_IX86) || defined(__i386__))
-
-/* On a Microsoft compiler, use assembler */
-#if defined(_MSC_VER)
-
-#define lua_number2int(i,d)   __asm fld d   __asm fistp i
-#define lua_number2integer(i,n)		lua_number2int(i, n)
-
-/* the next trick should work on any Pentium, but sometimes clashes
-   with a DirectX idiosyncrasy */
-#else
-
-union luai_Cast { double l_d; long l_l; };
-#define lua_number2int(i,d) \
-  { volatile union luai_Cast u; u.l_d = (d) + 6755399441055744.0; (i) = u.l_l; }
-#define lua_number2integer(i,n)		lua_number2int(i, n)
-
-#endif
-
-
-/* this option always works, but may be slow */
-#else
+/* Portable double -> integer conversions. The Pentium-specific
+** inline-assembler and union tricks were removed: neither is valid
+** for a 64-bit-only build, and these macros have no expansion sites. */
 #define lua_number2int(i,d)	((i)=(int)(d))
 #define lua_number2integer(i,d)	((i)=(lua_Integer)(d))
-
-#endif
 
 /* }================================================================== */
 

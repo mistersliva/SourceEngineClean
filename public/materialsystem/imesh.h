@@ -1155,32 +1155,7 @@ inline void CVertexBuilder::FastVertex( const ModelVertexDX7_t &vertex )
 	Assert( m_CompressionType == VERTEX_COMPRESSION_NONE ); // FIXME: support compressed verts if needed
 	Assert( m_nCurrentVertex < m_nMaxVertexCount );
 
-#if defined(_WIN32)
-	const void *pRead = &vertex;
-	void *pCurrPos = m_pCurrPosition;
-
-	__asm
-	{
-		mov esi, pRead
-			mov edi, pCurrPos
-
-			movq mm0, [esi + 0]
-		movq mm1, [esi + 8]
-		movq mm2, [esi + 16]
-		movq mm3, [esi + 24]
-		movq mm4, [esi + 32]
-		movq mm5, [esi + 40]
-
-		movntq [edi + 0], mm0
-			movntq [edi + 8], mm1
-			movntq [edi + 16], mm2
-			movntq [edi + 24], mm3
-			movntq [edi + 32], mm4
-			movntq [edi + 40], mm5
-
-			emms
-	}
-#elif defined(GNUC)
+#if defined(GNUC)
 	const void *pRead = &vertex;
 	void *pCurrPos = m_pCurrPosition;
 	__asm__ __volatile__ (
@@ -1217,23 +1192,7 @@ inline void CVertexBuilder::FastVertexSSE( const ModelVertexDX7_t &vertex )
 	Assert( m_CompressionType == VERTEX_COMPRESSION_NONE ); // FIXME: support compressed verts if needed
 	Assert( m_nCurrentVertex < m_nMaxVertexCount );
 
-#if defined(_WIN32) && !(defined(PLATFORM_64BITS))
-	const void *pRead = &vertex;
-	void *pCurrPos = m_pCurrPosition;
-	__asm
-	{
-		mov esi, pRead
-			mov edi, pCurrPos
-
-			movaps xmm0, [esi + 0]
-		movaps xmm1, [esi + 16]
-		movaps xmm2, [esi + 32]
-
-		movntps [edi + 0], xmm0
-			movntps [edi + 16], xmm1
-			movntps [edi + 32], xmm2
-	}
-#elif defined(GNUC) || defined(PLATFORM_WINDOWS_PC64)
+#if defined(GNUC) || defined(PLATFORM_WINDOWS_PC64)
 	const char *pRead = (char *)&vertex;
 	char *pCurrPos = (char *)m_pCurrPosition;
 	__m128 m1 = _mm_load_ps( (float *)pRead );
@@ -1264,49 +1223,7 @@ inline void CVertexBuilder::Fast4VerticesSSE(
 	Assert( m_CompressionType == VERTEX_COMPRESSION_NONE ); // FIXME: support compressed verts if needed
 	Assert( m_nCurrentVertex < m_nMaxVertexCount-3 );
 
-#if defined(_WIN32) && !(defined(PLATFORM_64BITS))
-	void *pCurrPos = m_pCurrPosition;
-	__asm
-	{
-		mov esi, vtx_a
-			mov ecx, vtx_b
-
-			mov edi, pCurrPos
-			nop
-
-			movaps xmm0, [esi + 0]
-		movaps xmm1, [esi + 16]
-		movaps xmm2, [esi + 32]
-		movaps xmm3, [ecx + 0]
-		movaps xmm4, [ecx + 16]
-		movaps xmm5, [ecx + 32]
-
-		mov esi, vtx_c
-			mov ecx, vtx_d
-
-			movntps [edi + 0], xmm0
-			movntps [edi + 16], xmm1
-			movntps [edi + 32], xmm2
-			movntps [edi + 48], xmm3
-			movntps [edi + 64], xmm4
-			movntps [edi + 80], xmm5
-
-			movaps xmm0, [esi + 0]
-		movaps xmm1, [esi + 16]
-		movaps xmm2, [esi + 32]
-		movaps xmm3, [ecx + 0]
-		movaps xmm4, [ecx + 16]
-		movaps xmm5, [ecx + 32]
-
-		movntps [edi + 0+96], xmm0
-			movntps [edi + 16+96], xmm1
-			movntps [edi + 32+96], xmm2
-			movntps [edi + 48+96], xmm3
-			movntps [edi + 64+96], xmm4
-			movntps [edi + 80+96], xmm5
-
-	}
-#elif defined(__arm__) || defined(PLATFORM_WINDOWS_PC64)
+#if defined(__arm__) || defined(PLATFORM_WINDOWS_PC64)
 	const void *pReadA = &vtx_a;
 	const void *pReadB = &vtx_b;
 	const void *pReadC = &vtx_c;
@@ -1357,35 +1274,7 @@ inline void CVertexBuilder::FastVertex( const ModelVertexDX8_t &vertex )
 	Assert( m_CompressionType == VERTEX_COMPRESSION_NONE ); // FIXME: support compressed verts if needed
 	Assert( m_nCurrentVertex < m_nMaxVertexCount );
 
-#if defined(_WIN32)
-	const void *pRead = &vertex;
-	void *pCurrPos = m_pCurrPosition;
-	__asm
-	{
-		mov esi, pRead
-			mov edi, pCurrPos
-
-			movq mm0, [esi + 0]
-		movq mm1, [esi + 8]
-		movq mm2, [esi + 16]
-		movq mm3, [esi + 24]
-		movq mm4, [esi + 32]
-		movq mm5, [esi + 40]
-		movq mm6, [esi + 48]
-		movq mm7, [esi + 56]
-
-		movntq [edi + 0], mm0
-			movntq [edi + 8], mm1
-			movntq [edi + 16], mm2
-			movntq [edi + 24], mm3
-			movntq [edi + 32], mm4
-			movntq [edi + 40], mm5
-			movntq [edi + 48], mm6
-			movntq [edi + 56], mm7
-
-			emms
-	}
-#elif defined(GNUC)
+#if defined(GNUC)
 	const void *pRead = &vertex;
 	void *pCurrPos = m_pCurrPosition;
 	__asm__ __volatile__ (
@@ -1427,25 +1316,7 @@ inline void CVertexBuilder::FastVertexSSE( const ModelVertexDX8_t &vertex )
 	Assert( m_CompressionType == VERTEX_COMPRESSION_NONE ); // FIXME: support compressed verts if needed
 	Assert( m_nCurrentVertex < m_nMaxVertexCount );
 
-#if defined(_WIN32) && !(defined(PLATFORM_64BITS))
-	const void *pRead = &vertex;
-	void *pCurrPos = m_pCurrPosition;
-	__asm
-	{
-		mov esi, pRead
-			mov edi, pCurrPos
-
-			movaps xmm0, [esi + 0]
-		movaps xmm1, [esi + 16]
-		movaps xmm2, [esi + 32]
-		movaps xmm3, [esi + 48]
-
-		movntps [edi + 0], xmm0
-			movntps [edi + 16], xmm1
-			movntps [edi + 32], xmm2
-			movntps [edi + 48], xmm3
-	}
-#elif defined(GNUC) || defined(PLATFORM_WINDOWS_PC64)
+#if defined(GNUC) || defined(PLATFORM_WINDOWS_PC64)
 	const void *pRead = &vertex;
 	void *pCurrPos = m_pCurrPosition;
 

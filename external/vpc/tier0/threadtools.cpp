@@ -1229,19 +1229,7 @@ bool ThreadInterlockedAssignIf( int32 volatile *pDest, int32 value, int32 comper
 {
 	Assert( (size_t)pDest % 4 == 0 );
 
-#if !((defined(_WIN64)))
-	__asm 
-	{
-		mov	eax,comperand
-		mov	ecx,pDest
-		mov edx,value
-		lock cmpxchg [ecx],edx 
-		mov eax,0
-		setz al
-	}
-#else
 	return ( InterlockedCompareExchange( TO_INTERLOCK_PARAM(pDest), value, comperand ) == comperand );
-#endif
 }
 
 #endif
@@ -1262,19 +1250,7 @@ void *ThreadInterlockedCompareExchangePointer( void * volatile *pDest, void *val
 bool ThreadInterlockedAssignPointerIf( void * volatile *pDest, void *value, void *comperand )
 {
 	Assert( (size_t)pDest % 4 == 0 );
-#if !((defined(_WIN64)))
-	__asm 
-	{
-		mov	eax,comperand
-		mov	ecx,pDest
-		mov edx,value
-		lock cmpxchg [ecx],edx 
-		mov eax,0
-		setz al
-	}
-#else
 	return ( InterlockedCompareExchangePointer( TO_INTERLOCK_PTR_PARAM(pDest), value, comperand ) == comperand );
-#endif
 }
 #endif
 
@@ -1282,46 +1258,14 @@ int64 ThreadInterlockedCompareExchange64( int64 volatile *pDest, int64 value, in
 {
 	Assert( (size_t)pDest % 8 == 0 );
 
-#if defined(_WIN64)
 	return InterlockedCompareExchange64( pDest, value, comperand );
-#else
-	__asm 
-	{
-		lea esi,comperand;
-		lea edi,value;
-
-		mov eax,[esi];
-		mov edx,4[esi];
-		mov ebx,[edi];
-		mov ecx,4[edi];
-		mov esi,pDest;
-		lock CMPXCHG8B [esi];			
-	}
-#endif
 }
 
 bool ThreadInterlockedAssignIf64(volatile int64 *pDest, int64 value, int64 comperand ) 
 {
 	Assert( (size_t)pDest % 8 == 0 );
 
-#if defined(_WIN64)
 	return ( ThreadInterlockedCompareExchange64( pDest, value, comperand ) == comperand ); 
-#else
-	__asm
-	{
-		lea esi,comperand;
-		lea edi,value;
-
-		mov eax,[esi];
-		mov edx,4[esi];
-		mov ebx,[edi];
-		mov ecx,4[edi];
-		mov esi,pDest;
-		lock CMPXCHG8B [esi];			
-		mov eax,0;
-		setz al;
-	}
-#endif
 }
 
 #elif defined(GNUC)

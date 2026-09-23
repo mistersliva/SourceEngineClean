@@ -574,19 +574,6 @@ private:
             m_eax = fnSet | fn;
             m_ecx = 0;
             Cpuid64(this);
-        #else
-        __asm
-            {
-            mov ecx, 0
-            mov eax, fn
-            or  eax, fnSet
-            cpuid
-            mov edi, this
-            mov [edi].m_eax, eax
-            mov [edi].m_ebx, ebx
-            mov [edi].m_ecx, ecx
-            mov [edi].m_edx, edx
-            }
 #endif
     }
 

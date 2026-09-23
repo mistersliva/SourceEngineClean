@@ -327,28 +327,8 @@ size_t Q_log2( unsigned int val );
 // Math routines done in optimized assembly math package routines
 void inline SinCos( float radians, float * RESTRICT sine, float * RESTRICT cosine )
 {
-#if defined(COMPILER_MSVC32)
-	_asm
-	{
-		fld		DWORD PTR [radians]
-		fsincos
-
-		mov edx, DWORD PTR [cosine]
-		mov eax, DWORD PTR [sine]
-
-		fstp DWORD PTR [edx]
-		fstp DWORD PTR [eax]
-	}
-#elif defined( GNUC )
-	register double __cosr, __sinr;
- 	__asm __volatile__ ("fsincos" : "=t" (__cosr), "=u" (__sinr) : "0" (radians));
-
-  	*sine = __sinr;
-  	*cosine = __cosr;
-#else
 	*sine = sinf(radians);
 	*cosine = cosf(radians);
-#endif
 }
 
 #define SIN_TABLE_SIZE	256
@@ -1189,19 +1169,7 @@ inline float SimpleSplineRemapValClamped( float val, float A, float B, float C, 
 FORCEINLINE int RoundFloatToInt(float f)
 {
 	int nResult;
-#if defined( COMPILER_MSVC32 )
-	__asm
-	{
-		fld f
-		fistp nResult
-	}
-#elif GNUC
-	__asm __volatile__ (
-		"fistpl %0;": "=m" (nResult): "t" (f) : "st"
-	);
-#else
 	nResult = static_cast<int>(f);
-#endif
 	return nResult;
 }
 
@@ -1210,19 +1178,7 @@ FORCEINLINE unsigned char RoundFloatToByte(float f)
 	
 	int nResult;
 
-#if defined( COMPILER_MSVC32 )
-	__asm
-	{
-		fld f
-		fistp nResult
-	}
-#elif GNUC
-	__asm __volatile__ (
-		"fistpl %0;": "=m" (nResult): "t" (f) : "st"
-	);
-#else
 	nResult = static_cast<unsigned int> (f) & 0xff;
-#endif
 
 #ifdef Assert
 	Assert( nResult >= 0 && nResult <= 255 );
@@ -1234,23 +1190,7 @@ FORCEINLINE unsigned char RoundFloatToByte(float f)
 FORCEINLINE unsigned long RoundFloatToUnsignedLong(float f)
 {
 	
-#if defined( COMPILER_MSVC32 )
-	unsigned char nResult[8];
-	__asm
-	{
-		fld f
-		fistp       qword ptr nResult
-	}
-	return *((unsigned long*)nResult);
-#elif defined( COMPILER_GCC )
-	unsigned char nResult[8];
-	__asm __volatile__ (
-		"fistpl %0;": "=m" (nResult): "t" (f) : "st"
-	);
-	return *((unsigned long*)nResult);
-#else
 	return static_cast<unsigned long>(f);
-#endif
 
 }
 
@@ -1265,24 +1205,7 @@ FORCEINLINE int Float2Int( float a )
 	
 	int RetVal;
 
-#if defined( COMPILER_MSVC32 )
-	int CtrlwdHolder;
-	int CtrlwdSetter;
-	__asm 
-	{
-		fld    a					// push 'a' onto the FP stack
-		fnstcw CtrlwdHolder		// store FPU control word
-		movzx  eax, CtrlwdHolder	// move and zero extend word into eax
-		and    eax, 0xFFFFF3FF	// set all bits except rounding bits to 1
-		or     eax, 0x00000C00	// set rounding mode bits to round towards zero
-		mov    CtrlwdSetter, eax	// Prepare to set the rounding mode -- prepare to enter plaid!
-		fldcw  CtrlwdSetter		// Entering plaid!
-		fistp  RetVal				// Store and converted (to int) result
-		fldcw  CtrlwdHolder		// Restore control word
-	}
-#else
 	RetVal = static_cast<int>( a );
-#endif
 
 	return RetVal;
 }
@@ -1294,21 +1217,6 @@ inline int Floor2Int( float a )
 
 #if defined( PLATFORM_PPC )
 	RetVal = (int)floor( a );
-#elif defined( COMPILER_MSVC32 )
-   int CtrlwdHolder;
-   int CtrlwdSetter;
-   __asm 
-   {
-      fld    a					// push 'a' onto the FP stack
-      fnstcw CtrlwdHolder		// store FPU control word
-      movzx  eax, CtrlwdHolder	// move and zero extend word into eax
-      and    eax, 0xFFFFF3FF	// set all bits except rounding bits to 1
-      or     eax, 0x00000400	// set rounding mode bits to round down
-      mov    CtrlwdSetter, eax	// Prepare to set the rounding mode -- prepare to enter plaid!
-      fldcw  CtrlwdSetter		// Entering plaid!
-      fistp  RetVal				// Store floored and converted (to int) result
-      fldcw  CtrlwdHolder		// Restore control word
-   }
 #else
 	RetVal = static_cast<int>( floor(a) );
 #endif
@@ -1348,21 +1256,6 @@ inline int Ceil2Int( float a )
 
 #if defined( PLATFORM_PPC )
 	RetVal = (int)ceil( a );
-#elif defined( COMPILER_MSVC32 )
-   int CtrlwdHolder;
-   int CtrlwdSetter;
-   __asm 
-   {
-      fld    a					// push 'a' onto the FP stack
-      fnstcw CtrlwdHolder		// store FPU control word
-      movzx  eax, CtrlwdHolder	// move and zero extend word into eax
-      and    eax, 0xFFFFF3FF	// set all bits except rounding bits to 1
-      or     eax, 0x00000800	// set rounding mode bits to round down
-      mov    CtrlwdSetter, eax	// Prepare to set the rounding mode -- prepare to enter plaid!
-      fldcw  CtrlwdSetter		// Entering plaid!
-      fistp  RetVal				// Store floored and converted (to int) result
-      fldcw  CtrlwdHolder		// Restore control word
-   }
 #else
 	RetVal = static_cast<int>( ceil(a) );
 #endif

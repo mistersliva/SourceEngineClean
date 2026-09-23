@@ -55,6 +55,10 @@ extern "C"
 #include <intrin.h>
 #endif
 
+#if !defined(_MSC_VER) && (defined(__i386__) || defined(__x86_64__))
+#include <immintrin.h>
+#endif
+
 // #define THREAD_PROFILER 1
 
 #define THREAD_MUTEX_TRACING_SUPPORTED
@@ -176,18 +180,11 @@ inline void ThreadPause()
 #if defined( COMPILER_PS3 )
 	__db16cyc();
 #elif defined( COMPILER_GCC ) && (defined( __i386__ ) || defined( __x86_64__ ))
-	__asm __volatile( "pause" );
+	_mm_pause();
 #elif defined( POSIX )
         sched_yield();
 #elif defined ( COMPILER_MSVC64 )
 	_mm_pause();
-#elif defined( COMPILER_MSVC32 )
-	__asm pause;
-#elif defined( COMPILER_MSVCX360 )
-	YieldProcessor(); 
-	__asm { or r0,r0,r0 } 
-	YieldProcessor(); 
-	__asm { or r1,r1,r1 } 
 #else
 #error "implement me"
 #endif

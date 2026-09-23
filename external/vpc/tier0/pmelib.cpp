@@ -440,13 +440,6 @@ double PME::GetCPUClockSpeedSlow(void)
     // read timestamp (you could use QueryPerformanceCounter in hires mode if you want)
 #ifdef COMPILER_MSVC64 
     RDTSC(start_tsc);
-#else
-    __asm
-    {
-        rdtsc
-        mov dword ptr [start_tsc+0],eax
-        mov dword ptr [start_tsc+4],edx
-    }
 #endif
 
     // wait for end
@@ -456,13 +449,6 @@ double PME::GetCPUClockSpeedSlow(void)
     // read timestamp (you could use QueryPerformanceCounter in hires mode if you want)
 #ifdef COMPILER_MSVC64
     RDTSC(stop_tsc);
-#else
-    __asm
-    {
-        rdtsc
-        mov dword ptr [stop_tsc+0],eax
-        mov dword ptr [stop_tsc+4],edx
-    }
 #endif
 
 

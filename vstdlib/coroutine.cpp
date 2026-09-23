@@ -211,9 +211,7 @@ static const int k_cubMaxCoroutineStackSize = (32 * 1024);
 extern "C" byte *GetStackPtr64();
 #define GetStackPtr( pStackPtr)		byte *pStackPtr = GetStackPtr64();
 #else
-#ifdef WIN32
-#define GetStackPtr( pStackPtr )	byte *pStackPtr;	__asm mov pStackPtr, esp	
-#elif defined(GNUC)
+#if defined(GNUC)
 // Apple's version of gcc/g++ doesn't return the expected value using the intrinsic, so 
 // do it the old fashioned way - this will also use asm on linux (since we don't compile
 // with llvm/clang there) but that seems fine.
@@ -626,21 +624,6 @@ bool Internal_Coroutine_Continue( HCoroutine hCoroutine, const char *pchDebugMsg
 
 	bool bInCoroutineAlready = GCoroutineMgr().IsAnyCoroutineActive();
 
-#ifdef _WIN32
-#ifndef _WIN64
-	// make sure nobody has a try/catch block and then yielded
-	// because we hate that and we will crash
-	uint32 topofexceptionchain;
-	__asm mov eax, dword ptr fs:[0]
-	__asm mov topofexceptionchain, eax
-	if ( GCoroutineMgr().m_topofexceptionchain == 0 )
-		GCoroutineMgr().m_topofexceptionchain = topofexceptionchain;
-	else
-	{
-		Assert( topofexceptionchain == GCoroutineMgr().m_topofexceptionchain );
-	}
-#endif
-#endif
 
 	// start the new coroutine
 	GCoroutineMgr().SetActiveCoroutine( hCoroutine );
@@ -858,21 +841,6 @@ void Coroutine_YieldToMain()
 	CCoroutine &coroutine = GCoroutineMgr().GetActiveCoroutine();
 	CoroutineDbgMsg( g_fmtstr.sprintf( "Coroutine_YieldToMain() %s#%x -> %s#%x\n", coroutine.m_pchName, coroutine.m_hCoroutine, coroutinePrev.m_pchName, coroutinePrev.m_hCoroutine ) );
 
-#ifdef _WIN32
-#ifndef _WIN64
-	// make sure nobody has a try/catch block and then yielded
-	// because we hate that and we will crash
-	uint32 topofexceptionchain;
-	__asm mov eax, dword ptr fs:[0]
-	__asm mov topofexceptionchain, eax
-		if ( GCoroutineMgr().m_topofexceptionchain == 0 )
-			GCoroutineMgr().m_topofexceptionchain = topofexceptionchain;
-		else
-		{
-			Assert( topofexceptionchain == GCoroutineMgr().m_topofexceptionchain );
-		}
-#endif
-#endif
 
 	RW_MEMORY_BARRIER;
 	int iResult = setjmp( coroutine.GetRegisters() );

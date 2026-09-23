@@ -318,20 +318,6 @@ inline void CCycleCount::Sample()
 		: /* no output regs */
 	: "D" (tmp.pSample)
 		: "%eax", "%edx" );
-#elif defined( _WIN32 )
-	unsigned long* pSample = (unsigned long *)&m_Int64;
-	__asm
-	{
-		// force the cpu to synchronize the instruction queue
-		// NJS: CPUID can really impact performance in tight loops.
-		//cpuid
-		//cpuid
-		//cpuid
-		mov		ecx, pSample
-		rdtsc
-		mov		[ecx], eax
-		mov		[ecx+4], edx
-	}
 #elif defined( POSIX )
 	unsigned long* pSample = (unsigned long *)&m_Int64;
     __asm__ __volatile__ (  
