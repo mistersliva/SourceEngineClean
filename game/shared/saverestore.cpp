@@ -1284,7 +1284,8 @@ bool CSave::WriteGameField( const char *pname, void *pData, datamap_t *pRootMap,
 			WriteString( pField->fieldName, (string_t *)pData, pField->fieldSize );
 			break;
 
-		// For now, just write the address out, we're not going to change memory while doing this yet!
+		// Serialize the function's name (UTIL_FunctionToName), not its address:
+		// ReadFunction resolves the name back on load, so this is arch-independent.
 		case FIELD_FUNCTION:
 			WriteFunction( pRootMap, pField->fieldName, (inputfunc_t **)(char *)pData, pField->fieldSize );
 			break;

@@ -900,7 +900,18 @@ int CSaveRestore::SaveReadHeader( FileHandle_t pFile, GAME_HEADER *pHeader, int 
 
 	if ( tag != SAVEGAME_VERSION )				// Enforce version for now
 	{
-		Warning( "Can't load saved game, incorrect version (got %i expecting %i)\n", tag, SAVEGAME_VERSION );
+		if ( tag == SAVEGAME_VERSION_BASE )
+		{
+			// Right format revision but no 64-bit stamp: a 32-bit save (or one
+			// written before saves were stamped). It embeds native-width pointer
+			// records, so it cannot be restored here - and there is no migration
+			// path (docs/modernization/phase2.md, Stage 6).
+			Warning( "Can't load saved game: this save was written by a 32-bit build (or before saves were stamped for 64-bit) and cannot be restored by this 64-bit build; start a new game.\n" );
+		}
+		else
+		{
+			Warning( "Can't load saved game, incorrect version (got %i expecting %i)\n", tag, SAVEGAME_VERSION );
+		}
 		return 0;
 	}
 
