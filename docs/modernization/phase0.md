@@ -128,6 +128,19 @@ Ratchet rules: the total must never exceed **27,809** and must fall as
 Stages 3–5 land; **Gate 2 additionally requires the C4311+C4302 subtotal
 to reach 0** on a clean full rebuild.
 
+**Gate 2 measurement (2026-09-24).** A clean full MSVC x64 rebuild at
+`6641b4ca` under `-T release` emits **11** warnings: C4311 **0**,
+C4302 **0**, C4312 **1**, plus C4789 4, C4273 3, C4477 2, C4838 1 —
+0 errors. The MSVC gate config is now `-T release` (retail-equivalent,
+already CI-covered by `tests.yml`): the previous `-T debug` config maps
+to `/Od /MTd`, and `/MTd` defines `_DEBUG`, which compiles Valve assert
+dialogs in — the first worker thread then trips
+`tier0/minidump.cpp:423` (ReThrow wrapper, `threadtools.inl`) and blocks
+boot on any Windows debug build, so debug cannot be the *running* config
+until a follow-up `fix:` commit removes that blocker. `-T debug`
+(`19` warnings at Gate 5) remains what `build.yml` compiles. The 27,809
+ceiling still holds.
+
 ## 3. Runtime smoke checklist (manual, requires game content)
 
 The engine repository alone cannot boot; a content mod (e.g. Half-Life 2)
@@ -161,6 +174,32 @@ Phase 3 additions:
 14. Screenshot comparison vs the DX9 baseline for: `d1_trainstation_01`
     (worldcraft props), `d2_coast_01` (water/reflection), a particle-heavy
     scene, and the HUD/font rendering.
+
+### Results
+
+**2026-09-24 — Gate 2 run.** Build config: MSVC x64 `-T release` at
+`6641b4ca`, deployed to the mount `D:\SourceEngine-Clean\game\` (run via
+`game\run_hl2_x64.bat`: `-console -condebug -novid`).
+
+- **6. PASS** — `save smoke64` / `load smoke64` round trip on
+  `d1_trainstation_01`; `save\smoke64.sav` header =
+  `4A 53 41 56 73 80 00 00` (JSAV + 0x8073, arch-stamped). Evidence:
+  `game\hl2\save\smoke64.sav`, session in `game\hl2\console.log`.
+- **11. PASS** — `dumpbin /headers` sweep of all 27 deployed binaries
+  (`game\bin\*.dll`, `game\hl2\bin\*.dll`, `hl2_launcher.exe`):
+  27/27 `8664 machine (x64)`, 0 x86, 0 failures.
+- **12. PASS** — staged `save\start.sav` (JSAV, version 0x0073 unstamped)
+  rejected at `SaveReadHeader` with the tailored "written by a 32-bit
+  build" warning, followed by `Save file save\start.sav is not valid`.
+  The intermediate `Map 'gamestate.txt' missing or invalid` line is the
+  known uninitialized-`gameHeader` defect (record-only,
+  `host_saverestore.cpp`). Evidence: `game\hl2\console_smoke12.log`.
+
+Content note: 78 of the 79 mounted campaign maps are valid VBSP v20;
+`d2_coast_02.bsp` is 0 bytes **in the source copies themselves**
+(pre-existing content hole — the engine rejects it cleanly with
+`map load failed: d2_coast_02 not found or invalid`). `d2_coast_01.bsp`,
+needed for checklist 14, is valid (21.8 MB).
 
 ## 4. Phase gates (definition of done)
 

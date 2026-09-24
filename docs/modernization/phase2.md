@@ -602,3 +602,12 @@ documented" clause, by recording why there is deliberately no migration.
 - save/load works on x64 (checklist 6 + 11); x86-save incompatibility
   documented (checklist 12);
 - warning-count baseline recorded in `phase0.md` §2 and not regressed.
+
+**Status: MET, 2026-09-24 at `6641b4ca`.** CI 6/6 green and 64-bit-only;
+lint both 0; clean `-T release` rebuild C4311 = 0, C4302 = 0 (total 11
+warnings, ceiling holds — config switch and rationale in
+`phase0.md` §2); save/load round trip passed with a 0x8073-stamped
+header (checklist 6); 27/27 binaries `8664` (checklist 11); x86-save
+rejection captured with the tailored warning (checklist 12,
+`console_smoke12.log`). Results and evidence paths recorded in
+`phase0.md` §3.
