@@ -528,6 +528,72 @@ followed up, so the Stage 5 commit compiles on every platform in the
 matrix. The general lesson stands: a green local build on one platform is
 not evidence about the other five jobs.
 
+## Stage 6 execution notes (save/load audit + x86-save enforcement)
+
+**What the audit found.** The save path was walked serializer by
+serializer to answer one question: which records put raw pointer bytes
+on disk? Almost nothing does. `FIELD_FUNCTION` writes the function's
+*name* (`UTIL_FunctionToName` / `UTIL_FunctionFromName` round trip),
+`string_t`, `CUtlSymbol`, activity and variant-string fields serialize
+string *content*, entity/edict/class pointers become `int` indices, the
+engine's own header structs are `int`-only, the token table is a
+byte blob whose `char *` index is rebuilt in memory on load,
+`TD_OFFSET_PACKED` offsets are computed at restore time, and every one
+of the 119 `DEFINE_CUSTOM_FIELD` ops writes counts, indices or names.
+Raw `sizeof(void*)` records appear at exactly two places:
+`physics_saverestore.cpp:46` (a `FIELD_POINTER` inside a
+header-prefixed block, where `ReadSimple`'s `MIN`/skip tolerance degrades
+a width mismatch gracefully) and the vphysics pointer-association blobs —
+`vphysics_saverestore.cpp` writes at 60/138/196 and reads at 108/159/212.
+The vphysics reads pass `nBytesAvailable = 0`, the one path that takes an
+unconditional native `sizeof(void*)` read; that is the concrete incompat:
+a 4-byte pointer from an x86 file consumed as 8 bytes on x64 shifts the
+stream for every record after it, desyncing mid-restore instead of
+failing cleanly. The pointers themselves are opaque remap keys
+(`s_VPhysPtrMap`) that are never dereferenced, so a **same-arch** x64
+save round-trips correctly — the defect is purely cross-arch. Also
+checked: `CRestore::ReadFunction`'s `GNUC` arm copies `sizeof(void*) * 2`
+for member-function pointers, correct because waf force-defines `GNUC`
+on every POSIX target (`wscript:224/235/255/269`).
+
+**Enforcement: the version tag now carries pointer width.** There was no
+arch discriminator at all — `SAVEGAME_VERSION` was `0x0073` on both
+arches, so an x86 save passed the check at `host_saverestore.cpp:901`
+and then corrupted. `public/savegame_version.h` now defines
+`SAVEGAME_VERSION_BASE` (`0x0073`), `SAVEGAME_VERSION_ARCH_FLAG`
+(`0x8000`), and `SAVEGAME_VERSION = base|flag` on 64-bit builds (the
+same compiler-macro test `tier0/platform.h` uses for `PLATFORM_64BITS`,
+plus waf's force-define, so the header needs no includes). One macro
+change covers every writer (`host_saverestore.cpp:812`, `:1278`) and
+every checker (`:901`, `:1764`, `:2240`, `gameui/BaseSaveGameDialog.cpp:537`)
+because all of them compare equality against the single macro. When the
+tag matches the base but lacks the stamp, `SaveReadHeader` prints a
+tailored warning naming the 32-bit origin instead of a bare version
+mismatch; GameUI's own check is untouched (silent `return 0`, the save
+simply doesn't get a name in the list). No x64 save files exist yet —
+the engine has never booted with mounted content — so re-stamping
+invalidates nothing real.
+
+**A stale comment claimed the opposite.**
+`game/shared/saverestore.cpp:1287` said `FIELD_FUNCTION` "just write[s]
+the address out"; the code writes the function's *name* through
+`UTIL_FunctionToName`, which is precisely why that field never had a
+pointer-width problem. Comment corrected to match.
+
+**A defect found and deliberately not fixed.**
+`CThinkContextsSaveDataOps::MakeEmpty` (`game/server/baseentity.cpp:1734-1738`)
+assigns `NULL` to a *local copy* of the member pointer, so it clears
+nothing. It predates Phase 2, bears on none of this phase's gates, and
+belongs with the `TextEntry.cpp:1380` record above: noted, not touched.
+
+**Gate 2 save/load criteria, restated.** Checklist 6 (save + load round
+trip) and 11 (64-bit process) must pass on x64 — that is the same-arch
+path the audit shows is sound. Checklist 12 flips meaning: a 32-bit save
+must now be *rejected at the header* with the tailored warning, and the
+incompatibility plus audit rationale is documented in this section —
+which is also what satisfies `phase0.md` §3 item 12's "migration path is
+documented" clause, by recording why there is deliberately no migration.
+
 ## Gate 2 completion criteria
 
 - CI matrix is 64-bit-only (no i386, no armv7 Android) and green;

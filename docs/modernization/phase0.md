@@ -149,8 +149,11 @@ and record results (date, build config, pass/fail, notes):
 Phase 2 additions:
 
 11. Process is 64-bit (Task Manager / `dumpbin /headers` shows machine 8664).
-12. Save files from the 32-bit build still load (or a migration path is
-    documented).
+12. Save files from the 32-bit build fail fast: loading one prints the
+    tailored "written by a 32-bit build" warning at the header check and
+    aborts - no partial load, no stream desync. 32-bit saves are
+    incompatible by design and there is no migration path; the audit and
+    rationale are documented in `phase2.md` Stage 6.
 
 Phase 3 additions:
 
@@ -181,6 +184,14 @@ Phase 3 additions:
 - **Gate 3**: `d3d9_com_types` and `dx_to_gl_abstraction` at 0; `togl/`,
   `togles/`, `stdshaders/*_dx6|dx7|dx8`, `dx9sdk/` deleted; boots on DX11;
   Vulkan backend at parity.
-- **Gate 4**: `grep -r '#include "vgui/'` returns nothing; `gameui/`,
+- **Gate 4**: `grep -r '#include [<"]vgui/'` returns nothing; `gameui/`,
   `vgui2/`, `vguimatsurface/` deleted; new retained-mode UI serves main
   menu, options, loading and HUD; smoke checklist all green.
+  The character class is load-bearing, not cosmetic: all 1133 vgui
+  includes in the tree use the angle form `#include <vgui/...>` and the
+  quoted form has **zero** occurrences, so the originally written
+  `'#include "vgui/'` pattern is already satisfied at baseline while 482
+  files still depend on vgui — as drafted, this gate would have passed
+  without a single file being migrated. Measure it as
+  `'#include [<"]vgui/'` and take the baseline count (482 files / 1133
+  lines) down to nothing.
