@@ -162,6 +162,15 @@ bool Unserialize( CUtlBuffer &buf, UniqueId_t &dest )
 	if ( buf.IsText() )
 	{
 		int nTextLen = buf.PeekStringLength();
+		if ( nTextLen <= 0 )
+		{
+			// Empty or exhausted text. GetStringManualCharCount() bails out on a length of 0
+			// before ever writing pBuf, and UniqueIdFromString() then treats a length of 0 as
+			// "strlen the input" - so it would strlen() an uninitialised stack buffer. Invalidate
+			// the id directly instead, which is exactly what parsing "" yields below.
+			InvalidateUniqueId( &dest );
+			return buf.IsValid();
+		}
 		char *pBuf = (char*)stackalloc( nTextLen );
 		buf.GetStringManualCharCount( pBuf, nTextLen );
 		UniqueIdFromString( &dest, pBuf, nTextLen );
