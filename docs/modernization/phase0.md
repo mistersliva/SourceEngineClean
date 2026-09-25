@@ -234,3 +234,13 @@ needed for checklist 14, is valid (21.8 MB).
   without a single file being migrated. Measure it as
   `'#include [<"]vgui/'` and take the baseline count (482 files / 1133
   lines) down to nothing.
+  Maintainer requirement (2026-09-25, verbatim): *"lets dont repeat
+  faults that valve made, new ui must be easy-replacable. i've heard
+  of UI Abstraction Layer, so its not implemented very deep like
+  vgui2."* Operationally: game and engine code talks to the new UI
+  only through a thin, toolkit-agnostic UI abstraction layer (views
+  and state in, user actions out); no toolkit types cross that
+  boundary, so the concrete implementation stays swappable without
+  re-plumbing call sites. The implementation must be retained-mode
+  (web-based or a modern retained-mode toolkit rendering over the new
+  DX11/Vulkan back end) — no immediate-mode UI such as dear imgui.
