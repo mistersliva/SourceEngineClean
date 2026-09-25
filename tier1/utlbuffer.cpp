@@ -839,6 +839,13 @@ void CUtlBuffer::GetDelimitedString( CUtlCharConversion *pConv, char *pString, i
 {
 	if ( !IsText() || !pConv )
 	{
+		if ( nMaxChars == 0 )
+		{
+			// 0 means "no limit" here as well - same as the text path below and the
+			// default argument declared in the header. GetString() requires
+			// nMaxChars > 0, so forwarding 0 through this path is a contract violation.
+			nMaxChars = INT_MAX;
+		}
 		GetString( pString, nMaxChars );
 		return;
 	}
