@@ -1386,7 +1386,6 @@ bool NET_ReceiveDatagram ( const int sock, netpacket_t * packet )
 	VPROF_BUDGET( "NET_ReceiveDatagram", VPROF_BUDGETGROUP_OTHER_NETWORKING );
 
 	Assert ( packet );
-	Assert ( net_multiplayer );
 
 	struct sockaddr	from;
 	int				fromlen = sizeof(from);
