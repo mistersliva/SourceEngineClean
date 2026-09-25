@@ -164,9 +164,6 @@ public:
 	virtual void EnableNonInteractiveMode( MaterialNonInteractiveMode_t mode, ShaderNonInteractiveInfo_t *pInfo );
 	virtual void RefreshFrontBufferNonInteractive();
 	virtual void HandleThreadEvent( uint32 threadEvent );
-#ifdef DX_TO_GL_ABSTRACTION
-	virtual void DoStartupShaderPreloading( void );
-#endif
 	virtual char *GetDisplayDeviceName();
 
 private:
@@ -957,11 +954,9 @@ void CShaderDeviceDx11::HandleThreadEvent( uint32 threadEvent )
 	// CreateDevice's re-create path instead.
 }
 
-#ifdef DX_TO_GL_ABSTRACTION
-void CShaderDeviceDx11::DoStartupShaderPreloading( void )
-{
-}
-#endif
+// DoStartupShaderPreloading is a GL-abstraction-only hook (declared in
+// IShaderDevice behind the fake-D3D9-over-GL define); this backend is
+// Windows/DX11 and never compiles it.
 
 char *CShaderDeviceDx11::GetDisplayDeviceName()
 {

@@ -293,6 +293,13 @@ Findings that shaped the procedure:
   sxe av; g; k; g; k; q"` (Debugging Tools, `build\engine\engine.pdb`
   resolves) pinned the first-chance AV to
   `CStudioRenderContext::R_StudioBuildMeshGroup → CMeshBuilder::Begin`.
+* **Lint counts tracked files only.** New sources are invisible to
+  `lint-legacy.ps1` until `git add`, so the first CI run caught two
+  fake-D3D9-over-GL define matches (a GL-only
+  `DoStartupShaderPreloading` stub copied from the DX9 device) that
+  local lint had passed as untracked. The stub is dead code in a
+  Windows-only backend and was deleted; from now on the loop's lint
+  step runs *after* staging.
 * **Expected Stage 3 visuals.** The menu UI draws as no-ops over the
   magenta clear (VGUI rasterization needs Stage 4 shaders + Stage 5
   resources), and `g_pShaderAPI->GetBackBufferDimensions()` still
