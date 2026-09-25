@@ -542,7 +542,10 @@ INLINE_ON_PS3 void* CThread::ThreadProc(LPVOID pv)
 	else
 	{
 #if defined( _WIN32 )
-		CatchAndWriteMiniDumpForVoidPtrFn( ThreadProcRunWithMinidumpHandler, pv, false );
+		// Rethrow is unimplemented - CatchAndWriteMiniDump_Impl asserts on it,
+		// which blocks boot in debug builds; Abort is behavior-identical here
+		// because the action has no consumer past that assert.
+		CatchAndWriteMiniDumpForVoidPtrFn( ThreadProcRunWithMinidumpHandler, pv, true );
 #else
 		pInit->pThread->m_result = pInit->pThread->Run();
 #endif
