@@ -199,6 +199,55 @@ the phase ends with both ids at **0**.
     baseline, recorded in `phase0.md` §3. Full lint green, warning
     baseline held, CI 6/6 green.
 
+## Stage 1 execution notes (baseline captures, 2026-09-25)
+
+Capture procedure (all four frames): script-driven boots of
+`hl2_launcher.exe` with `-condebug -windowed -noborder -novid -nojoy
++map <map>` (working directory `game\`), 140 s load + 15 s settle, a
+960x540 client-rect GDI `CopyFromScreen` capture, then `taskkill /F /T`
+with pre- and post-run verification that no `hl2*` process survives.
+
+Findings that shaped the procedure:
+
+* **Stale-instance forwarding.** `game\run_hl2_x64.bat` hardcodes its
+  argument list, and a leftover launcher could forward a later `+map`
+  into an already-running instance - early frames were contaminated
+  this way (a `d1_town_01a` shot differed from the clean spawn by 14.6).
+  Scripts invoke the launcher directly and kill-verify around every
+  boot.
+* **Joystick drift.** `JOY_AXIS_X/Y` map to Turn/Look and drifted the
+  view in early frames; every capture boot passes `-nojoy`.
+* **Input channels.** Synthetic `keybd_event` keys never reach the
+  engine even with the window verified foreground
+  (`GetForegroundWindow` = game hwnd). `PostMessage(WM_KEYDOWN/UP)` to
+  that hwnd *does*: a bound `echo` reached `console.log`, and bound
+  `setang` calls rotated the camera (scene diff 53-94 vs baseline).
+  Command-line `+commands` after `+map` do *not* run post-load
+  (ordering probe: diff 0.13 = unchanged view, no entity created).
+* **Particle frame = injected emitters.** The 70 campaign maps contain
+  zero `info_particle_system` entities, and every map-authored emitter
+  near a spawn is either off (`env_steam` without `InitialState 1`),
+  not auto-igniting (`env_fire` without `SF_FIRE_START_ON` 0x4), or
+  occluded from every spawn view (checked `d1_town_01`,
+  `d1_town_03` indoor spawn, `d1_canals_01`, `d2_coast_09`
+  underground, `d3_c17_*`, `d1_trainstation_05`). The frame is
+  therefore `d2_coast_11` with two `env_fire` clusters
+  (`spawnflags 5` = INFINITE|START_ON, `firesize 50`) injected at the
+  player's aim point on open ground via F-key binds in
+  `game/hl2/cfg/config.cfg` fired with `PostMessage`. The same bind
+  block replays the frame on the DX11 build for checklist 14:
+  `sv_cheats 1; setang 30 320` + 3x `ent_create env_fire spawnflags 5
+  firesize 50`, repeat at `setang 30 290`, frame at `setang 25 305`.
+* **Pre-existing engine crash (record-only).** A session idling ~13
+  min on `d2_coast_11` died with `0xc0000005` in `engine.dll+0x55d5c9`;
+  `console.log` shows late joystick init and `Redownloading all
+  lightmaps` immediately before shutdown. All capture windows are ~3
+  min and unaffected.
+* **Final inventory.** `baseline_dx9/` holds exactly `backend_dx9.txt`
+  plus four frames: `d1_trainstation_01_props.png`,
+  `d2_coast_01_water.png`, `d2_coast_11_particles.png`,
+  `hud_font.png`.
+
 ## Risks and known hard parts (scoping)
 
 * **Constant buffers are the deepest semantic change.** D3D9 hands

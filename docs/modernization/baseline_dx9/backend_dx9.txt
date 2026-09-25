@@ -1,0 +1,104 @@
+Phase 3 Stage 1 - DX9 backend baseline (checklist 13 "before" side)
+=====================================================================
+
+Captured:    2026-09-25, release build at 75f87bff, deploy 26/26.
+How:         console command `mat_info` -> materialsystem
+             cmaterialsystem.cpp SpewDriverInfo() -> "ShaderAPI: %s"
+             -> materialsystem/shaderapidx9 CShaderDeviceDx8::
+             SpewDriverInfo() (shaderdevicedx8.cpp).
+Command:     hl2_launcher.exe -condebug -windowed -noborder -novid
+             -console +mat_info      (working dir: game\)
+Desktop/GPU: 1920x1080, NVIDIA GeForce RTX 4060 (nvldumdx.dll),
+             driver reports D3D9 feature level VS 3.0 / PS 3.0.
+
+The canonical line for checklist 13 is line 1 below:
+    ShaderAPI: shaderapidx9.dll
+
+After the switch to the D3D11 backend this must read
+    ShaderAPI: shaderapidx11.dll
+(or the D3D11 equivalent name) while the rest of the spew keeps
+reporting the real driver.
+
+Verbatim `mat_info` output follows (end of spew; subsequent console
+noise - cheat-cvar warnings, missing VGUI material lines - omitted).
+---------------------------------------------------------------------
+ShaderAPI: shaderapidx9.dll
+Shader API Driver Info:
+
+Driver : nvldumdx.dll Version : 9007199255730126
+Driver Description :  NVIDIA GeForce RTX 4060
+Chipset version 4318 10370 402724721 161
+
+Display mode : 1920 x 1080 (BGRX8888)
+Vertex Shader Version : 3.0 Pixel Shader Version : 3.0
+
+Device Caps :
+CANBLTSYSTONONLOCAL  Y  CANRENDERAFTERFLIP  Y  HWRASTERIZATION  Y 
+HWTRANSFORMANDLIGHT  Y  NPATCHES  N  PUREDEVICE  Y 
+SEPARATETEXTUREMEMORIES  N  TEXTURENONLOCALVIDMEM  Y  TEXTURESYSTEMMEMORY  N 
+TEXTUREVIDEOMEMORY  Y  TLVERTEXSYSTEMMEMORY  Y  TLVERTEXVIDEOMEMORY  Y 
+
+Primitive Caps :
+BLENDOP  Y  CLIPPLANESCALEDPOINTS  N  CLIPTLVERTS  Y 
+COLORWRITEENABLE  Y  MASKZ  Y  TSSARGTEMP  Y 
+
+Raster Caps :
+FOGRANGE  Y  FOGTABLE  Y  FOGVERTEX  Y  ZFOG  Y  WFOG  Y 
+MIPMAPLODBIAS  Y  WBUFFER  N  ZBIAS  Y  ZTEST  Y 
+Size of Texture Memory : 2097151 kb
+Max Texture Dimensions : 16384 x 16384
+Max Texture Aspect Ratio : *16384*
+Max Textures : 8 Max Stages : 8
+
+Texture Caps :
+ALPHA  Y  CUBEMAP  Y  MIPCUBEMAP  Y  SQUAREONLY  N 
+vendor id: 0x10de
+device id: 0x2882
+SHADERAPI CAPS:
+m_NumSamplers: 16
+m_NumTextureStages: 2
+m_HasSetDeviceGammaRamp: no
+m_SupportsVertexShaders (1.1): yes
+m_SupportsVertexShaders_2_0: yes
+m_SupportsPixelShaders (1.1): yes
+m_SupportsPixelShaders_1_4: yes
+m_SupportsPixelShaders_2_0: yes
+m_SupportsPixelShaders_2_b: yes
+m_SupportsShaderModel_3_0: yes
+m_SupportsCompressedTextures: COMPRESSED_TEXTURES_ON
+m_SupportsCompressedVertices: 1
+m_bSupportsAnisotropicFiltering: yes
+m_nMaxAnisotropy: 16
+m_MaxTextureWidth: 16384
+m_MaxTextureHeight: 16384
+m_MaxTextureAspectRatio: 16384
+m_MaxPrimitiveCount: 16777215
+m_ZBiasAndSlopeScaledDepthBiasSupported: yes
+m_SupportsMipmapping: yes
+m_SupportsOverbright: yes
+m_SupportsCubeMaps: yes
+m_NumPixelShaderConstants: 32
+m_NumVertexShaderConstants: 256
+m_NumBooleanVertexShaderConstants: 16
+m_NumIntegerVertexShaderConstants: 16
+m_TextureMemorySize: 2147483647
+m_MaxNumLights: 4
+m_SupportsHardwareLighting: yes
+m_MaxBlendMatrices: 4
+m_MaxBlendMatrixIndices: 0
+m_MaxVertexShaderBlendMatrices: 53
+m_SupportsMipmappedCubemaps: yes
+m_SupportsNonPow2Textures: yes
+m_nDXSupportLevel: 90
+m_PreferDynamicTextures: yes
+m_HasProjectedBumpEnv: yes
+m_MaxUserClipPlanes: 6
+m_SupportsSRGB: yes
+m_HDRType: HDR_TYPE_INTEGER
+m_bSupportsSpheremapping: yes
+m_UseFastClipping: no
+m_pShaderDLL: 
+m_bNeedsATICentroidHack: no
+m_bDisableShaderOptimizations: no
+m_bColorOnSecondStream: yes
+m_MaxSimultaneousRenderTargets: 4
