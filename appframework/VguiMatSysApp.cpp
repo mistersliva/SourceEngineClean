@@ -57,7 +57,9 @@ bool CVguiMatSysApp::Create()
 		return false;
 	}
 
-	pMaterialSystem->SetShaderAPI( "shaderapidx9.dll" );
+	// "-dx11" selects the Phase 3 D3D11 backend; DX9 stays the default so
+	// both remain selectable (phase3.md Stage 3).
+	pMaterialSystem->SetShaderAPI( CommandLine()->FindParm( "-dx11" ) ? "shaderapidx11.dll" : "shaderapidx9.dll" );
 	return true;
 }
 

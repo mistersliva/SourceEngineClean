@@ -1,0 +1,70 @@
+#! /usr/bin/env python
+# encoding: utf-8
+
+from waflib import Utils
+import os
+
+top = '.'
+PROJECT_NAME = 'shaderapidx11'
+
+def options(opt):
+	# stub
+	return
+
+def configure(conf):
+	conf.env.append_unique('DEFINES',[
+		'SHADERAPIDX11',
+		'SHADER_DLL_EXPORT',
+		# PROTECTED_THINGS_ENABLE deliberately off, same as every other
+		# game-build project: the VCR-mode API renames collide with the
+		# Windows SDK headers (C4005) in this TU's include order.
+		'strncpy=use_Q_strncpy_instead',
+		'_snprintf=use_Q_snprintf_instead',
+	])
+
+def build(bld):
+	# The native D3D11 backend is Windows-first. The Linux/macOS build gets
+	# the same code through DXVK-Native in a later Phase 3 stage, so no
+	# target is produced here yet (and nothing may include d3d11.h
+	# off-Windows). GL-on-Windows builds keep the DX9/togl path untouched.
+	if bld.env.DEST_OS != 'win32' or bld.env.GL:
+		return
+
+	source = [
+		'shaderapidx11.cpp',
+		# Shared stub seam: the empty implementation compiles into this DLL
+		# with SHADERAPIEMPTY_BACKEND_BUILD (see shaderapi_backend_hooks.h),
+		# so IShaderAPI / IShaderShadow / IHardwareConfigInternal are stubs
+		# while SetMode / ClearBuffers route back into this project.
+		'../shaderapiempty/shaderapiempty.cpp',
+		'../../public/tier0/memoverride.cpp'
+	]
+
+	includes = [
+		'.',
+		'../shaderapiempty',
+		'../../public',
+		'../../public/tier0',
+		'../../public/tier1',
+		'../../common',
+		'../'
+	] + bld.env.INCLUDES_SDL2
+
+	defines = ['SHADERAPIEMPTY_BACKEND_BUILD']
+
+	libs = ['tier0','tier1','USER32','D3D11','DXGI']
+
+	install_path = bld.env.LIBDIR
+
+	bld.shlib(
+		source   = source,
+		target   = PROJECT_NAME,
+		name     = PROJECT_NAME,
+		features = 'c cxx',
+		includes = includes,
+		defines  = defines,
+		use      = libs,
+		install_path = install_path,
+		subsystem = bld.env.MSVC_SUBSYSTEM,
+		idx      = bld.get_taskgen_count()
+	)

@@ -68,6 +68,7 @@ projects={
 		'materialsystem',
 #		'materialsystem/shaderapiempty',
 		'materialsystem/shaderapidx9',
+		'materialsystem/shaderapidx11',
 		'materialsystem/shaderlib',
 		'materialsystem/stdshaders',
 		'mathlib',
@@ -430,6 +431,8 @@ def check_deps(conf):
 		conf.check(lib='d3d9', uselib_store='D3D9')
 		conf.check(lib='dsound', uselib_store='DSOUND')
 		conf.check(lib='dxguid', uselib_store='DXGUID')
+		conf.check(lib='d3d11', uselib_store='D3D11')
+		conf.check(lib='dxgi', uselib_store='DXGI')
 		if conf.options.OPUS:
 			conf.check(lib='opus', uselib_store='OPUS')
 

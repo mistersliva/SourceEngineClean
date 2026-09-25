@@ -16,104 +16,25 @@
 #include "tier0/dbg.h"
 #include "materialsystem/idebugtextureinfo.h"
 #include "materialsystem/deformations.h"
+#include "shaderapi_backend_hooks.h"
+
+
+//-----------------------------------------------------------------------------
+// Backend hooks: NULL for the standalone shaderapiempty.dll. A real backend
+// project (shaderapidx11) compiles this file into itself with
+// SHADERAPIEMPTY_BACKEND_BUILD defined and installs its hooks from
+// CShaderDeviceMgrDx11::Connect, so SetMode/ClearBuffers reach real hardware.
+//-----------------------------------------------------------------------------
+IShaderAPIBackendHooks *g_pShaderAPIBackendHooks = NULL;
 
 
 //-----------------------------------------------------------------------------
 // The empty mesh
 //-----------------------------------------------------------------------------
-class CEmptyMesh : public IMesh
-{
-public:
-	CEmptyMesh( bool bIsDynamic );
-	virtual ~CEmptyMesh();
-
-	// FIXME: Make this work! Unsupported methods of IIndexBuffer + IVertexBuffer
-	virtual bool Lock( int nMaxIndexCount, bool bAppend, IndexDesc_t& desc );
-	virtual void Unlock( int nWrittenIndexCount, IndexDesc_t& desc );
-	virtual void ModifyBegin( bool bReadOnly, int nFirstIndex, int nIndexCount, IndexDesc_t& desc );
-	virtual void ModifyEnd( IndexDesc_t& desc );
-	virtual void Spew( int nIndexCount, const IndexDesc_t & desc );
-	virtual void ValidateData( int nIndexCount, const IndexDesc_t &desc );
-	virtual bool Lock( int nVertexCount, bool bAppend, VertexDesc_t &desc );
-	virtual void Unlock( int nVertexCount, VertexDesc_t &desc );
-	virtual void Spew( int nVertexCount, const VertexDesc_t &desc );
-	virtual void ValidateData( int nVertexCount, const VertexDesc_t & desc );
-	virtual bool IsDynamic() const { return m_bIsDynamic; }
-	virtual void BeginCastBuffer( VertexFormat_t format ) {}
-	virtual void BeginCastBuffer( MaterialIndexFormat_t format ) {}
-	virtual void EndCastBuffer( ) {}
-	virtual int GetRoomRemaining() const { return 0; }
-	virtual MaterialIndexFormat_t IndexFormat() const { return MATERIAL_INDEX_FORMAT_UNKNOWN; }
-
-	void LockMesh( int numVerts, int numIndices, MeshDesc_t& desc );
-	void UnlockMesh( int numVerts, int numIndices, MeshDesc_t& desc );
-
-	void ModifyBeginEx( bool bReadOnly, int firstVertex, int numVerts, int firstIndex, int numIndices, MeshDesc_t& desc );
-	void ModifyBegin( int firstVertex, int numVerts, int firstIndex, int numIndices, MeshDesc_t& desc );
-	void ModifyEnd( MeshDesc_t& desc );
-
-	// returns the # of vertices (static meshes only)
-	int  VertexCount() const;
-
-	// Sets the primitive type
-	void SetPrimitiveType( MaterialPrimitiveType_t type );
-	 
-	// Draws the entire mesh
-	void Draw(int firstIndex, int numIndices);
-
-	void Draw(CPrimList *pPrims, int nPrims);
-
-	// Copy verts and/or indices to a mesh builder. This only works for temp meshes!
-	virtual void CopyToMeshBuilder( 
-		int iStartVert,		// Which vertices to copy.
-		int nVerts, 
-		int iStartIndex,	// Which indices to copy.
-		int nIndices, 
-		int indexOffset,	// This is added to each index.
-		CMeshBuilder &builder );
-
-	// Spews the mesh data
-	void Spew( int numVerts, int numIndices, const MeshDesc_t & desc );
-
-	void ValidateData( int numVerts, int numIndices, const MeshDesc_t & desc );
-
-	// gets the associated material
-	IMaterial* GetMaterial();
-
-	void SetColorMesh( IMesh *pColorMesh, int nVertexOffset )
-	{
-	}
-
-
-	virtual int IndexCount() const
-	{
-		return 0;
-	}
-
-	virtual void SetFlexMesh( IMesh *pMesh, int nVertexOffset ) {}
-
-	virtual void DisableFlexMesh() {}
-
-	virtual void MarkAsDrawn() {}
-
-	virtual unsigned ComputeMemoryUsed() { return 0; }
-
-	virtual VertexFormat_t GetVertexFormat() const { return VERTEX_POSITION; }
-
-	virtual IMesh *GetMesh()
-	{
-		return this;
-	}
-
-private:
-	enum
-	{
-		VERTEX_BUFFER_SIZE = 1024 * 1024
-	};
-
-	unsigned char* m_pVertexMemory;
-	bool m_bIsDynamic;
-};
+// Declaration shared with shaderapidx11 (emptymesh.h); the implementation
+// stays in this file and is linked into both the standalone empty DLL and
+// the backend that compiles this source in.
+#include "emptymesh.h"
 
 
 //-----------------------------------------------------------------------------
@@ -325,9 +246,11 @@ private:
 
 static CShaderDeviceEmpty s_ShaderDeviceEmpty;
 
+#ifndef SHADERAPIEMPTY_BACKEND_BUILD
 // FIXME: Remove; it's for backward compat with the materialsystem only for now
 EXPOSE_SINGLE_INTERFACE_GLOBALVAR( CShaderDeviceEmpty, IShaderDevice, 
 								  SHADER_DEVICE_INTERFACE_VERSION, s_ShaderDeviceEmpty )
+#endif
 
 
 //-----------------------------------------------------------------------------
@@ -359,8 +282,10 @@ public:
 
 static CShaderDeviceMgrEmpty s_ShaderDeviceMgrEmpty;
 
+#ifndef SHADERAPIEMPTY_BACKEND_BUILD
 EXPOSE_SINGLE_INTERFACE_GLOBALVAR( CShaderDeviceMgrEmpty, IShaderDeviceMgr, 
 								  SHADER_DEVICE_MGR_INTERFACE_VERSION, s_ShaderDeviceMgrEmpty )
+#endif
 
 
 //-----------------------------------------------------------------------------
@@ -418,6 +343,8 @@ public:
 	// Sets the mode...
 	bool SetMode( void* hwnd, int nAdapter, const ShaderDeviceInfo_t &info )
 	{
+		if ( g_pShaderAPIBackendHooks )
+			return g_pShaderAPIBackendHooks->SetMode( hwnd, nAdapter, info );
 		return true;
 	}
 
@@ -1869,6 +1796,8 @@ bool CShaderAPIEmpty::DoRenderTargetsNeedSeparateDepthBuffer() const
 // Can we download textures?
 bool CShaderAPIEmpty::CanDownloadTextures() const
 {
+	if ( g_pShaderAPIBackendHooks )
+		return g_pShaderAPIBackendHooks->CanDownloadTextures();
 	return false;
 }
 
@@ -2759,6 +2688,8 @@ bool CShaderAPIEmpty::IsTextureResident( ShaderAPITextureHandle_t textureHandle 
 // stuff that isn't to be used from within a shader
 void CShaderAPIEmpty::ClearBuffers( bool bClearColor, bool bClearDepth, bool bClearStencil, int renderTargetWidth, int renderTargetHeight )
 {
+	if ( g_pShaderAPIBackendHooks )
+		g_pShaderAPIBackendHooks->ClearBuffers( bClearColor, bClearDepth, bClearStencil, renderTargetWidth, renderTargetHeight );
 }
 
 void CShaderAPIEmpty::ClearBuffersObeyStencil( bool bClearColor, bool bClearDepth )

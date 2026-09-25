@@ -248,6 +248,57 @@ Findings that shaped the procedure:
   `d2_coast_01_water.png`, `d2_coast_11_particles.png`,
   `hud_font.png`.
 
+## Stage 3 execution notes (device + swapchain spike, 2026-09-25)
+
+* **What shipped.** New `materialsystem/shaderapidx11/` project (`wscript`
+  gates on `DEST_OS == 'win32' and not GL`; Linux/macOS come later via
+  DXVK-Native). It compiles `../shaderapiempty/shaderapiempty.cpp` with
+  `SHADERAPIEMPTY_BACKEND_BUILD` so only `IShaderDeviceMgr` /
+  `IShaderDevice` are first-party — everything else stays the shared stub,
+  delegating `SetMode` / `ClearBuffers` / `CanDownloadTextures` through the
+  new guarded seam `shaderapi_backend_hooks.h` (`g_pShaderAPIBackendHooks`).
+  Selected by the new `-dx11` switch in `launcher/launcher.cpp` and
+  `appframework/VguiMatSysApp.cpp`; `-noshaderapi` still overrides, DX9
+  stays the default. Root `wscript` gained `check(lib='d3d11'/'dxgi')`
+  probes beside the existing D3D9 ones.
+* **Gate result: PASSED.** `hl2_launcher.exe -dx11 -nojoy` boots to the
+  menu, window up at t+3s, screenshot at t+21s and t+106s reads exactly
+  `avgRGB=(255,0,255)` (the `s_SpikeClearColor` spike presented through
+  the real materialsystem frame path), survives 109s with no dialog and a
+  clean `taskkill` post-verification. `engine.log` shows
+  `shaderapidx11: 2 display adapter(s) found` and
+  `device ready - feature level 45056 (11_0), 640x480, NVIDIA GeForce
+  RTX 4060, windowed`. The default (no `-dx11`) DX9 boot was re-verified
+  after the launcher edits: reaches the menu, normal `avgRGB=(21,35,47)`
+  background, survives 76s — both backends selectable, no regression.
+  Lint PASS, release C-warnings stayed at baseline (0 new).
+* **Two stub-seam gaps found by boot-debugging (fixed here, kept for
+  Stage 4/5 context).**
+  1. `CShaderAPIEmpty::CanDownloadTextures()` returns `false`
+     unconditionally, which made `CMaterialSystem::ReloadMaterials`
+     early-out with `bDeviceReady false`. It now consults the hook seam;
+     the DX11 hook reports `IsUsingGraphics()` (mirrors
+     `CShaderAPIDx8::CanDownloadTextures` = `IsActive()`).
+  2. `IShaderDevice::CreateStaticMesh` and the vertex/index buffer
+     factories returned `NULL` on the assumption of "no callers in this
+     build" — wrong: `studiorender`'s `R_StudioBuildMeshGroup` calls
+     `CreateStaticMesh` for every static prop during `SpawnServer` at
+     menu boot, and `CMeshBuilder::Begin(NULL)` was a first-chance
+     `0xc0000005` (exit code 1, no WER record). `CEmptyMesh`'s
+     declaration moved to the shared `emptymesh.h`; `CShaderDeviceDx11`
+     now hands out the same non-null placeholders `CShaderDeviceEmpty`
+     always did. Real buffers are Stage 5.
+* **Diagnosis method (reusable).** The failure mode was a *clean*
+  `exit(1)` two seconds in with truncated logs — `cdb.exe -c "sxe e;
+  sxe av; g; k; g; k; q"` (Debugging Tools, `build\engine\engine.pdb`
+  resolves) pinned the first-chance AV to
+  `CStudioRenderContext::R_StudioBuildMeshGroup → CMeshBuilder::Begin`.
+* **Expected Stage 3 visuals.** The menu UI draws as no-ops over the
+  magenta clear (VGUI rasterization needs Stage 4 shaders + Stage 5
+  resources), and `g_pShaderAPI->GetBackBufferDimensions()` still
+  reports the empty backend's fixed 1024x768 — both recorded as Stage
+  4/5 work, harmless while nothing rasterizes.
+
 ## Risks and known hard parts (scoping)
 
 * **Constant buffers are the deepest semantic change.** D3D9 hands
