@@ -86,8 +86,24 @@ struct DbgMemHeader_t
 #endif
 {
 	size_t nLogicalSize;
-	byte reserved[12];	// MS allocator always returns mem aligned on 16 bytes, which some of our code depends on
+#if defined( _DEBUG ) && !defined( POSIX )
+	// This configuration has no CrtDbgMemHeader_t base, so size_t + this padding is the entire
+	// header, and the payload sits directly behind it. Keep sizeof(DbgMemHeader_t) a multiple of
+	// 16 bytes (enforced by the assert below): malloc()/operator new promise to preserve the
+	// underlying allocator's 16-byte alignment, and 64-bit code depends on it - e.g.
+	// CTSListBase::CTSListBase() calls Error() if its head lands 8 bytes off (tslist.h).
+	byte reserved[16 - sizeof( size_t )];
+#else
+	// Header also includes CrtDbgMemHeader_t, so it already lands on a multiple of 16.
+	// MS allocator always returns mem aligned on 16 bytes, which some of our code depends on
+	byte reserved[12];
+#endif
 };
+
+// The payload follows this header, so a header that isn't a multiple of 16 bytes would hand out
+// misaligned blocks. (On Win64 _DEBUG the header was 24 bytes before the padding above: every
+// allocation came back 8 bytes off, which is a hard boot failure in debug builds.)
+COMPILE_TIME_ASSERT( sizeof( DbgMemHeader_t ) % 16 == 0 );
 
 //-----------------------------------------------------------------------------
 
